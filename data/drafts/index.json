@@ -1,0 +1,32 @@
+[
+  {
+    "season": 2025,
+    "rounds": 15,
+    "teams": 12,
+    "picks": 180
+  },
+  {
+    "season": 2024,
+    "rounds": 15,
+    "teams": 12,
+    "picks": 180
+  },
+  {
+    "season": 2023,
+    "rounds": 15,
+    "teams": 12,
+    "picks": 180
+  },
+  {
+    "season": 2022,
+    "rounds": 18,
+    "teams": 10,
+    "picks": 180
+  },
+  {
+    "season": 2021,
+    "rounds": 15,
+    "teams": 8,
+    "picks": 120
+  }
+]

@@ -1,0 +1,2667 @@
+{
+  "season": 2024,
+  "rounds": 15,
+  "teamCount": 12,
+  "picks": [
+    {
+      "season": 2024,
+      "round": 1,
+      "pick": 1,
+      "playerId": 2572411,
+      "playerName": "Marvin Harrison Jr.",
+      "position": "WR",
+      "proTeam": "ARI",
+      "fantasyTeamId": 8,
+      "fantasyTeamName": "De'Aaron Cronin",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 1,
+      "pick": 2,
+      "playerId": 2567973,
+      "playerName": "Chris Olave",
+      "position": "WR",
+      "proTeam": "NO",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 12,
+      "fantasyTeamName": "Dimmy",
+      "managers": [
+        "Dim"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 1,
+      "pick": 3,
+      "playerId": 2572342,
+      "playerName": "Malik Nabers",
+      "position": "WR",
+      "proTeam": "NYG",
+      "fantasyTeamId": 7,
+      "fantasyTeamName": "Dalts",
+      "managers": [
+        "Talds"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 1,
+      "pick": 4,
+      "playerId": 2568315,
+      "playerName": "Rachaad White",
+      "position": "RB",
+      "proTeam": "TB",
+      "fantasyTeamId": 9,
+      "fantasyTeamName": "Sir Doug",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 1,
+      "pick": 5,
+      "playerId": 2569726,
+      "playerName": "Sam LaPorta",
+      "position": "TE",
+      "proTeam": "DET",
+      "fantasyTeamId": 1,
+      "fantasyTeamName": "Thomo",
+      "managers": [
+        "Tom"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 1,
+      "pick": 6,
+      "playerId": 2566127,
+      "playerName": "Nico Collins",
+      "position": "WR",
+      "proTeam": "HOU",
+      "fantasyTeamId": 1,
+      "fantasyTeamName": "Thomo",
+      "managers": [
+        "Tom"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 1,
+      "pick": 7,
+      "playerId": 2569573,
+      "playerName": "Zay Flowers",
+      "position": "WR",
+      "proTeam": "BAL",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 2,
+      "fantasyTeamName": "Brownlowrowbottom",
+      "managers": [
+        "Cam"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 1,
+      "pick": 8,
+      "playerId": 2564136,
+      "playerName": "Michael Pittman",
+      "position": "WR",
+      "proTeam": "IND",
+      "fantasyTeamId": 4,
+      "fantasyTeamName": "ChiChi",
+      "managers": [
+        "Chi"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 1,
+      "pick": 9,
+      "playerId": 2567328,
+      "playerName": "James Cook",
+      "position": "RB",
+      "proTeam": "BUF",
+      "fantasyTeamId": 11,
+      "fantasyTeamName": "Cleveland",
+      "managers": [
+        "Oliver"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 1,
+      "pick": 10,
+      "playerId": 2571859,
+      "playerName": "Keon Coleman",
+      "position": "WR",
+      "proTeam": "BUF",
+      "fantasyTeamId": 2,
+      "fantasyTeamName": "Brownlowrowbottom",
+      "managers": [
+        "Cam"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 1,
+      "pick": 11,
+      "playerId": 2562382,
+      "playerName": "Kyler Murray",
+      "position": "QB",
+      "proTeam": "ARI",
+      "fantasyTeamId": 10,
+      "fantasyTeamName": "GinniVan Jefferson",
+      "managers": [
+        "Brodie, Joseph"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 1,
+      "pick": 12,
+      "playerId": 2568159,
+      "playerName": "George Pickens",
+      "position": "WR",
+      "proTeam": "DAL",
+      "fantasyTeamId": 9,
+      "fantasyTeamName": "Sir Doug",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 2,
+      "pick": 13,
+      "playerId": 2557978,
+      "playerName": "James Conner",
+      "position": "RB",
+      "proTeam": "ARI",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 8,
+      "fantasyTeamName": "De'Aaron Cronin",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 2,
+      "pick": 14,
+      "playerId": 2558019,
+      "playerName": "Alvin Kamara",
+      "position": "RB",
+      "proTeam": "NO",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 2,
+      "fantasyTeamName": "Brownlowrowbottom",
+      "managers": [
+        "Cam"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 2,
+      "pick": 15,
+      "playerId": 2560781,
+      "playerName": "Christian Kirk",
+      "position": "WR",
+      "proTeam": "HOU",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 3,
+      "fantasyTeamName": "Paho",
+      "managers": [
+        "James"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 2,
+      "pick": 16,
+      "playerId": 2562489,
+      "playerName": "Terry McLaurin",
+      "position": "WR",
+      "proTeam": "WAS",
+      "fantasyTeamId": 12,
+      "fantasyTeamName": "Dimmy",
+      "managers": [
+        "Dim"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 2,
+      "pick": 17,
+      "playerId": 2562502,
+      "playerName": "David Montgomery",
+      "position": "RB",
+      "proTeam": "DET",
+      "fantasyTeamId": 4,
+      "fantasyTeamName": "ChiChi",
+      "managers": [
+        "Chi"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 2,
+      "pick": 18,
+      "playerId": 2569813,
+      "playerName": "Tank Dell",
+      "position": "WR",
+      "proTeam": "HOU",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 6,
+      "fantasyTeamName": "Monke Vengence",
+      "managers": [
+        "will, Xavier"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 2,
+      "pick": 19,
+      "playerId": 2568216,
+      "playerName": "Brock Purdy",
+      "position": "QB",
+      "proTeam": "SF",
+      "fantasyTeamId": 5,
+      "fantasyTeamName": "Lucky Bison",
+      "managers": [
+        "Cody"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 2,
+      "pick": 20,
+      "playerId": 2560854,
+      "playerName": "Calvin Ridley",
+      "position": "WR",
+      "proTeam": "TEN",
+      "fantasyTeamId": 3,
+      "fantasyTeamName": "Paho",
+      "managers": [
+        "James"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 2,
+      "pick": 21,
+      "playerId": 2558266,
+      "playerName": "George Kittle",
+      "position": "TE",
+      "proTeam": "SF",
+      "fantasyTeamId": 12,
+      "fantasyTeamName": "Dimmy",
+      "managers": [
+        "Dim"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 2,
+      "pick": 22,
+      "playerId": 2565830,
+      "playerName": "Kyle Pitts",
+      "position": "TE",
+      "proTeam": "ATL",
+      "fantasyTeamId": 8,
+      "fantasyTeamName": "De'Aaron Cronin",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 2,
+      "pick": 23,
+      "playerId": 2562674,
+      "playerName": "Diontae Johnson",
+      "position": "WR",
+      "proTeam": "CLE",
+      "fantasyTeamId": 10,
+      "fantasyTeamName": "GinniVan Jefferson",
+      "managers": [
+        "Brodie, Joseph"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 2,
+      "pick": 24,
+      "playerId": 2540154,
+      "playerName": "Keenan Allen",
+      "position": "WR",
+      "proTeam": "CHI",
+      "fantasyTeamId": 1,
+      "fantasyTeamName": "Thomo",
+      "managers": [
+        "Tom"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 3,
+      "pick": 25,
+      "playerId": 2558105,
+      "playerName": "Chris Godwin",
+      "position": "WR",
+      "proTeam": "TB",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 11,
+      "fantasyTeamName": "Cleveland",
+      "managers": [
+        "Oliver"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 3,
+      "pick": 26,
+      "playerId": 2569594,
+      "playerName": "Dalton Kincaid",
+      "position": "TE",
+      "proTeam": "BUF",
+      "fantasyTeamId": 10,
+      "fantasyTeamName": "GinniVan Jefferson",
+      "managers": [
+        "Brodie, Joseph"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 3,
+      "pick": 27,
+      "playerId": 2566343,
+      "playerName": "Rhamondre Stevenson",
+      "position": "RB",
+      "proTeam": "NE",
+      "fantasyTeamId": 3,
+      "fantasyTeamName": "Paho",
+      "managers": [
+        "James"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 3,
+      "pick": 28,
+      "playerId": 2567496,
+      "playerName": "Jake Ferguson",
+      "position": "TE",
+      "proTeam": "DAL",
+      "fantasyTeamId": 9,
+      "fantasyTeamName": "Sir Doug",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 3,
+      "pick": 29,
+      "playerId": 2568348,
+      "playerName": "Brian Robinson",
+      "position": "RB",
+      "proTeam": "WAS",
+      "fantasyTeamId": 5,
+      "fantasyTeamName": "Lucky Bison",
+      "managers": [
+        "Cody"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 3,
+      "pick": 30,
+      "playerId": 2567883,
+      "playerName": "Zamir White",
+      "position": "RB",
+      "proTeam": "LV",
+      "fantasyTeamId": 10,
+      "fantasyTeamName": "GinniVan Jefferson",
+      "managers": [
+        "Brodie, Joseph"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 3,
+      "pick": 31,
+      "playerId": 2566448,
+      "playerName": "Najee Harris",
+      "position": "RB",
+      "proTeam": "LAC",
+      "fantasyTeamId": 5,
+      "fantasyTeamName": "Lucky Bison",
+      "managers": [
+        "Cody"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 3,
+      "pick": 32,
+      "playerId": 2562379,
+      "playerName": "Marquise Brown",
+      "position": "WR",
+      "proTeam": "KC",
+      "fantasyTeamId": 6,
+      "fantasyTeamName": "Monke Vengence",
+      "managers": [
+        "will, Xavier"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 3,
+      "pick": 33,
+      "playerId": 2571883,
+      "playerName": "Jonathon Brooks",
+      "position": "RB",
+      "proTeam": "CAR",
+      "status": {
+        "label": "PUP",
+        "title": "Physically Unable to Perform"
+      },
+      "fantasyTeamId": 7,
+      "fantasyTeamName": "Dalts",
+      "managers": [
+        "Talds"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 3,
+      "pick": 34,
+      "playerId": 2572219,
+      "playerName": "Brock Bowers",
+      "position": "TE",
+      "proTeam": "LV",
+      "fantasyTeamId": 7,
+      "fantasyTeamName": "Dalts",
+      "managers": [
+        "Talds"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 3,
+      "pick": 35,
+      "playerId": 2557858,
+      "playerName": "Evan Engram",
+      "position": "TE",
+      "proTeam": "DEN",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 2,
+      "fantasyTeamName": "Brownlowrowbottom",
+      "managers": [
+        "Cam"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 3,
+      "pick": 36,
+      "playerId": 2555260,
+      "playerName": "Dak Prescott",
+      "position": "QB",
+      "proTeam": "DAL",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 1,
+      "fantasyTeamName": "Thomo",
+      "managers": [
+        "Tom"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 4,
+      "pick": 37,
+      "playerId": 2564499,
+      "playerName": "Tua Tagovailoa",
+      "position": "QB",
+      "proTeam": "MIA",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 8,
+      "fantasyTeamName": "De'Aaron Cronin",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 4,
+      "pick": 38,
+      "playerId": 2568493,
+      "playerName": "Jaylen Warren",
+      "position": "RB",
+      "proTeam": "PIT",
+      "fantasyTeamId": 12,
+      "fantasyTeamName": "Dimmy",
+      "managers": [
+        "Dim"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 4,
+      "pick": 39,
+      "playerId": 2557986,
+      "playerName": "David Njoku",
+      "position": "TE",
+      "proTeam": "CLE",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 11,
+      "fantasyTeamName": "Cleveland",
+      "managers": [
+        "Oliver"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 4,
+      "pick": 40,
+      "playerId": 2569765,
+      "playerName": "Jayden Reed",
+      "position": "WR",
+      "proTeam": "GB",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 2,
+      "fantasyTeamName": "Brownlowrowbottom",
+      "managers": [
+        "Cam"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 4,
+      "pick": 41,
+      "playerId": 2565045,
+      "playerName": "Justin Herbert",
+      "position": "QB",
+      "proTeam": "LAC",
+      "fantasyTeamId": 4,
+      "fantasyTeamName": "ChiChi",
+      "managers": [
+        "Chi"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 4,
+      "pick": 42,
+      "playerId": 2571907,
+      "playerName": "Rome Odunze",
+      "position": "WR",
+      "proTeam": "CHI",
+      "fantasyTeamId": 2,
+      "fantasyTeamName": "Brownlowrowbottom",
+      "managers": [
+        "Cam"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 4,
+      "pick": 43,
+      "playerId": 2570341,
+      "playerName": "Jaxon Smith-Njigba",
+      "position": "WR",
+      "proTeam": "SEA",
+      "fantasyTeamId": 7,
+      "fantasyTeamName": "Dalts",
+      "managers": [
+        "Talds"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 4,
+      "pick": 44,
+      "playerId": 2558116,
+      "playerName": "Aaron Jones",
+      "position": "RB",
+      "proTeam": "MIN",
+      "fantasyTeamId": 6,
+      "fantasyTeamName": "Monke Vengence",
+      "managers": [
+        "will, Xavier"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 4,
+      "pick": 45,
+      "playerId": 2572477,
+      "playerName": "Ladd McConkey",
+      "position": "WR",
+      "proTeam": "LAC",
+      "fantasyTeamId": 7,
+      "fantasyTeamName": "Dalts",
+      "managers": [
+        "Talds"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 4,
+      "pick": 46,
+      "playerId": 2562734,
+      "playerName": "Devin Singletary",
+      "position": "RB",
+      "proTeam": "NYG",
+      "fantasyTeamId": 11,
+      "fantasyTeamName": "Cleveland",
+      "managers": [
+        "Oliver"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 4,
+      "pick": 47,
+      "playerId": 2569921,
+      "playerName": "Rashee Rice",
+      "position": "WR",
+      "proTeam": "KC",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 12,
+      "fantasyTeamName": "Dimmy",
+      "managers": [
+        "Dim"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 4,
+      "pick": 48,
+      "playerId": 2553728,
+      "playerName": "Raheem Mostert",
+      "position": "RB",
+      "proTeam": "LV",
+      "fantasyTeamId": 1,
+      "fantasyTeamName": "Thomo",
+      "managers": [
+        "Tom"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 5,
+      "pick": 49,
+      "playerId": 2559169,
+      "playerName": "Austin Ekeler",
+      "position": "RB",
+      "proTeam": "WAS",
+      "fantasyTeamId": 8,
+      "fantasyTeamName": "De'Aaron Cronin",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 5,
+      "pick": 50,
+      "playerId": 2572162,
+      "playerName": "Brian Thomas Jr.",
+      "position": "WR",
+      "proTeam": "JAX",
+      "fantasyTeamId": 3,
+      "fantasyTeamName": "Paho",
+      "managers": [
+        "James"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 5,
+      "pick": 51,
+      "playerId": 2572186,
+      "playerName": "Xavier Worthy",
+      "position": "WR",
+      "proTeam": "KC",
+      "fantasyTeamId": 6,
+      "fantasyTeamName": "Monke Vengence",
+      "managers": [
+        "will, Xavier"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 5,
+      "pick": 52,
+      "playerId": 2567637,
+      "playerName": "Christian Watson",
+      "position": "WR",
+      "proTeam": "GB",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 9,
+      "fantasyTeamName": "Sir Doug",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 5,
+      "pick": 53,
+      "playerId": 2560888,
+      "playerName": "Courtland Sutton",
+      "position": "WR",
+      "proTeam": "DEN",
+      "fantasyTeamId": 4,
+      "fantasyTeamName": "ChiChi",
+      "managers": [
+        "Chi"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 5,
+      "pick": 54,
+      "playerId": 2572564,
+      "playerName": "Jayden Daniels",
+      "position": "QB",
+      "proTeam": "WAS",
+      "fantasyTeamId": 6,
+      "fantasyTeamName": "Monke Vengence",
+      "managers": [
+        "will, Xavier"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 5,
+      "pick": 55,
+      "playerId": 2569795,
+      "playerName": "Tyjae Spears",
+      "position": "RB",
+      "proTeam": "TEN",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 5,
+      "fantasyTeamName": "Lucky Bison",
+      "managers": [
+        "Cody"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 5,
+      "pick": 56,
+      "playerId": 2566049,
+      "playerName": "Javonte Williams",
+      "position": "RB",
+      "proTeam": "DAL",
+      "fantasyTeamId": 7,
+      "fantasyTeamName": "Dalts",
+      "managers": [
+        "Talds"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 5,
+      "pick": 57,
+      "playerId": 2562699,
+      "playerName": "Tony Pollard",
+      "position": "RB",
+      "proTeam": "TEN",
+      "fantasyTeamId": 11,
+      "fantasyTeamName": "Cleveland",
+      "managers": [
+        "Oliver"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 5,
+      "pick": 58,
+      "playerId": 2569642,
+      "playerName": "Chase Brown",
+      "position": "RB",
+      "proTeam": "CIN",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 7,
+      "fantasyTeamName": "Dalts",
+      "managers": [
+        "Talds"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 5,
+      "pick": 59,
+      "playerId": 2555224,
+      "playerName": "Ezekiel Elliott",
+      "position": "RB",
+      "proTeam": "LAC",
+      "fantasyTeamId": 10,
+      "fantasyTeamName": "GinniVan Jefferson",
+      "managers": [
+        "Brodie, Joseph"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 5,
+      "pick": 60,
+      "playerId": 2567565,
+      "playerName": "Jameson Williams",
+      "position": "WR",
+      "proTeam": "DET",
+      "fantasyTeamId": 4,
+      "fantasyTeamName": "ChiChi",
+      "managers": [
+        "Chi"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 6,
+      "pick": 61,
+      "playerId": 2566163,
+      "playerName": "Trevor Lawrence",
+      "position": "QB",
+      "proTeam": "JAX",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 8,
+      "fantasyTeamName": "De'Aaron Cronin",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 6,
+      "pick": 62,
+      "playerId": 2563617,
+      "playerName": "Zack Moss",
+      "position": "RB",
+      "proTeam": "CIN",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 12,
+      "fantasyTeamName": "Dimmy",
+      "managers": [
+        "Dim"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 6,
+      "pick": 63,
+      "playerId": 2560995,
+      "playerName": "Dallas Goedert",
+      "position": "TE",
+      "proTeam": "PHI",
+      "fantasyTeamId": 8,
+      "fantasyTeamName": "De'Aaron Cronin",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 6,
+      "pick": 64,
+      "playerId": 2561021,
+      "playerName": "Nick Chubb",
+      "position": "RB",
+      "proTeam": "CLE",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 9,
+      "fantasyTeamName": "Sir Doug",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 6,
+      "pick": 65,
+      "playerId": 2561324,
+      "playerName": "Gus Edwards",
+      "position": "RB",
+      "proTeam": "LAC",
+      "fantasyTeamId": 4,
+      "fantasyTeamName": "ChiChi",
+      "managers": [
+        "Chi"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 6,
+      "pick": 66,
+      "playerId": 2567334,
+      "playerName": "Khalil Shakir",
+      "position": "WR",
+      "proTeam": "BUF",
+      "fantasyTeamId": 3,
+      "fantasyTeamName": "Paho",
+      "managers": [
+        "James"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 6,
+      "pick": 67,
+      "playerId": 2571913,
+      "playerName": "Caleb Williams",
+      "position": "QB",
+      "proTeam": "CHI",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 5,
+      "fantasyTeamName": "Lucky Bison",
+      "managers": [
+        "Cody"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 6,
+      "pick": 68,
+      "playerId": 2569759,
+      "playerName": "Dontayvion Wicks",
+      "position": "WR",
+      "proTeam": "GB",
+      "fantasyTeamId": 11,
+      "fantasyTeamName": "Cleveland",
+      "managers": [
+        "Oliver"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 6,
+      "pick": 69,
+      "playerId": 2543498,
+      "playerName": "Brandin Cooks",
+      "position": "WR",
+      "proTeam": "NO",
+      "fantasyTeamId": 9,
+      "fantasyTeamName": "Sir Doug",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 6,
+      "pick": 70,
+      "playerId": 2555334,
+      "playerName": "Jared Goff",
+      "position": "QB",
+      "proTeam": "DET",
+      "fantasyTeamId": 1,
+      "fantasyTeamName": "Thomo",
+      "managers": [
+        "Tom"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 6,
+      "pick": 71,
+      "playerId": 2558245,
+      "playerName": "Harrison Butker",
+      "position": "K",
+      "proTeam": "KC",
+      "fantasyTeamId": 10,
+      "fantasyTeamName": "GinniVan Jefferson",
+      "managers": [
+        "Brodie, Joseph"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 6,
+      "pick": 72,
+      "playerId": 2572189,
+      "playerName": "Blake Corum",
+      "position": "RB",
+      "proTeam": "LAR",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 6,
+      "fantasyTeamName": "Monke Vengence",
+      "managers": [
+        "will, Xavier"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 7,
+      "pick": 73,
+      "playerId": 2559205,
+      "playerName": "Younghoe Koo",
+      "position": "K",
+      "proTeam": "ATL",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 8,
+      "fantasyTeamName": "De'Aaron Cronin",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 7,
+      "pick": 74,
+      "playerId": 2541785,
+      "playerName": "Adam Thielen",
+      "position": "WR",
+      "proTeam": "CAR",
+      "fantasyTeamId": 9,
+      "fantasyTeamName": "Sir Doug",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 7,
+      "pick": 75,
+      "playerId": 2536340,
+      "playerName": "Justin Tucker",
+      "position": "K",
+      "proTeam": "BAL",
+      "fantasyTeamId": 9,
+      "fantasyTeamName": "Sir Doug",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 7,
+      "pick": 76,
+      "playerId": 100008,
+      "playerName": "Dallas Cowboys",
+      "position": "DEF",
+      "proTeam": "",
+      "fantasyTeamId": 9,
+      "fantasyTeamName": "Sir Doug",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 7,
+      "pick": 77,
+      "playerId": 2558066,
+      "playerName": "Curtis Samuel",
+      "position": "WR",
+      "proTeam": "BUF",
+      "fantasyTeamId": 4,
+      "fantasyTeamName": "ChiChi",
+      "managers": [
+        "Chi"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 7,
+      "pick": 78,
+      "playerId": 100029,
+      "playerName": "San Francisco 49ers",
+      "position": "DEF",
+      "proTeam": "",
+      "fantasyTeamId": 10,
+      "fantasyTeamName": "GinniVan Jefferson",
+      "managers": [
+        "Brodie, Joseph"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 7,
+      "pick": 79,
+      "playerId": 2571750,
+      "playerName": "Brandon Aubrey",
+      "position": "K",
+      "proTeam": "DAL",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 7,
+      "fantasyTeamName": "Dalts",
+      "managers": [
+        "Talds"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 7,
+      "pick": 80,
+      "playerId": 2565899,
+      "playerName": "Chuba Hubbard",
+      "position": "RB",
+      "proTeam": "CAR",
+      "fantasyTeamId": 3,
+      "fantasyTeamName": "Paho",
+      "managers": [
+        "James"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 7,
+      "pick": 81,
+      "playerId": 100003,
+      "playerName": "Buffalo Bills",
+      "position": "DEF",
+      "proTeam": "",
+      "fantasyTeamId": 6,
+      "fantasyTeamName": "Monke Vengence",
+      "managers": [
+        "will, Xavier"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 7,
+      "pick": 82,
+      "playerId": 2540165,
+      "playerName": "DeAndre Hopkins",
+      "position": "WR",
+      "proTeam": "BAL",
+      "fantasyTeamId": 10,
+      "fantasyTeamName": "GinniVan Jefferson",
+      "managers": [
+        "Brodie, Joseph"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 7,
+      "pick": 83,
+      "playerId": 2506363,
+      "playerName": "Aaron Rodgers",
+      "position": "QB",
+      "proTeam": "NYJ",
+      "fantasyTeamId": 10,
+      "fantasyTeamName": "GinniVan Jefferson",
+      "managers": [
+        "Brodie, Joseph"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 7,
+      "pick": 84,
+      "playerId": 2567469,
+      "playerName": "Jerome Ford",
+      "position": "RB",
+      "proTeam": "CLE",
+      "fantasyTeamId": 1,
+      "fantasyTeamName": "Thomo",
+      "managers": [
+        "Tom"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 8,
+      "pick": 85,
+      "playerId": 2572405,
+      "playerName": "Trey Benson",
+      "position": "RB",
+      "proTeam": "ARI",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 3,
+      "fantasyTeamName": "Paho",
+      "managers": [
+        "James"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 8,
+      "pick": 86,
+      "playerId": 100016,
+      "playerName": "Kansas City Chiefs",
+      "position": "DEF",
+      "proTeam": "",
+      "fantasyTeamId": 11,
+      "fantasyTeamName": "Cleveland",
+      "managers": [
+        "Oliver"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 8,
+      "pick": 87,
+      "playerId": 2566442,
+      "playerName": "Pat Freiermuth",
+      "position": "TE",
+      "proTeam": "PIT",
+      "fantasyTeamId": 11,
+      "fantasyTeamName": "Cleveland",
+      "managers": [
+        "Oliver"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 8,
+      "pick": 88,
+      "playerId": 2569606,
+      "playerName": "Bryce Young",
+      "position": "QB",
+      "proTeam": "CAR",
+      "fantasyTeamId": 9,
+      "fantasyTeamName": "Sir Doug",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 8,
+      "pick": 89,
+      "playerId": 2565953,
+      "playerName": "Evan McPherson",
+      "position": "K",
+      "proTeam": "CIN",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 4,
+      "fantasyTeamName": "ChiChi",
+      "managers": [
+        "Chi"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 8,
+      "pick": 90,
+      "playerId": 2539227,
+      "playerName": "Dustin Hopkins",
+      "position": "K",
+      "proTeam": "CLE",
+      "fantasyTeamId": 3,
+      "fantasyTeamName": "Paho",
+      "managers": [
+        "James"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 8,
+      "pick": 91,
+      "playerId": 100002,
+      "playerName": "Baltimore Ravens",
+      "position": "DEF",
+      "proTeam": "",
+      "fantasyTeamId": 7,
+      "fantasyTeamName": "Dalts",
+      "managers": [
+        "Talds"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 8,
+      "pick": 92,
+      "playerId": 100007,
+      "playerName": "Cleveland Browns",
+      "position": "DEF",
+      "proTeam": "",
+      "fantasyTeamId": 3,
+      "fantasyTeamName": "Paho",
+      "managers": [
+        "James"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 8,
+      "pick": 93,
+      "playerId": 2571889,
+      "playerName": "Xavier Legette",
+      "position": "WR",
+      "proTeam": "CAR",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 2,
+      "fantasyTeamName": "Brownlowrowbottom",
+      "managers": [
+        "Cam"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 8,
+      "pick": 94,
+      "playerId": 2570335,
+      "playerName": "Zach Charbonnet",
+      "position": "RB",
+      "proTeam": "SEA",
+      "fantasyTeamId": 1,
+      "fantasyTeamName": "Thomo",
+      "managers": [
+        "Tom"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 8,
+      "pick": 95,
+      "playerId": 2560866,
+      "playerName": "Dalton Schultz",
+      "position": "TE",
+      "proTeam": "HOU",
+      "fantasyTeamId": 10,
+      "fantasyTeamName": "GinniVan Jefferson",
+      "managers": [
+        "Brodie, Joseph"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 8,
+      "pick": 96,
+      "playerId": 100024,
+      "playerName": "New York Jets",
+      "position": "DEF",
+      "proTeam": "",
+      "fantasyTeamId": 1,
+      "fantasyTeamName": "Thomo",
+      "managers": [
+        "Tom"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 9,
+      "pick": 97,
+      "playerId": 2571922,
+      "playerName": "Jermaine Burton",
+      "position": "WR",
+      "proTeam": "CIN",
+      "fantasyTeamId": 8,
+      "fantasyTeamName": "De'Aaron Cronin",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 9,
+      "pick": 98,
+      "playerId": 2561153,
+      "playerName": "Jason Sanders",
+      "position": "K",
+      "proTeam": "MIA",
+      "fantasyTeamId": 1,
+      "fantasyTeamName": "Thomo",
+      "managers": [
+        "Tom"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 9,
+      "pick": 99,
+      "playerId": 2568435,
+      "playerName": "Cameron Dicker",
+      "position": "K",
+      "proTeam": "LAC",
+      "fantasyTeamId": 11,
+      "fantasyTeamName": "Cleveland",
+      "managers": [
+        "Oliver"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 9,
+      "pick": 100,
+      "playerId": 2569861,
+      "playerName": "Josh Downs",
+      "position": "WR",
+      "proTeam": "IND",
+      "fantasyTeamId": 9,
+      "fantasyTeamName": "Sir Doug",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 9,
+      "pick": 101,
+      "playerId": 100025,
+      "playerName": "Philadelphia Eagles",
+      "position": "DEF",
+      "proTeam": "",
+      "fantasyTeamId": 4,
+      "fantasyTeamName": "ChiChi",
+      "managers": [
+        "Chi"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 9,
+      "pick": 102,
+      "playerId": 2572300,
+      "playerName": "Ja'Lynn Polk",
+      "position": "WR",
+      "proTeam": "NE",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 3,
+      "fantasyTeamName": "Paho",
+      "managers": [
+        "James"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 9,
+      "pick": 103,
+      "playerId": 100006,
+      "playerName": "Cincinnati Bengals",
+      "position": "DEF",
+      "proTeam": "",
+      "fantasyTeamId": 5,
+      "fantasyTeamName": "Lucky Bison",
+      "managers": [
+        "Cody"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 9,
+      "pick": 104,
+      "playerId": 2552430,
+      "playerName": "Tyler Lockett",
+      "position": "WR",
+      "proTeam": "TEN",
+      "fantasyTeamId": 1,
+      "fantasyTeamName": "Thomo",
+      "managers": [
+        "Tom"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 9,
+      "pick": 105,
+      "playerId": 2556521,
+      "playerName": "Ka'imi Fairbairn",
+      "position": "K",
+      "proTeam": "HOU",
+      "fantasyTeamId": 2,
+      "fantasyTeamName": "Brownlowrowbottom",
+      "managers": [
+        "Cam"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 9,
+      "pick": 106,
+      "playerId": 2563896,
+      "playerName": "Jerry Jeudy",
+      "position": "WR",
+      "proTeam": "CLE",
+      "fantasyTeamId": 7,
+      "fantasyTeamName": "Dalts",
+      "managers": [
+        "Talds"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 9,
+      "pick": 107,
+      "playerId": 2562378,
+      "playerName": "T.J. Hockenson",
+      "position": "TE",
+      "proTeam": "MIN",
+      "fantasyTeamId": 6,
+      "fantasyTeamName": "Monke Vengence",
+      "managers": [
+        "will, Xavier"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 9,
+      "pick": 108,
+      "playerId": 2556075,
+      "playerName": "Derrick Henry",
+      "position": "RB",
+      "proTeam": "BAL",
+      "fantasyTeamId": 1,
+      "fantasyTeamName": "Thomo",
+      "managers": [
+        "Tom"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 10,
+      "pick": 109,
+      "playerId": 2567907,
+      "playerName": "Ty Chandler",
+      "position": "RB",
+      "proTeam": "MIN",
+      "fantasyTeamId": 8,
+      "fantasyTeamName": "De'Aaron Cronin",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 10,
+      "pick": 110,
+      "playerId": 2570275,
+      "playerName": "Quentin Johnston",
+      "position": "WR",
+      "proTeam": "LAC",
+      "fantasyTeamId": 12,
+      "fantasyTeamName": "Dimmy",
+      "managers": [
+        "Dim"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 10,
+      "pick": 111,
+      "playerId": 100014,
+      "playerName": "Indianapolis Colts",
+      "position": "DEF",
+      "proTeam": "",
+      "fantasyTeamId": 2,
+      "fantasyTeamName": "Brownlowrowbottom",
+      "managers": [
+        "Cam"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 10,
+      "pick": 112,
+      "playerId": 2572294,
+      "playerName": "Drake Maye",
+      "position": "QB",
+      "proTeam": "NE",
+      "fantasyTeamId": 11,
+      "fantasyTeamName": "Cleveland",
+      "managers": [
+        "Oliver"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 10,
+      "pick": 113,
+      "playerId": 2532820,
+      "playerName": "Kirk Cousins",
+      "position": "QB",
+      "proTeam": "ATL",
+      "fantasyTeamId": 4,
+      "fantasyTeamName": "ChiChi",
+      "managers": [
+        "Chi"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 10,
+      "pick": 114,
+      "playerId": 2569717,
+      "playerName": "Marvin Mims Jr.",
+      "position": "WR",
+      "proTeam": "DEN",
+      "fantasyTeamId": 12,
+      "fantasyTeamName": "Dimmy",
+      "managers": [
+        "Dim"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 10,
+      "pick": 115,
+      "playerId": 2563602,
+      "playerName": "Gabe Davis",
+      "position": "WR",
+      "proTeam": "JAX",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 5,
+      "fantasyTeamName": "Lucky Bison",
+      "managers": [
+        "Cody"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 10,
+      "pick": 116,
+      "playerId": 79860,
+      "playerName": "Matthew Stafford",
+      "position": "QB",
+      "proTeam": "LAR",
+      "fantasyTeamId": 3,
+      "fantasyTeamName": "Paho",
+      "managers": [
+        "James"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 10,
+      "pick": 117,
+      "playerId": 2565295,
+      "playerName": "Rico Dowdle",
+      "position": "RB",
+      "proTeam": "CAR",
+      "fantasyTeamId": 2,
+      "fantasyTeamName": "Brownlowrowbottom",
+      "managers": [
+        "Cam"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 10,
+      "pick": 118,
+      "playerId": 2570308,
+      "playerName": "Jake Moody",
+      "position": "K",
+      "proTeam": "SF",
+      "fantasyTeamId": 12,
+      "fantasyTeamName": "Dimmy",
+      "managers": [
+        "Dim"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 10,
+      "pick": 119,
+      "playerId": 2572507,
+      "playerName": "Ricky Pearsall",
+      "position": "WR",
+      "proTeam": "SF",
+      "fantasyTeamId": 2,
+      "fantasyTeamName": "Brownlowrowbottom",
+      "managers": [
+        "Cam"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 10,
+      "pick": 120,
+      "playerId": 2557898,
+      "playerName": "Cooper Kupp",
+      "position": "WR",
+      "proTeam": "SEA",
+      "fantasyTeamId": 1,
+      "fantasyTeamName": "Thomo",
+      "managers": [
+        "Tom"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 11,
+      "pick": 121,
+      "playerId": 100019,
+      "playerName": "Miami Dolphins",
+      "position": "DEF",
+      "proTeam": "",
+      "fantasyTeamId": 8,
+      "fantasyTeamName": "De'Aaron Cronin",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 11,
+      "pick": 122,
+      "playerId": 100027,
+      "playerName": "Pittsburgh Steelers",
+      "position": "DEF",
+      "proTeam": "",
+      "fantasyTeamId": 12,
+      "fantasyTeamName": "Dimmy",
+      "managers": [
+        "Dim"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 11,
+      "pick": 123,
+      "playerId": 2566502,
+      "playerName": "Josh Palmer",
+      "position": "WR",
+      "proTeam": "BUF",
+      "fantasyTeamId": 11,
+      "fantasyTeamName": "Cleveland",
+      "managers": [
+        "Oliver"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 11,
+      "pick": 124,
+      "playerId": 2567808,
+      "playerName": "Isiah Pacheco",
+      "position": "RB",
+      "proTeam": "KC",
+      "fantasyTeamId": 9,
+      "fantasyTeamName": "Sir Doug",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 11,
+      "pick": 125,
+      "playerId": 2565926,
+      "playerName": "Khalil Herbert",
+      "position": "RB",
+      "proTeam": "IND",
+      "fantasyTeamId": 4,
+      "fantasyTeamName": "ChiChi",
+      "managers": [
+        "Chi"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 11,
+      "pick": 126,
+      "playerId": 2563704,
+      "playerName": "Cole Kmet",
+      "position": "TE",
+      "proTeam": "CHI",
+      "fantasyTeamId": 6,
+      "fantasyTeamName": "Monke Vengence",
+      "managers": [
+        "will, Xavier"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 11,
+      "pick": 127,
+      "playerId": 2563596,
+      "playerName": "Tyler Bass",
+      "position": "K",
+      "proTeam": "BUF",
+      "fantasyTeamId": 5,
+      "fantasyTeamName": "Lucky Bison",
+      "managers": [
+        "Cody"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 11,
+      "pick": 128,
+      "playerId": 2540258,
+      "playerName": "Travis Kelce",
+      "position": "TE",
+      "proTeam": "KC",
+      "fantasyTeamId": 3,
+      "fantasyTeamName": "Paho",
+      "managers": [
+        "James"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 11,
+      "pick": 129,
+      "playerId": 2560968,
+      "playerName": "Saquon Barkley",
+      "position": "RB",
+      "proTeam": "PHI",
+      "fantasyTeamId": 2,
+      "fantasyTeamName": "Brownlowrowbottom",
+      "managers": [
+        "Cam"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 11,
+      "pick": 130,
+      "playerId": 2567586,
+      "playerName": "Romeo Doubs",
+      "position": "WR",
+      "proTeam": "GB",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 5,
+      "fantasyTeamName": "Lucky Bison",
+      "managers": [
+        "Cody"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 11,
+      "pick": 131,
+      "playerId": 2568321,
+      "playerName": "Jahan Dotson",
+      "position": "WR",
+      "proTeam": "PHI",
+      "fantasyTeamId": 10,
+      "fantasyTeamName": "GinniVan Jefferson",
+      "managers": [
+        "Brodie, Joseph"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 11,
+      "pick": 132,
+      "playerId": 2558172,
+      "playerName": "Jake Elliott",
+      "position": "K",
+      "proTeam": "PHI",
+      "fantasyTeamId": 6,
+      "fantasyTeamName": "Monke Vengence",
+      "managers": [
+        "will, Xavier"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 12,
+      "pick": 133,
+      "playerId": 2564148,
+      "playerName": "Jonathan Taylor",
+      "position": "RB",
+      "proTeam": "IND",
+      "fantasyTeamId": 8,
+      "fantasyTeamName": "De'Aaron Cronin",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 12,
+      "pick": 134,
+      "playerId": 2572585,
+      "playerName": "Ben Sinnott",
+      "position": "TE",
+      "proTeam": "WAS",
+      "fantasyTeamId": 7,
+      "fantasyTeamName": "Dalts",
+      "managers": [
+        "Talds"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 12,
+      "pick": 135,
+      "playerId": 2562238,
+      "playerName": "A.J. Brown",
+      "position": "WR",
+      "proTeam": "PHI",
+      "fantasyTeamId": 11,
+      "fantasyTeamName": "Cleveland",
+      "managers": [
+        "Oliver"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 12,
+      "pick": 136,
+      "playerId": 2566292,
+      "playerName": "Jaylen Waddle",
+      "position": "WR",
+      "proTeam": "MIA",
+      "fantasyTeamId": 9,
+      "fantasyTeamName": "Sir Doug",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 12,
+      "pick": 137,
+      "playerId": 2566409,
+      "playerName": "DeVonta Smith",
+      "position": "WR",
+      "proTeam": "PHI",
+      "fantasyTeamId": 4,
+      "fantasyTeamName": "ChiChi",
+      "managers": [
+        "Chi"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 12,
+      "pick": 138,
+      "playerId": 2572357,
+      "playerName": "Malachi Corley",
+      "position": "WR",
+      "proTeam": "NYJ",
+      "fantasyTeamId": 6,
+      "fantasyTeamName": "Monke Vengence",
+      "managers": [
+        "will, Xavier"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 12,
+      "pick": 139,
+      "playerId": 2563548,
+      "playerName": "J.K. Dobbins",
+      "position": "RB",
+      "proTeam": "LAC",
+      "fantasyTeamId": 5,
+      "fantasyTeamName": "Lucky Bison",
+      "managers": [
+        "Cody"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 12,
+      "pick": 140,
+      "playerId": 2567250,
+      "playerName": "Drake London",
+      "position": "WR",
+      "proTeam": "ATL",
+      "fantasyTeamId": 11,
+      "fantasyTeamName": "Cleveland",
+      "managers": [
+        "Oliver"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 12,
+      "pick": 141,
+      "playerId": 2564832,
+      "playerName": "Jalen Hurts",
+      "position": "QB",
+      "proTeam": "PHI",
+      "fantasyTeamId": 2,
+      "fantasyTeamName": "Brownlowrowbottom",
+      "managers": [
+        "Cam"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 12,
+      "pick": 142,
+      "playerId": 2569780,
+      "playerName": "Luke Musgrave",
+      "position": "TE",
+      "proTeam": "GB",
+      "fantasyTeamId": 5,
+      "fantasyTeamName": "Lucky Bison",
+      "managers": [
+        "Cody"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 12,
+      "pick": 143,
+      "playerId": 2570026,
+      "playerName": "Puka Nacua",
+      "position": "WR",
+      "proTeam": "LAR",
+      "fantasyTeamId": 10,
+      "fantasyTeamName": "GinniVan Jefferson",
+      "managers": [
+        "Brodie, Joseph"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 12,
+      "pick": 144,
+      "playerId": 2552608,
+      "playerName": "Stefon Diggs",
+      "position": "WR",
+      "proTeam": "NE",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 1,
+      "fantasyTeamName": "Thomo",
+      "managers": [
+        "Tom"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 13,
+      "pick": 145,
+      "playerId": 2563731,
+      "playerName": "Tee Higgins",
+      "position": "WR",
+      "proTeam": "CIN",
+      "fantasyTeamId": 8,
+      "fantasyTeamName": "De'Aaron Cronin",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 13,
+      "pick": 146,
+      "playerId": 2572270,
+      "playerName": "J.J. McCarthy",
+      "position": "QB",
+      "proTeam": "MIN",
+      "fantasyTeamId": 12,
+      "fantasyTeamName": "Dimmy",
+      "managers": [
+        "Dim"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 13,
+      "pick": 147,
+      "playerId": 2566073,
+      "playerName": "Amon-Ra St. Brown",
+      "position": "WR",
+      "proTeam": "DET",
+      "fantasyTeamId": 7,
+      "fantasyTeamName": "Dalts",
+      "managers": [
+        "Talds"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 13,
+      "pick": 148,
+      "playerId": 2557976,
+      "playerName": "Joe Mixon",
+      "position": "RB",
+      "proTeam": "HOU",
+      "fantasyTeamId": 9,
+      "fantasyTeamName": "Sir Doug",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 13,
+      "pick": 149,
+      "playerId": 2565093,
+      "playerName": "Brandon Aiyuk",
+      "position": "WR",
+      "proTeam": "SF",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 4,
+      "fantasyTeamName": "ChiChi",
+      "managers": [
+        "Chi"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 13,
+      "pick": 150,
+      "playerId": 2569747,
+      "playerName": "Jahmyr Gibbs",
+      "position": "RB",
+      "proTeam": "DET",
+      "fantasyTeamId": 6,
+      "fantasyTeamName": "Monke Vengence",
+      "managers": [
+        "will, Xavier"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 13,
+      "pick": 151,
+      "playerId": 2562721,
+      "playerName": "Deebo Samuel Sr.",
+      "position": "WR",
+      "proTeam": "WAS",
+      "fantasyTeamId": 5,
+      "fantasyTeamName": "Lucky Bison",
+      "managers": [
+        "Cody"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 13,
+      "pick": 152,
+      "playerId": 2562685,
+      "playerName": "DK Metcalf",
+      "position": "WR",
+      "proTeam": "PIT",
+      "fantasyTeamId": 3,
+      "fantasyTeamName": "Paho",
+      "managers": [
+        "James"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 13,
+      "pick": 153,
+      "playerId": 2543495,
+      "playerName": "Davante Adams",
+      "position": "WR",
+      "proTeam": "LAR",
+      "fantasyTeamId": 2,
+      "fantasyTeamName": "Brownlowrowbottom",
+      "managers": [
+        "Cam"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 13,
+      "pick": 154,
+      "playerId": 2556214,
+      "playerName": "Tyreek Hill",
+      "position": "WR",
+      "proTeam": "MIA",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 7,
+      "fantasyTeamName": "Dalts",
+      "managers": [
+        "Talds"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 13,
+      "pick": 155,
+      "playerId": 2569558,
+      "playerName": "Bijan Robinson",
+      "position": "RB",
+      "proTeam": "ATL",
+      "fantasyTeamId": 10,
+      "fantasyTeamName": "GinniVan Jefferson",
+      "managers": [
+        "Brodie, Joseph"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 13,
+      "pick": 156,
+      "playerId": 2557997,
+      "playerName": "Christian McCaffrey",
+      "position": "RB",
+      "proTeam": "SF",
+      "fantasyTeamId": 1,
+      "fantasyTeamName": "Thomo",
+      "managers": [
+        "Tom"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 14,
+      "pick": 157,
+      "playerId": 2552487,
+      "playerName": "Amari Cooper",
+      "position": "WR",
+      "proTeam": "BUF",
+      "fantasyTeamId": 8,
+      "fantasyTeamName": "De'Aaron Cronin",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 14,
+      "pick": 158,
+      "playerId": 2568048,
+      "playerName": "Garrett Wilson",
+      "position": "WR",
+      "proTeam": "NYJ",
+      "fantasyTeamId": 12,
+      "fantasyTeamName": "Dimmy",
+      "managers": [
+        "Dim"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 14,
+      "pick": 159,
+      "playerId": 2563965,
+      "playerName": "D'Andre Swift",
+      "position": "RB",
+      "proTeam": "CHI",
+      "fantasyTeamId": 11,
+      "fantasyTeamName": "Cleveland",
+      "managers": [
+        "Oliver"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 14,
+      "pick": 160,
+      "playerId": 2564007,
+      "playerName": "Jordan Love",
+      "position": "QB",
+      "proTeam": "GB",
+      "fantasyTeamId": 9,
+      "fantasyTeamName": "Sir Doug",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 14,
+      "pick": 161,
+      "playerId": 2570062,
+      "playerName": "De'Von Achane",
+      "position": "RB",
+      "proTeam": "MIA",
+      "fantasyTeamId": 4,
+      "fantasyTeamName": "ChiChi",
+      "managers": [
+        "Chi"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 14,
+      "pick": 162,
+      "playerId": 2563848,
+      "playerName": "CeeDee Lamb",
+      "position": "WR",
+      "proTeam": "DAL",
+      "fantasyTeamId": 6,
+      "fantasyTeamName": "Monke Vengence",
+      "managers": [
+        "will, Xavier"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 14,
+      "pick": 163,
+      "playerId": 2543468,
+      "playerName": "Mike Evans",
+      "position": "WR",
+      "proTeam": "TB",
+      "fantasyTeamId": 5,
+      "fantasyTeamName": "Lucky Bison",
+      "managers": [
+        "Cody"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 14,
+      "pick": 164,
+      "playerId": 2562377,
+      "playerName": "Josh Jacobs",
+      "position": "RB",
+      "proTeam": "GB",
+      "fantasyTeamId": 3,
+      "fantasyTeamName": "Paho",
+      "managers": [
+        "James"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 14,
+      "pick": 165,
+      "playerId": 2569819,
+      "playerName": "C.J. Stroud",
+      "position": "QB",
+      "proTeam": "HOU",
+      "fantasyTeamId": 2,
+      "fantasyTeamName": "Brownlowrowbottom",
+      "managers": [
+        "Cam"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 14,
+      "pick": 166,
+      "playerId": 2566157,
+      "playerName": "Travis Etienne",
+      "position": "RB",
+      "proTeam": "JAX",
+      "fantasyTeamId": 7,
+      "fantasyTeamName": "Dalts",
+      "managers": [
+        "Talds"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 14,
+      "pick": 167,
+      "playerId": 2568030,
+      "playerName": "Breece Hall",
+      "position": "RB",
+      "proTeam": "NYJ",
+      "fantasyTeamId": 10,
+      "fantasyTeamName": "GinniVan Jefferson",
+      "managers": [
+        "Brodie, Joseph"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 14,
+      "pick": 168,
+      "playerId": 2560813,
+      "playerName": "DJ Moore",
+      "position": "WR",
+      "proTeam": "CHI",
+      "fantasyTeamId": 6,
+      "fantasyTeamName": "Monke Vengence",
+      "managers": [
+        "will, Xavier"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 15,
+      "pick": 169,
+      "playerId": 2564556,
+      "playerName": "Justin Jefferson",
+      "position": "WR",
+      "proTeam": "MIN",
+      "fantasyTeamId": 8,
+      "fantasyTeamName": "De'Aaron Cronin",
+      "managers": [
+        "Noah"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 15,
+      "pick": 170,
+      "playerId": 2569864,
+      "playerName": "Anthony Richardson",
+      "position": "QB",
+      "proTeam": "IND",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 12,
+      "fantasyTeamName": "Dimmy",
+      "managers": [
+        "Dim"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 15,
+      "pick": 171,
+      "playerId": 2558125,
+      "playerName": "Patrick Mahomes",
+      "position": "QB",
+      "proTeam": "KC",
+      "fantasyTeamId": 11,
+      "fantasyTeamName": "Cleveland",
+      "managers": [
+        "Oliver"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 15,
+      "pick": 172,
+      "playerId": 2567862,
+      "playerName": "Kyren Williams",
+      "position": "RB",
+      "proTeam": "LAR",
+      "fantasyTeamId": 12,
+      "fantasyTeamName": "Dimmy",
+      "managers": [
+        "Dim"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 15,
+      "pick": 173,
+      "playerId": 2568117,
+      "playerName": "Trey McBride",
+      "position": "TE",
+      "proTeam": "ARI",
+      "fantasyTeamId": 4,
+      "fantasyTeamName": "ChiChi",
+      "managers": [
+        "Chi"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 15,
+      "pick": 174,
+      "playerId": 2565941,
+      "playerName": "Ja'Marr Chase",
+      "position": "WR",
+      "proTeam": "CIN",
+      "fantasyTeamId": 6,
+      "fantasyTeamName": "Monke Vengence",
+      "managers": [
+        "will, Xavier"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 15,
+      "pick": 175,
+      "playerId": 2570074,
+      "playerName": "Jordan Addison",
+      "position": "WR",
+      "proTeam": "MIN",
+      "fantasyTeamId": 5,
+      "fantasyTeamName": "Lucky Bison",
+      "managers": [
+        "Cody"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 15,
+      "pick": 176,
+      "playerId": 2563722,
+      "playerName": "Joe Burrow",
+      "position": "QB",
+      "proTeam": "CIN",
+      "fantasyTeamId": 3,
+      "fantasyTeamName": "Paho",
+      "managers": [
+        "James"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 15,
+      "pick": 177,
+      "playerId": 2568282,
+      "playerName": "Kenneth Walker III",
+      "position": "RB",
+      "proTeam": "SEA",
+      "status": {
+        "label": "Q",
+        "title": "Questionable"
+      },
+      "fantasyTeamId": 12,
+      "fantasyTeamName": "Dimmy",
+      "managers": [
+        "Dim"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 15,
+      "pick": 178,
+      "playerId": 2560757,
+      "playerName": "Lamar Jackson",
+      "position": "QB",
+      "proTeam": "BAL",
+      "fantasyTeamId": 7,
+      "fantasyTeamName": "Dalts",
+      "managers": [
+        "Talds"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 15,
+      "pick": 179,
+      "playerId": 2560955,
+      "playerName": "Josh Allen",
+      "position": "QB",
+      "proTeam": "BUF",
+      "fantasyTeamId": 10,
+      "fantasyTeamName": "GinniVan Jefferson",
+      "managers": [
+        "Brodie, Joseph"
+      ]
+    },
+    {
+      "season": 2024,
+      "round": 15,
+      "pick": 180,
+      "playerId": 2560957,
+      "playerName": "Mark Andrews",
+      "position": "TE",
+      "proTeam": "BAL",
+      "fantasyTeamId": 5,
+      "fantasyTeamName": "Lucky Bison",
+      "managers": [
+        "Cody"
+      ]
+    }
+  ]
+}

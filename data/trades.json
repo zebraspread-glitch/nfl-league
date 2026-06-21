@@ -1,0 +1,8639 @@
+[
+  {
+    "id": "2025-2107",
+    "season": 2025,
+    "week": 12,
+    "date": "Nov 20, 6:08am",
+    "legs": [
+      {
+        "fromTeamId": 11,
+        "fromName": "Tinkle Van Ginkel",
+        "toTeamId": 5,
+        "toName": "Lucky Bison",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2574427,
+            "name": "Cam Skattebo",
+            "pos": "RB",
+            "proTeam": "NYG"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 8"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 14"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 5,
+        "fromName": "Lucky Bison",
+        "toTeamId": 11,
+        "toName": "Tinkle Van Ginkel",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569888,
+            "name": "Parker Washington",
+            "pos": "WR",
+            "proTeam": "JAX"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 3"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 7"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-2006",
+    "season": 2025,
+    "week": 11,
+    "date": "Nov 15, 7:39pm",
+    "legs": [
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2574043,
+            "name": "Harold Fannin Jr.",
+            "pos": "TE",
+            "proTeam": "CLE"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 6"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2536340,
+            "name": "Justin Tucker",
+            "pos": "K",
+            "proTeam": ""
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 4"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-1912",
+    "season": 2025,
+    "week": 11,
+    "date": "Nov 11, 12:29am",
+    "legs": [
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2571859,
+            "name": "Keon Coleman",
+            "pos": "WR",
+            "proTeam": "BUF"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 3"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 5"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2560888,
+            "name": "Courtland Sutton",
+            "pos": "WR",
+            "proTeam": "DEN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 11"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 13"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-1857",
+    "season": 2025,
+    "week": 10,
+    "date": "Nov 8, 4:29pm",
+    "legs": [
+      {
+        "fromTeamId": 8,
+        "fromName": "De'Aaron Cronin",
+        "toTeamId": 9,
+        "toName": "Lavar Balls",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2558116,
+            "name": "Aaron Jones",
+            "pos": "RB",
+            "proTeam": "MIN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 11"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 9,
+        "fromName": "Lavar Balls",
+        "toTeamId": 8,
+        "toName": "De'Aaron Cronin",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2558914,
+            "name": "Kendrick Bourne",
+            "pos": "WR",
+            "proTeam": "SF"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 8"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-1842",
+    "season": 2025,
+    "week": 10,
+    "date": "Nov 7, 7:02am",
+    "legs": [
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 9,
+        "toName": "Lavar Balls",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2560813,
+            "name": "DJ Moore",
+            "pos": "WR",
+            "proTeam": "CHI"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 15"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 9,
+        "fromName": "Lavar Balls",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569110,
+            "name": "Rashid Shaheed",
+            "pos": "WR",
+            "proTeam": "SEA"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 7"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-1744",
+    "season": 2025,
+    "week": 10,
+    "date": "Nov 4, 5:11am",
+    "legs": [
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 4,
+        "toName": "ChiChi",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2561036,
+            "name": "Sam Darnold",
+            "pos": "QB",
+            "proTeam": "SEA"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 9"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 4,
+        "fromName": "ChiChi",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2506363,
+            "name": "Aaron Rodgers",
+            "pos": "QB",
+            "proTeam": "PIT"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-1676",
+    "season": 2025,
+    "week": 10,
+    "date": "Nov 4, 1:16am",
+    "legs": [
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2565830,
+            "name": "Kyle Pitts",
+            "pos": "TE",
+            "proTeam": "ATL"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569765,
+            "name": "Jayden Reed",
+            "pos": "WR",
+            "proTeam": "GB"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-1598",
+    "season": 2025,
+    "week": 9,
+    "date": "Oct 29, 7:44pm",
+    "legs": [
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 4,
+        "toName": "ChiChi",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562379,
+            "name": "Marquise Brown",
+            "pos": "WR",
+            "proTeam": "KC"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 5"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 4,
+        "fromName": "ChiChi",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2574511,
+            "name": "Oronde Gadsden II",
+            "pos": "TE",
+            "proTeam": "LAC"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 11"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-1525",
+    "season": 2025,
+    "week": 9,
+    "date": "Oct 28, 3:26am",
+    "legs": [
+      {
+        "fromTeamId": 9,
+        "fromName": "Lavar Balls",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2565295,
+            "name": "Rico Dowdle",
+            "pos": "RB",
+            "proTeam": "CAR"
+          },
+          {
+            "kind": "player",
+            "playerId": 2574090,
+            "name": "RJ Harvey",
+            "pos": "RB",
+            "proTeam": "DEN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 2"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 4"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 9,
+        "toName": "Lavar Balls",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2532820,
+            "name": "Kirk Cousins",
+            "pos": "QB",
+            "proTeam": "ATL"
+          },
+          {
+            "kind": "player",
+            "playerId": 2567862,
+            "name": "Kyren Williams",
+            "pos": "RB",
+            "proTeam": "LAR"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 14"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 14"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-1443",
+    "season": 2025,
+    "week": 8,
+    "date": "Oct 26, 2:59am",
+    "legs": [
+      {
+        "fromTeamId": 5,
+        "fromName": "Lucky Bison",
+        "toTeamId": 12,
+        "toName": "Dimmy",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2572920,
+            "name": "Jalen Coker",
+            "pos": "WR",
+            "proTeam": "CAR"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 4"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 12,
+        "fromName": "Dimmy",
+        "toTeamId": 5,
+        "toName": "Lucky Bison",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2572507,
+            "name": "Ricky Pearsall",
+            "pos": "WR",
+            "proTeam": "SF"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 9"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-1380",
+    "season": 2025,
+    "week": 8,
+    "date": "Oct 23, 2:09am",
+    "legs": [
+      {
+        "fromTeamId": 8,
+        "fromName": "De'Aaron Cronin",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2567808,
+            "name": "Isiah Pacheco",
+            "pos": "RB",
+            "proTeam": "KC"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 15"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 14"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 8,
+        "toName": "De'Aaron Cronin",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2574256,
+            "name": "Brashard Smith",
+            "pos": "RB",
+            "proTeam": "KC"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 5"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 9"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-1307",
+    "season": 2025,
+    "week": 8,
+    "date": "Oct 21, 11:06pm",
+    "legs": [
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2561036,
+            "name": "Sam Darnold",
+            "pos": "QB",
+            "proTeam": "SEA"
+          },
+          {
+            "kind": "player",
+            "playerId": 2563896,
+            "name": "Jerry Jeudy",
+            "pos": "WR",
+            "proTeam": "CLE"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 15"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 15"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2561021,
+            "name": "Nick Chubb",
+            "pos": "RB",
+            "proTeam": "HOU"
+          },
+          {
+            "kind": "player",
+            "playerId": 2564676,
+            "name": "Juwan Johnson",
+            "pos": "TE",
+            "proTeam": "NO"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 5"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 12"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-1275",
+    "season": 2025,
+    "week": 8,
+    "date": "Oct 21, 3:42am",
+    "legs": [
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 4,
+        "toName": "ChiChi",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2552408,
+            "name": "Darren Waller",
+            "pos": "TE",
+            "proTeam": "MIA"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 12"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 4,
+        "fromName": "ChiChi",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2557978,
+            "name": "James Conner",
+            "pos": "RB",
+            "proTeam": "ARI"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 9"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-1274",
+    "season": 2025,
+    "week": 8,
+    "date": "Oct 21, 3:42am",
+    "legs": [
+      {
+        "fromTeamId": 5,
+        "fromName": "Lucky Bison",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2563896,
+            "name": "Jerry Jeudy",
+            "pos": "WR",
+            "proTeam": "CLE"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 14"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 5,
+        "toName": "Lucky Bison",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2570912,
+            "name": "Emanuel Wilson",
+            "pos": "RB",
+            "proTeam": "GB"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 11"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-1159",
+    "season": 2025,
+    "week": 7,
+    "date": "Oct 16, 7:16am",
+    "legs": [
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 4,
+        "toName": "ChiChi",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2570092,
+            "name": "Kayshon Boutte",
+            "pos": "WR",
+            "proTeam": "NE"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 3"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 4,
+        "fromName": "ChiChi",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2566409,
+            "name": "DeVonta Smith",
+            "pos": "WR",
+            "proTeam": "PHI"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 7"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-930",
+    "season": 2025,
+    "week": 6,
+    "date": "Oct 8, 4:22am",
+    "legs": [
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2567565,
+            "name": "Jameson Williams",
+            "pos": "WR",
+            "proTeam": "DET"
+          },
+          {
+            "kind": "player",
+            "playerId": 2574608,
+            "name": "Jacory Croskey-Merritt",
+            "pos": "RB",
+            "proTeam": "WAS"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 3"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2543495,
+            "name": "Davante Adams",
+            "pos": "WR",
+            "proTeam": "LAR"
+          },
+          {
+            "kind": "player",
+            "playerId": 2567649,
+            "name": "Hassan Haskins",
+            "pos": "RB",
+            "proTeam": "LAC"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-929",
+    "season": 2025,
+    "week": 6,
+    "date": "Oct 8, 4:22am",
+    "legs": [
+      {
+        "fromTeamId": 8,
+        "fromName": "De'Aaron Cronin",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2565953,
+            "name": "Evan McPherson",
+            "pos": "K",
+            "proTeam": "CIN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 4"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 8,
+        "toName": "De'Aaron Cronin",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2567808,
+            "name": "Isiah Pacheco",
+            "pos": "RB",
+            "proTeam": "KC"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 10"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-886",
+    "season": 2025,
+    "week": 6,
+    "date": "Oct 7, 9:52pm",
+    "legs": [
+      {
+        "fromTeamId": 8,
+        "fromName": "De'Aaron Cronin",
+        "toTeamId": 9,
+        "toName": "Lavar Balls",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2557986,
+            "name": "David Njoku",
+            "pos": "TE",
+            "proTeam": "CLE"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 9,
+        "fromName": "Lavar Balls",
+        "toTeamId": 8,
+        "toName": "De'Aaron Cronin",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2557898,
+            "name": "Cooper Kupp",
+            "pos": "WR",
+            "proTeam": "SEA"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-862",
+    "season": 2025,
+    "week": 6,
+    "date": "Oct 7, 12:39am",
+    "legs": [
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569765,
+            "name": "Jayden Reed",
+            "pos": "WR",
+            "proTeam": "GB"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 4"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 6"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2565830,
+            "name": "Kyle Pitts",
+            "pos": "TE",
+            "proTeam": "ATL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 5"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 8"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-861",
+    "season": 2025,
+    "week": 6,
+    "date": "Oct 7, 12:39am",
+    "legs": [
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569768,
+            "name": "Tucker Kraft",
+            "pos": "TE",
+            "proTeam": "GB"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 2"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562685,
+            "name": "DK Metcalf",
+            "pos": "WR",
+            "proTeam": "PIT"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-697",
+    "season": 2025,
+    "week": 5,
+    "date": "Sep 30, 3:04am",
+    "legs": [
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 5,
+        "toName": "Lucky Bison",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2552608,
+            "name": "Stefon Diggs",
+            "pos": "WR",
+            "proTeam": "NE"
+          },
+          {
+            "kind": "player",
+            "playerId": 2560957,
+            "name": "Mark Andrews",
+            "pos": "TE",
+            "proTeam": "BAL"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 5,
+        "fromName": "Lucky Bison",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569726,
+            "name": "Sam LaPorta",
+            "pos": "TE",
+            "proTeam": "DET"
+          },
+          {
+            "kind": "player",
+            "playerId": 2574062,
+            "name": "Dylan Sampson",
+            "pos": "RB",
+            "proTeam": "CLE"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-688",
+    "season": 2025,
+    "week": 5,
+    "date": "Sep 30, 1:05am",
+    "legs": [
+      {
+        "fromTeamId": 8,
+        "fromName": "De'Aaron Cronin",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2559205,
+            "name": "Younghoe Koo",
+            "pos": "K",
+            "proTeam": ""
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 8"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 8,
+        "toName": "De'Aaron Cronin",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569861,
+            "name": "Josh Downs",
+            "pos": "WR",
+            "proTeam": "IND"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 11"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-679",
+    "season": 2025,
+    "week": 5,
+    "date": "Sep 30, 12:02am",
+    "legs": [
+      {
+        "fromTeamId": 8,
+        "fromName": "De'Aaron Cronin",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2558105,
+            "name": "Chris Godwin Jr.",
+            "pos": "WR",
+            "proTeam": "TB"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 6"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 8,
+        "toName": "De'Aaron Cronin",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562378,
+            "name": "T.J. Hockenson",
+            "pos": "TE",
+            "proTeam": "MIN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 4"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-445",
+    "season": 2025,
+    "week": 3,
+    "date": "Sep 16, 11:07pm",
+    "legs": [
+      {
+        "fromTeamId": 5,
+        "fromName": "Lucky Bison",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2563707,
+            "name": "Darnell Mooney",
+            "pos": "WR",
+            "proTeam": "ATL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 5"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 5,
+        "toName": "Lucky Bison",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2563548,
+            "name": "J.K. Dobbins",
+            "pos": "RB",
+            "proTeam": "DEN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 7"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-415",
+    "season": 2025,
+    "week": 3,
+    "date": "Sep 16, 4:25am",
+    "legs": [
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2564676,
+            "name": "Juwan Johnson",
+            "pos": "TE",
+            "proTeam": "NO"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2564007,
+            "name": "Jordan Love",
+            "pos": "QB",
+            "proTeam": "GB"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-364",
+    "season": 2025,
+    "week": 2,
+    "date": "Sep 15, 10:03pm",
+    "legs": [
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2565045,
+            "name": "Justin Herbert",
+            "pos": "QB",
+            "proTeam": "LAC"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2565114,
+            "name": "Jauan Jennings",
+            "pos": "WR",
+            "proTeam": "SF"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-241",
+    "season": 2025,
+    "week": 1,
+    "date": "Sep 2, 12:23am",
+    "legs": [
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 9,
+        "toName": "Lavar Balls",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2564136,
+            "name": "Michael Pittman",
+            "pos": "WR",
+            "proTeam": "IND"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 9,
+        "fromName": "Lavar Balls",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569765,
+            "name": "Jayden Reed",
+            "pos": "WR",
+            "proTeam": "GB"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-228",
+    "season": 2025,
+    "week": 1,
+    "date": "Aug 31, 6:46am",
+    "legs": [
+      {
+        "fromTeamId": 12,
+        "fromName": "Dimmy",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2567862,
+            "name": "Kyren Williams",
+            "pos": "RB",
+            "proTeam": "LAR"
+          },
+          {
+            "kind": "player",
+            "playerId": 2574086,
+            "name": "Pat Bryant",
+            "pos": "WR",
+            "proTeam": "DEN"
+          },
+          {
+            "kind": "player",
+            "playerId": 2574174,
+            "name": "Woody Marks",
+            "pos": "RB",
+            "proTeam": "HOU"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 5"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 15"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 12,
+        "toName": "Dimmy",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2574068,
+            "name": "Jaydon Blue",
+            "pos": "RB",
+            "proTeam": "DAL"
+          },
+          {
+            "kind": "player",
+            "playerId": 2574322,
+            "name": "Ollie Gordon II",
+            "pos": "RB",
+            "proTeam": "MIA"
+          },
+          {
+            "kind": "player",
+            "playerId": 2574585,
+            "name": "Emeka Egbuka",
+            "pos": "WR",
+            "proTeam": "TB"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 1"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 12"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-183",
+    "season": 2025,
+    "week": 1,
+    "date": "Aug 24, 7:03am",
+    "legs": [
+      {
+        "fromTeamId": 12,
+        "fromName": "Dimmy",
+        "toTeamId": 4,
+        "toName": "ChiChi",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2574496,
+            "name": "Kaleb Johnson",
+            "pos": "RB",
+            "proTeam": "PIT"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 6"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 4,
+        "fromName": "ChiChi",
+        "toTeamId": 12,
+        "toName": "Dimmy",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562502,
+            "name": "David Montgomery",
+            "pos": "RB",
+            "proTeam": "DET"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 3"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-110",
+    "season": 2025,
+    "week": 1,
+    "date": "Aug 17, 9:39pm",
+    "legs": [
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2568348,
+            "name": "Brian Robinson",
+            "pos": "RB",
+            "proTeam": "SF"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 12"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569882,
+            "name": "Tank Bigsby",
+            "pos": "RB",
+            "proTeam": "PHI"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-71",
+    "season": 2025,
+    "week": 1,
+    "date": "Aug 16, 11:12pm",
+    "legs": [
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2564358,
+            "name": "Van Jefferson",
+            "pos": "WR",
+            "proTeam": "TEN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 1"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2567232,
+            "name": "Tyler Allgeier",
+            "pos": "RB",
+            "proTeam": "ATL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 15"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-65",
+    "season": 2025,
+    "week": 1,
+    "date": "Aug 16, 11:10pm",
+    "legs": [
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 4,
+        "toName": "ChiChi",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2557978,
+            "name": "James Conner",
+            "pos": "RB",
+            "proTeam": "ARI"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 1"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 4,
+        "fromName": "ChiChi",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562685,
+            "name": "DK Metcalf",
+            "pos": "WR",
+            "proTeam": "PIT"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 4"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-64",
+    "season": 2025,
+    "week": 1,
+    "date": "Aug 16, 11:10pm",
+    "legs": [
+      {
+        "fromTeamId": 12,
+        "fromName": "Dimmy",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2565830,
+            "name": "Kyle Pitts",
+            "pos": "TE",
+            "proTeam": "ATL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 11"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 12,
+        "toName": "Dimmy",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2567283,
+            "name": "Isaiah Likely",
+            "pos": "TE",
+            "proTeam": "BAL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 2"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-63",
+    "season": 2025,
+    "week": 1,
+    "date": "Aug 16, 11:09pm",
+    "legs": [
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 9,
+        "toName": "Lavar Balls",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2574090,
+            "name": "RJ Harvey",
+            "pos": "RB",
+            "proTeam": "DEN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 14"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 9,
+        "fromName": "Lavar Balls",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569681,
+            "name": "Cedric Tillman",
+            "pos": "WR",
+            "proTeam": "CLE"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-1991",
+    "season": 2025,
+    "week": 0,
+    "date": "Nov 14, 11:28am",
+    "legs": [
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2560955,
+            "name": "Josh Allen",
+            "pos": "QB",
+            "proTeam": "BUF"
+          },
+          {
+            "kind": "player",
+            "playerId": 2569558,
+            "name": "Bijan Robinson",
+            "pos": "RB",
+            "proTeam": "ATL"
+          },
+          {
+            "kind": "player",
+            "playerId": 2570026,
+            "name": "Puka Nacua",
+            "pos": "WR",
+            "proTeam": "LAR"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2563848,
+            "name": "CeeDee Lamb",
+            "pos": "WR",
+            "proTeam": "DAL"
+          },
+          {
+            "kind": "player",
+            "playerId": 2569747,
+            "name": "Jahmyr Gibbs",
+            "pos": "RB",
+            "proTeam": "DET"
+          },
+          {
+            "kind": "player",
+            "playerId": 2572003,
+            "name": "Bo Nix",
+            "pos": "QB",
+            "proTeam": "DEN"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-1971",
+    "season": 2025,
+    "week": 0,
+    "date": "Nov 12, 10:41pm",
+    "legs": [
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2563848,
+            "name": "CeeDee Lamb",
+            "pos": "WR",
+            "proTeam": "DAL"
+          },
+          {
+            "kind": "player",
+            "playerId": 2566049,
+            "name": "Javonte Williams",
+            "pos": "RB",
+            "proTeam": "DAL"
+          },
+          {
+            "kind": "player",
+            "playerId": 2569747,
+            "name": "Jahmyr Gibbs",
+            "pos": "RB",
+            "proTeam": "DET"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2560955,
+            "name": "Josh Allen",
+            "pos": "QB",
+            "proTeam": "BUF"
+          },
+          {
+            "kind": "player",
+            "playerId": 2569558,
+            "name": "Bijan Robinson",
+            "pos": "RB",
+            "proTeam": "ATL"
+          },
+          {
+            "kind": "player",
+            "playerId": 2570026,
+            "name": "Puka Nacua",
+            "pos": "WR",
+            "proTeam": "LAR"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2025-413",
+    "season": 2025,
+    "week": 0,
+    "date": "Sep 16, 4:24am",
+    "legs": [
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2564676,
+            "name": "Juwan Johnson",
+            "pos": "TE",
+            "proTeam": "NO"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2564007,
+            "name": "Jordan Love",
+            "pos": "QB",
+            "proTeam": "GB"
+          },
+          {
+            "kind": "player",
+            "playerId": 2566448,
+            "name": "Najee Harris",
+            "pos": "RB",
+            "proTeam": "LAC"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-2615",
+    "season": 2024,
+    "week": 15,
+    "date": "Dec 10, 10:13pm",
+    "legs": [
+      {
+        "fromTeamId": 4,
+        "fromName": "ChiChi",
+        "toTeamId": 12,
+        "toName": "Dimmy",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2568117,
+            "name": "Trey McBride",
+            "pos": "TE",
+            "proTeam": "ARI"
+          },
+          {
+            "kind": "player",
+            "playerId": 2569921,
+            "name": "Rashee Rice",
+            "pos": "WR",
+            "proTeam": "KC"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 2"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 12,
+        "fromName": "Dimmy",
+        "toTeamId": 4,
+        "toName": "ChiChi",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2572219,
+            "name": "Brock Bowers",
+            "pos": "TE",
+            "proTeam": "LV"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 15"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 12,
+        "fromName": "Dimmy",
+        "toTeamId": null,
+        "toName": "Waivers",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2560907,
+            "name": "Marquez Valdes-Scantling",
+            "pos": "WR",
+            "proTeam": "SEA"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-2536",
+    "season": 2024,
+    "week": 14,
+    "date": "Dec 7, 9:59pm",
+    "legs": [
+      {
+        "fromTeamId": 5,
+        "fromName": "Lucky Bison",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2568984,
+            "name": "Sincere McCormick",
+            "pos": "RB",
+            "proTeam": "LV"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 6"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 5,
+        "toName": "Lucky Bison",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2572354,
+            "name": "Braelon Allen",
+            "pos": "RB",
+            "proTeam": "NYJ"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 7"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-2430",
+    "season": 2024,
+    "week": 14,
+    "date": "Dec 3, 12:44am",
+    "legs": [
+      {
+        "fromTeamId": 5,
+        "fromName": "Lucky Bison",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2567586,
+            "name": "Romeo Doubs",
+            "pos": "WR",
+            "proTeam": "GB"
+          },
+          {
+            "kind": "player",
+            "playerId": 2571889,
+            "name": "Xavier Legette",
+            "pos": "WR",
+            "proTeam": "CAR"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 2"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 5,
+        "toName": "Lucky Bison",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2557898,
+            "name": "Cooper Kupp",
+            "pos": "WR",
+            "proTeam": "SEA"
+          },
+          {
+            "kind": "player",
+            "playerId": 2569726,
+            "name": "Sam LaPorta",
+            "pos": "TE",
+            "proTeam": "DET"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 6"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-2429",
+    "season": 2024,
+    "week": 14,
+    "date": "Dec 3, 12:42am",
+    "legs": [
+      {
+        "fromTeamId": 4,
+        "fromName": "ChiChi",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 100020,
+            "name": "Minnesota Vikings",
+            "pos": "DEF",
+            "proTeam": ""
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 9"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 4,
+        "toName": "ChiChi",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 100002,
+            "name": "Baltimore Ravens",
+            "pos": "DEF",
+            "proTeam": ""
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 8"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-2428",
+    "season": 2024,
+    "week": 14,
+    "date": "Dec 3, 12:42am",
+    "legs": [
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2556075,
+            "name": "Derrick Henry",
+            "pos": "RB",
+            "proTeam": "BAL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 3"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2568315,
+            "name": "Rachaad White",
+            "pos": "RB",
+            "proTeam": "TB"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-2195",
+    "season": 2024,
+    "week": 12,
+    "date": "Nov 21, 8:35pm",
+    "legs": [
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2570335,
+            "name": "Zach Charbonnet",
+            "pos": "RB",
+            "proTeam": "SEA"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 4"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2566049,
+            "name": "Javonte Williams",
+            "pos": "RB",
+            "proTeam": "DAL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 8"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-2022",
+    "season": 2024,
+    "week": 11,
+    "date": "Nov 13, 12:51pm",
+    "legs": [
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 100005,
+            "name": "Chicago Bears",
+            "pos": "DEF",
+            "proTeam": ""
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 5"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2532975,
+            "name": "Russell Wilson",
+            "pos": "QB",
+            "proTeam": "NYG"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 8"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-1747",
+    "season": 2024,
+    "week": 10,
+    "date": "Nov 5, 12:35am",
+    "legs": [
+      {
+        "fromTeamId": 4,
+        "fromName": "ChiChi",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562502,
+            "name": "David Montgomery",
+            "pos": "RB",
+            "proTeam": "DET"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 8"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 4,
+        "toName": "ChiChi",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2572546,
+            "name": "Bucky Irving",
+            "pos": "RB",
+            "proTeam": "TB"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 2"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-1652",
+    "season": 2024,
+    "week": 9,
+    "date": "Nov 1, 7:29pm",
+    "legs": [
+      {
+        "fromTeamId": 5,
+        "fromName": "Lucky Bison",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2570335,
+            "name": "Zach Charbonnet",
+            "pos": "RB",
+            "proTeam": "SEA"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 6"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 5,
+        "toName": "Lucky Bison",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2563896,
+            "name": "Jerry Jeudy",
+            "pos": "WR",
+            "proTeam": "CLE"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 10"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-1651",
+    "season": 2024,
+    "week": 9,
+    "date": "Nov 1, 7:29pm",
+    "legs": [
+      {
+        "fromTeamId": 4,
+        "fromName": "ChiChi",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2565836,
+            "name": "Rashod Bateman",
+            "pos": "WR",
+            "proTeam": "BAL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 6"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 4,
+        "toName": "ChiChi",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2553728,
+            "name": "Raheem Mostert",
+            "pos": "RB",
+            "proTeam": "LV"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 8"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-1566",
+    "season": 2024,
+    "week": 9,
+    "date": "Oct 29, 12:57am",
+    "legs": [
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569257,
+            "name": "Jordan Mason",
+            "pos": "RB",
+            "proTeam": "MIN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 15"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2572405,
+            "name": "Trey Benson",
+            "pos": "RB",
+            "proTeam": "ARI"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 11"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-1302",
+    "season": 2024,
+    "week": 7,
+    "date": "Oct 16, 10:45pm",
+    "legs": [
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562685,
+            "name": "DK Metcalf",
+            "pos": "WR",
+            "proTeam": "PIT"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 14"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2552430,
+            "name": "Tyler Lockett",
+            "pos": "WR",
+            "proTeam": "TEN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-1289",
+    "season": 2024,
+    "week": 7,
+    "date": "Oct 16, 9:32pm",
+    "legs": [
+      {
+        "fromTeamId": 4,
+        "fromName": "ChiChi",
+        "toTeamId": 12,
+        "toName": "Dimmy",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2570062,
+            "name": "De'Von Achane",
+            "pos": "RB",
+            "proTeam": "MIA"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 14"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 11"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 12,
+        "fromName": "Dimmy",
+        "toTeamId": 4,
+        "toName": "ChiChi",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2567973,
+            "name": "Chris Olave",
+            "pos": "WR",
+            "proTeam": "NO"
+          },
+          {
+            "kind": "player",
+            "playerId": 2569921,
+            "name": "Rashee Rice",
+            "pos": "WR",
+            "proTeam": "KC"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 2"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 5"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 4,
+        "fromName": "ChiChi",
+        "toTeamId": null,
+        "toName": "Waivers",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2570059,
+            "name": "Tre Tucker",
+            "pos": "WR",
+            "proTeam": "LV"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-1254",
+    "season": 2024,
+    "week": 7,
+    "date": "Oct 15, 5:09am",
+    "legs": [
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2572546,
+            "name": "Bucky Irving",
+            "pos": "RB",
+            "proTeam": "TB"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 10"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2572477,
+            "name": "Ladd McConkey",
+            "pos": "WR",
+            "proTeam": "LAC"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 7"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-1248",
+    "season": 2024,
+    "week": 7,
+    "date": "Oct 15, 3:10am",
+    "legs": [
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2567637,
+            "name": "Christian Watson",
+            "pos": "WR",
+            "proTeam": "GB"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 11"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2568312,
+            "name": "Cade Otton",
+            "pos": "TE",
+            "proTeam": "TB"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 13"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-1174",
+    "season": 2024,
+    "week": 6,
+    "date": "Oct 13, 4:06am",
+    "legs": [
+      {
+        "fromTeamId": 4,
+        "fromName": "ChiChi",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2560854,
+            "name": "Calvin Ridley",
+            "pos": "WR",
+            "proTeam": "TEN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 1"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 4,
+        "toName": "ChiChi",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562382,
+            "name": "Kyler Murray",
+            "pos": "QB",
+            "proTeam": "ARI"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 3"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-1171",
+    "season": 2024,
+    "week": 6,
+    "date": "Oct 13, 1:39am",
+    "legs": [
+      {
+        "fromTeamId": 5,
+        "fromName": "Lucky Bison",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2571889,
+            "name": "Xavier Legette",
+            "pos": "WR",
+            "proTeam": "CAR"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 3"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 5,
+        "toName": "Lucky Bison",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2560781,
+            "name": "Christian Kirk",
+            "pos": "WR",
+            "proTeam": "HOU"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 11"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-1071",
+    "season": 2024,
+    "week": 6,
+    "date": "Oct 9, 2:13am",
+    "legs": [
+      {
+        "fromTeamId": 11,
+        "fromName": "Cleveland",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2568315,
+            "name": "Rachaad White",
+            "pos": "RB",
+            "proTeam": "TB"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 7"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 11,
+        "toName": "Cleveland",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2572351,
+            "name": "Tyrone Tracy Jr.",
+            "pos": "RB",
+            "proTeam": "NYG"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 2"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-1069",
+    "season": 2024,
+    "week": 6,
+    "date": "Oct 9, 1:41am",
+    "legs": [
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2506363,
+            "name": "Aaron Rodgers",
+            "pos": "QB",
+            "proTeam": "NYJ"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 14"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 13"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 13"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 12"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 11"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 11"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 10"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 15"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2552033,
+            "name": "Jameis Winston",
+            "pos": "QB",
+            "proTeam": "NYG"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 15"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 14"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 14"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 13"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 12"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 12"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 11"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 10"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-991",
+    "season": 2024,
+    "week": 6,
+    "date": "Oct 8, 12:32am",
+    "legs": [
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 11,
+        "toName": "Cleveland",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569110,
+            "name": "Rashid Shaheed",
+            "pos": "WR",
+            "proTeam": "NO"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 9"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 11,
+        "fromName": "Cleveland",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562699,
+            "name": "Tony Pollard",
+            "pos": "RB",
+            "proTeam": "TEN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 6"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-884",
+    "season": 2024,
+    "week": 5,
+    "date": "Oct 2, 6:42pm",
+    "legs": [
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2552430,
+            "name": "Tyler Lockett",
+            "pos": "WR",
+            "proTeam": "TEN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 12"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2563980,
+            "name": "Josiah Deguara",
+            "pos": "TE",
+            "proTeam": "ARI"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 9"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-691",
+    "season": 2024,
+    "week": 4,
+    "date": "Sep 26, 10:44pm",
+    "legs": [
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2557858,
+            "name": "Evan Engram",
+            "pos": "TE",
+            "proTeam": "DEN"
+          },
+          {
+            "kind": "player",
+            "playerId": 2571907,
+            "name": "Rome Odunze",
+            "pos": "WR",
+            "proTeam": "CHI"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2540258,
+            "name": "Travis Kelce",
+            "pos": "TE",
+            "proTeam": "KC"
+          },
+          {
+            "kind": "player",
+            "playerId": 2565114,
+            "name": "Jauan Jennings",
+            "pos": "WR",
+            "proTeam": "SF"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-669",
+    "season": 2024,
+    "week": 4,
+    "date": "Sep 26, 2:24am",
+    "legs": [
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2572354,
+            "name": "Braelon Allen",
+            "pos": "RB",
+            "proTeam": "NYJ"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 15"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2543498,
+            "name": "Brandin Cooks",
+            "pos": "WR",
+            "proTeam": "NO"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 9"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-624",
+    "season": 2024,
+    "week": 4,
+    "date": "Sep 24, 9:57pm",
+    "legs": [
+      {
+        "fromTeamId": 11,
+        "fromName": "Cleveland",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2563707,
+            "name": "Darnell Mooney",
+            "pos": "WR",
+            "proTeam": "ATL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 10"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 11,
+        "toName": "Cleveland",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2572552,
+            "name": "Jalen McMillan",
+            "pos": "WR",
+            "proTeam": "TB"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 4"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-623",
+    "season": 2024,
+    "week": 4,
+    "date": "Sep 24, 9:57pm",
+    "legs": [
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 11,
+        "toName": "Cleveland",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2568315,
+            "name": "Rachaad White",
+            "pos": "RB",
+            "proTeam": "TB"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 4"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 11,
+        "fromName": "Cleveland",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562734,
+            "name": "Devin Singletary",
+            "pos": "RB",
+            "proTeam": "NYG"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-606",
+    "season": 2024,
+    "week": 4,
+    "date": "Sep 24, 1:51am",
+    "legs": [
+      {
+        "fromTeamId": 8,
+        "fromName": "De'Aaron Cronin",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2559169,
+            "name": "Austin Ekeler",
+            "pos": "RB",
+            "proTeam": "WAS"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 13"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 8,
+        "toName": "De'Aaron Cronin",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2560888,
+            "name": "Courtland Sutton",
+            "pos": "WR",
+            "proTeam": "DEN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 6"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-605",
+    "season": 2024,
+    "week": 4,
+    "date": "Sep 24, 12:46am",
+    "legs": [
+      {
+        "fromTeamId": 8,
+        "fromName": "De'Aaron Cronin",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2560995,
+            "name": "Dallas Goedert",
+            "pos": "TE",
+            "proTeam": "PHI"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 14"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 12"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 8,
+        "toName": "De'Aaron Cronin",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2560994,
+            "name": "Mike Gesicki",
+            "pos": "TE",
+            "proTeam": "CIN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 5"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 10"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-473",
+    "season": 2024,
+    "week": 3,
+    "date": "Sep 17, 12:03am",
+    "legs": [
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 4,
+        "toName": "ChiChi",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2540154,
+            "name": "Keenan Allen",
+            "pos": "WR",
+            "proTeam": "CHI"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 1"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 4,
+        "fromName": "ChiChi",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2565093,
+            "name": "Brandon Aiyuk",
+            "pos": "WR",
+            "proTeam": "SF"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 15"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-472",
+    "season": 2024,
+    "week": 3,
+    "date": "Sep 17, 12:03am",
+    "legs": [
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569765,
+            "name": "Jayden Reed",
+            "pos": "WR",
+            "proTeam": "GB"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569813,
+            "name": "Tank Dell",
+            "pos": "WR",
+            "proTeam": "HOU"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-465",
+    "season": 2024,
+    "week": 2,
+    "date": "Sep 16, 8:44pm",
+    "legs": [
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2553728,
+            "name": "Raheem Mostert",
+            "pos": "RB",
+            "proTeam": "LV"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 2"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2570341,
+            "name": "Jaxon Smith-Njigba",
+            "pos": "WR",
+            "proTeam": "SEA"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 11"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-372",
+    "season": 2024,
+    "week": 2,
+    "date": "Sep 10, 6:32pm",
+    "legs": [
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2568321,
+            "name": "Jahan Dotson",
+            "pos": "WR",
+            "proTeam": "PHI"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 5"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569257,
+            "name": "Jordan Mason",
+            "pos": "RB",
+            "proTeam": "MIN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 8"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-371",
+    "season": 2024,
+    "week": 2,
+    "date": "Sep 10, 6:32pm",
+    "legs": [
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2558846,
+            "name": "Mike Williams",
+            "pos": "WR",
+            "proTeam": "LAC"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 1"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2553728,
+            "name": "Raheem Mostert",
+            "pos": "RB",
+            "proTeam": "LV"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 13"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-343",
+    "season": 2024,
+    "week": 1,
+    "date": "Sep 9, 6:22pm",
+    "legs": [
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2506363,
+            "name": "Aaron Rodgers",
+            "pos": "QB",
+            "proTeam": "NYJ"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 6"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2558063,
+            "name": "Deshaun Watson",
+            "pos": "QB",
+            "proTeam": "CLE"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 9"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-319",
+    "season": 2024,
+    "week": 1,
+    "date": "Sep 7, 2:54am",
+    "legs": [
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 8,
+        "toName": "De'Aaron Cronin",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2564832,
+            "name": "Jalen Hurts",
+            "pos": "QB",
+            "proTeam": "PHI"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 4"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 8,
+        "fromName": "De'Aaron Cronin",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2552487,
+            "name": "Amari Cooper",
+            "pos": "WR",
+            "proTeam": "BUF"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-186",
+    "season": 2024,
+    "week": 1,
+    "date": "Aug 22, 4:17am",
+    "legs": [
+      {
+        "fromTeamId": 12,
+        "fromName": "Dimmy",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2558266,
+            "name": "George Kittle",
+            "pos": "TE",
+            "proTeam": "SF"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 9"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 12,
+        "toName": "Dimmy",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2572219,
+            "name": "Brock Bowers",
+            "pos": "TE",
+            "proTeam": "LV"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 4"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-151",
+    "season": 2024,
+    "week": 1,
+    "date": "Aug 17, 5:54am",
+    "legs": [
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 4,
+        "toName": "ChiChi",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2560854,
+            "name": "Calvin Ridley",
+            "pos": "WR",
+            "proTeam": "TEN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 1"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 4,
+        "fromName": "ChiChi",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2564136,
+            "name": "Michael Pittman",
+            "pos": "WR",
+            "proTeam": "IND"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 4"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-92",
+    "season": 2024,
+    "week": 1,
+    "date": "Aug 13, 6:46pm",
+    "legs": [
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2560813,
+            "name": "DJ Moore",
+            "pos": "WR",
+            "proTeam": "CHI"
+          },
+          {
+            "kind": "player",
+            "playerId": 2572186,
+            "name": "Xavier Worthy",
+            "pos": "WR",
+            "proTeam": "KC"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562382,
+            "name": "Kyler Murray",
+            "pos": "QB",
+            "proTeam": "ARI"
+          },
+          {
+            "kind": "player",
+            "playerId": 2567883,
+            "name": "Zamir White",
+            "pos": "RB",
+            "proTeam": "LV"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-530",
+    "season": 2024,
+    "week": 0,
+    "date": "Sep 18, 4:39am",
+    "legs": [
+      {
+        "fromTeamId": 12,
+        "fromName": "Dimmy",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569921,
+            "name": "Rashee Rice",
+            "pos": "WR",
+            "proTeam": "KC"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 2"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 12,
+        "toName": "Dimmy",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569558,
+            "name": "Bijan Robinson",
+            "pos": "RB",
+            "proTeam": "ATL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 15"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-370",
+    "season": 2024,
+    "week": 0,
+    "date": "Sep 10, 6:32pm",
+    "legs": [
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2560955,
+            "name": "Josh Allen",
+            "pos": "QB",
+            "proTeam": "BUF"
+          },
+          {
+            "kind": "player",
+            "playerId": 2568030,
+            "name": "Breece Hall",
+            "pos": "RB",
+            "proTeam": "NYJ"
+          },
+          {
+            "kind": "player",
+            "playerId": 2569558,
+            "name": "Bijan Robinson",
+            "pos": "RB",
+            "proTeam": "ATL"
+          },
+          {
+            "kind": "player",
+            "playerId": 2570026,
+            "name": "Puka Nacua",
+            "pos": "WR",
+            "proTeam": "LAR"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 1"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 2"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 3"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 4"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 5"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2563848,
+            "name": "CeeDee Lamb",
+            "pos": "WR",
+            "proTeam": "DAL"
+          },
+          {
+            "kind": "player",
+            "playerId": 2565941,
+            "name": "Ja'Marr Chase",
+            "pos": "WR",
+            "proTeam": "CIN"
+          },
+          {
+            "kind": "player",
+            "playerId": 2569747,
+            "name": "Jahmyr Gibbs",
+            "pos": "RB",
+            "proTeam": "DET"
+          },
+          {
+            "kind": "player",
+            "playerId": 2569813,
+            "name": "Tank Dell",
+            "pos": "WR",
+            "proTeam": "HOU"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 1"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 2"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 3"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 4"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2025 Rd 5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2024-176",
+    "season": 2024,
+    "week": 0,
+    "date": "Aug 18, 4:57am",
+    "legs": [
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 4,
+        "toName": "ChiChi",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2553728,
+            "name": "Raheem Mostert",
+            "pos": "RB",
+            "proTeam": "LV"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 4,
+        "fromName": "ChiChi",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562377,
+            "name": "Josh Jacobs",
+            "pos": "RB",
+            "proTeam": "GB"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-2763",
+    "season": 2023,
+    "week": 14,
+    "date": "Dec 7, 3:12am",
+    "legs": [
+      {
+        "fromTeamId": 12,
+        "fromName": "Dim",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2571750,
+            "name": "Brandon Aubrey",
+            "pos": "K",
+            "proTeam": "DAL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 12"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 12,
+        "toName": "Dim",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2570308,
+            "name": "Jake Moody",
+            "pos": "K",
+            "proTeam": "SF"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 10"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-2761",
+    "season": 2023,
+    "week": 14,
+    "date": "Dec 7, 3:00am",
+    "legs": [
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2567637,
+            "name": "Christian Watson",
+            "pos": "WR",
+            "proTeam": "GB"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 5"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2543496,
+            "name": "Odell Beckham Jr.",
+            "pos": "WR",
+            "proTeam": "BAL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 3"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-2677",
+    "season": 2023,
+    "week": 14,
+    "date": "Dec 5, 2:53am",
+    "legs": [
+      {
+        "fromTeamId": 11,
+        "fromName": "Cleveland",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2566127,
+            "name": "Nico Collins",
+            "pos": "WR",
+            "proTeam": "HOU"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 10"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 11,
+        "toName": "Cleveland",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2560888,
+            "name": "Courtland Sutton",
+            "pos": "WR",
+            "proTeam": "DEN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-2598",
+    "season": 2023,
+    "week": 13,
+    "date": "Dec 1, 2:17pm",
+    "legs": [
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2557889,
+            "name": "Gerald Everett",
+            "pos": "TE",
+            "proTeam": "CHI"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2561215,
+            "name": "Tanner Hudson",
+            "pos": "TE",
+            "proTeam": "CIN"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-2520",
+    "season": 2023,
+    "week": 13,
+    "date": "Nov 28, 2:00am",
+    "legs": [
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 100010,
+            "name": "Detroit Lions",
+            "pos": "DEF",
+            "proTeam": ""
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 6"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 9"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2558105,
+            "name": "Chris Godwin",
+            "pos": "WR",
+            "proTeam": "TB"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 11"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 14"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-2519",
+    "season": 2023,
+    "week": 13,
+    "date": "Nov 28, 2:00am",
+    "legs": [
+      {
+        "fromTeamId": 5,
+        "fromName": "Lucky Bison",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2532975,
+            "name": "Russell Wilson",
+            "pos": "QB",
+            "proTeam": "PIT"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 5,
+        "toName": "Lucky Bison",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2558167,
+            "name": "Joshua Dobbs",
+            "pos": "QB",
+            "proTeam": "SF"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-2447",
+    "season": 2023,
+    "week": 12,
+    "date": "Nov 23, 12:57am",
+    "legs": [
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 12,
+        "toName": "Dim",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2570074,
+            "name": "Jordan Addison",
+            "pos": "WR",
+            "proTeam": "MIN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 6"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 12,
+        "fromName": "Dim",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2560888,
+            "name": "Courtland Sutton",
+            "pos": "WR",
+            "proTeam": "DEN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 2"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-2433",
+    "season": 2023,
+    "week": 12,
+    "date": "Nov 22, 1:57pm",
+    "legs": [
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2560866,
+            "name": "Dalton Schultz",
+            "pos": "TE",
+            "proTeam": "HOU"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 10"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2557889,
+            "name": "Gerald Everett",
+            "pos": "TE",
+            "proTeam": "CHI"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 7"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-2060",
+    "season": 2023,
+    "week": 10,
+    "date": "Nov 7, 3:07am",
+    "legs": [
+      {
+        "fromTeamId": 5,
+        "fromName": "Lucky Bison",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2558066,
+            "name": "Curtis Samuel",
+            "pos": "WR",
+            "proTeam": "BUF"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 8"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 5,
+        "toName": "Lucky Bison",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569110,
+            "name": "Rashid Shaheed",
+            "pos": "WR",
+            "proTeam": "NO"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 15"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-1788",
+    "season": 2023,
+    "week": 9,
+    "date": "Oct 31, 12:04am",
+    "legs": [
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 12,
+        "toName": "Dim",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2565899,
+            "name": "Chuba Hubbard",
+            "pos": "RB",
+            "proTeam": "CAR"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 2"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 12,
+        "fromName": "Dim",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2540165,
+            "name": "DeAndre Hopkins",
+            "pos": "WR",
+            "proTeam": "TEN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 6"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-1787",
+    "season": 2023,
+    "week": 9,
+    "date": "Oct 31, 12:04am",
+    "legs": [
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2566448,
+            "name": "Najee Harris",
+            "pos": "RB",
+            "proTeam": "PIT"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2552430,
+            "name": "Tyler Lockett",
+            "pos": "WR",
+            "proTeam": "SEA"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-1514",
+    "season": 2023,
+    "week": 6,
+    "date": "Oct 16, 5:48pm",
+    "legs": [
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2566448,
+            "name": "Najee Harris",
+            "pos": "RB",
+            "proTeam": "PIT"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 3"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569726,
+            "name": "Sam LaPorta",
+            "pos": "TE",
+            "proTeam": "DET"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 7"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-1439",
+    "season": 2023,
+    "week": 6,
+    "date": "Oct 11, 9:27pm",
+    "legs": [
+      {
+        "fromTeamId": 11,
+        "fromName": "Cleveland",
+        "toTeamId": 8,
+        "toName": "De'Aaron Cronin",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562722,
+            "name": "Miles Sanders",
+            "pos": "RB",
+            "proTeam": "CAR"
+          },
+          {
+            "kind": "player",
+            "playerId": 2563896,
+            "name": "Jerry Jeudy",
+            "pos": "WR",
+            "proTeam": "CLE"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 6"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 8,
+        "fromName": "De'Aaron Cronin",
+        "toTeamId": 11,
+        "toName": "Cleveland",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2540169,
+            "name": "Robert Woods",
+            "pos": "WR",
+            "proTeam": "HOU"
+          },
+          {
+            "kind": "player",
+            "playerId": 2557991,
+            "name": "Dalvin Cook",
+            "pos": "RB",
+            "proTeam": "BAL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 3"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-1413",
+    "season": 2023,
+    "week": 6,
+    "date": "Oct 10, 3:24pm",
+    "legs": [
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2563617,
+            "name": "Zack Moss",
+            "pos": "RB",
+            "proTeam": "CIN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 7"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569795,
+            "name": "Tyjae Spears",
+            "pos": "RB",
+            "proTeam": "TEN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 4"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-1344",
+    "season": 2023,
+    "week": 6,
+    "date": "Oct 10, 1:52am",
+    "legs": [
+      {
+        "fromTeamId": 9,
+        "fromName": "Lavar Balls",
+        "toTeamId": 11,
+        "toName": "Cleveland",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2553728,
+            "name": "Raheem Mostert",
+            "pos": "RB",
+            "proTeam": "MIA"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 10"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 11,
+        "fromName": "Cleveland",
+        "toTeamId": 9,
+        "toName": "Lavar Balls",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2567685,
+            "name": "Dameon Pierce",
+            "pos": "RB",
+            "proTeam": "HOU"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 7"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-1322",
+    "season": 2023,
+    "week": 6,
+    "date": "Oct 10, 12:24am",
+    "legs": [
+      {
+        "fromTeamId": 5,
+        "fromName": "Lucky Bison",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2567520,
+            "name": "Greg Dulcich",
+            "pos": "TE",
+            "proTeam": "DEN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 7"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 5,
+        "toName": "Lucky Bison",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569594,
+            "name": "Dalton Kincaid",
+            "pos": "TE",
+            "proTeam": "BUF"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 11"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-1321",
+    "season": 2023,
+    "week": 6,
+    "date": "Oct 10, 12:24am",
+    "legs": [
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 4,
+        "toName": "ChiChi",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2566409,
+            "name": "DeVonta Smith",
+            "pos": "WR",
+            "proTeam": "PHI"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 5"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 4,
+        "fromName": "ChiChi",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2566343,
+            "name": "Rhamondre Stevenson",
+            "pos": "RB",
+            "proTeam": "NE"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 3"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-1257",
+    "season": 2023,
+    "week": 5,
+    "date": "Oct 7, 8:14pm",
+    "legs": [
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569765,
+            "name": "Jayden Reed",
+            "pos": "WR",
+            "proTeam": "GB"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 2"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 6"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2567328,
+            "name": "James Cook",
+            "pos": "RB",
+            "proTeam": "BUF"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 4"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 8"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-1256",
+    "season": 2023,
+    "week": 5,
+    "date": "Oct 7, 8:14pm",
+    "legs": [
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569110,
+            "name": "Rashid Shaheed",
+            "pos": "WR",
+            "proTeam": "NO"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 5"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2541785,
+            "name": "Adam Thielen",
+            "pos": "WR",
+            "proTeam": "CAR"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 8"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-1233",
+    "season": 2023,
+    "week": 5,
+    "date": "Oct 6, 6:38pm",
+    "legs": [
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2567496,
+            "name": "Jake Ferguson",
+            "pos": "TE",
+            "proTeam": "DAL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 15"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 100007,
+            "name": "Cleveland Browns",
+            "pos": "DEF",
+            "proTeam": ""
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 8"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-1103",
+    "season": 2023,
+    "week": 4,
+    "date": "Sep 29, 3:56am",
+    "legs": [
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 12,
+        "toName": "Dim",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2568048,
+            "name": "Garrett Wilson",
+            "pos": "WR",
+            "proTeam": "NYJ"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 4"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 12,
+        "fromName": "Dim",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2570026,
+            "name": "Puka Nacua",
+            "pos": "WR",
+            "proTeam": "LA"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 3"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-1088",
+    "season": 2023,
+    "week": 4,
+    "date": "Sep 28, 3:30am",
+    "legs": [
+      {
+        "fromTeamId": 9,
+        "fromName": "Lavar Balls",
+        "toTeamId": 12,
+        "toName": "Dim",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2560813,
+            "name": "DJ Moore",
+            "pos": "WR",
+            "proTeam": "CHI"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 15"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 12,
+        "fromName": "Dim",
+        "toTeamId": 9,
+        "toName": "Lavar Balls",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2553728,
+            "name": "Raheem Mostert",
+            "pos": "RB",
+            "proTeam": "MIA"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 7"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-1017",
+    "season": 2023,
+    "week": 4,
+    "date": "Sep 26, 4:40am",
+    "legs": [
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569747,
+            "name": "Jahmyr Gibbs",
+            "pos": "RB",
+            "proTeam": "DET"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 6"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2556075,
+            "name": "Derrick Henry",
+            "pos": "RB",
+            "proTeam": "BAL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-1016",
+    "season": 2023,
+    "week": 4,
+    "date": "Sep 26, 3:42am",
+    "legs": [
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 9,
+        "toName": "Lavar Balls",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2567808,
+            "name": "Isiah Pacheco",
+            "pos": "RB",
+            "proTeam": "KC"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 6"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 9,
+        "fromName": "Lavar Balls",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562383,
+            "name": "Noah Fant",
+            "pos": "TE",
+            "proTeam": "SEA"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 4"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-669",
+    "season": 2023,
+    "week": 2,
+    "date": "Sep 14, 3:51pm",
+    "legs": [
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2557863,
+            "name": "Zay Jones",
+            "pos": "WR",
+            "proTeam": "JAX"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 1"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 8"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569573,
+            "name": "Zay Flowers",
+            "pos": "WR",
+            "proTeam": "BAL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 2"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 6"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-550",
+    "season": 2023,
+    "week": 2,
+    "date": "Sep 12, 1:48am",
+    "legs": [
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2556075,
+            "name": "Derrick Henry",
+            "pos": "RB",
+            "proTeam": "BAL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 1"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 3"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562377,
+            "name": "Josh Jacobs",
+            "pos": "RB",
+            "proTeam": "GB"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 7"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 9"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-523",
+    "season": 2023,
+    "week": 1,
+    "date": "Sep 9, 10:51pm",
+    "legs": [
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2552409,
+            "name": "DeVante Parker",
+            "pos": "WR",
+            "proTeam": "PHI"
+          },
+          {
+            "kind": "player",
+            "playerId": 2560757,
+            "name": "Lamar Jackson",
+            "pos": "QB",
+            "proTeam": "BAL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 3"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 4"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2558019,
+            "name": "Alvin Kamara",
+            "pos": "RB",
+            "proTeam": "NO"
+          },
+          {
+            "kind": "player",
+            "playerId": 2570074,
+            "name": "Jordan Addison",
+            "pos": "WR",
+            "proTeam": "MIN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 1"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 7"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-427",
+    "season": 2023,
+    "week": 1,
+    "date": "Sep 2, 8:03pm",
+    "legs": [
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 12,
+        "toName": "Dim",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2560888,
+            "name": "Courtland Sutton",
+            "pos": "WR",
+            "proTeam": "DEN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 15"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 12,
+        "fromName": "Dim",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562734,
+            "name": "Devin Singletary",
+            "pos": "RB",
+            "proTeam": "NYG"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-395",
+    "season": 2023,
+    "week": 1,
+    "date": "Aug 29, 2:39am",
+    "legs": [
+      {
+        "fromTeamId": 4,
+        "fromName": "ChiChi",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2543715,
+            "name": "Jerick McKinnon",
+            "pos": "RB",
+            "proTeam": "KC"
+          },
+          {
+            "kind": "player",
+            "playerId": 2569765,
+            "name": "Jayden Reed",
+            "pos": "WR",
+            "proTeam": "GB"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 1"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 4,
+        "toName": "ChiChi",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562674,
+            "name": "Diontae Johnson",
+            "pos": "WR",
+            "proTeam": "CAR"
+          },
+          {
+            "kind": "player",
+            "playerId": 2563548,
+            "name": "J.K. Dobbins",
+            "pos": "RB",
+            "proTeam": "LAC"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 3"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-389",
+    "season": 2023,
+    "week": 1,
+    "date": "Aug 28, 4:18am",
+    "legs": [
+      {
+        "fromTeamId": 5,
+        "fromName": "Lucky Bison",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2567643,
+            "name": "Treylon Burks",
+            "pos": "WR",
+            "proTeam": "TEN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 4"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 5,
+        "toName": "Lucky Bison",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2567586,
+            "name": "Romeo Doubs",
+            "pos": "WR",
+            "proTeam": "GB"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 12"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-362",
+    "season": 2023,
+    "week": 1,
+    "date": "Aug 26, 1:22am",
+    "legs": [
+      {
+        "fromTeamId": 12,
+        "fromName": "Dim",
+        "toTeamId": 11,
+        "toName": "Cleveland",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2563965,
+            "name": "D'Andre Swift",
+            "pos": "RB",
+            "proTeam": "CHI"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 8"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 11,
+        "fromName": "Cleveland",
+        "toTeamId": 12,
+        "toName": "Dim",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2540165,
+            "name": "DeAndre Hopkins",
+            "pos": "WR",
+            "proTeam": "TEN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-358",
+    "season": 2023,
+    "week": 1,
+    "date": "Aug 26, 12:10am",
+    "legs": [
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 11,
+        "toName": "Cleveland",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2567250,
+            "name": "Drake London",
+            "pos": "WR",
+            "proTeam": "ATL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 12"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 11,
+        "fromName": "Cleveland",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2565836,
+            "name": "Rashod Bateman",
+            "pos": "WR",
+            "proTeam": "BAL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-305",
+    "season": 2023,
+    "week": 1,
+    "date": "Aug 23, 3:20am",
+    "legs": [
+      {
+        "fromTeamId": 5,
+        "fromName": "Lucky Bison",
+        "toTeamId": 4,
+        "toName": "ChiChi",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2566343,
+            "name": "Rhamondre Stevenson",
+            "pos": "RB",
+            "proTeam": "NE"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 1"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 4,
+        "fromName": "ChiChi",
+        "toTeamId": 5,
+        "toName": "Lucky Bison",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2568282,
+            "name": "Kenneth Walker III",
+            "pos": "RB",
+            "proTeam": "SEA"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 3"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-273",
+    "season": 2023,
+    "week": 1,
+    "date": "Aug 22, 7:21pm",
+    "legs": [
+      {
+        "fromTeamId": 12,
+        "fromName": "Dim",
+        "toTeamId": 9,
+        "toName": "Lavar Balls",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562489,
+            "name": "Terry McLaurin",
+            "pos": "WR",
+            "proTeam": "WAS"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 9"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 9,
+        "fromName": "Lavar Balls",
+        "toTeamId": 12,
+        "toName": "Dim",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2555466,
+            "name": "Tyler Boyd",
+            "pos": "WR",
+            "proTeam": "CIN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 2"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-272",
+    "season": 2023,
+    "week": 1,
+    "date": "Aug 22, 7:21pm",
+    "legs": [
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2557889,
+            "name": "Gerald Everett",
+            "pos": "TE",
+            "proTeam": "CHI"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 3"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2558266,
+            "name": "George Kittle",
+            "pos": "TE",
+            "proTeam": "SF"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 9"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-211",
+    "season": 2023,
+    "week": 1,
+    "date": "Aug 21, 5:25am",
+    "legs": [
+      {
+        "fromTeamId": 11,
+        "fromName": "Cleveland",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2567973,
+            "name": "Chris Olave",
+            "pos": "WR",
+            "proTeam": "NO"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 13"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 11,
+        "toName": "Cleveland",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2540165,
+            "name": "DeAndre Hopkins",
+            "pos": "WR",
+            "proTeam": "TEN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 4"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-161",
+    "season": 2023,
+    "week": 1,
+    "date": "Aug 20, 4:36am",
+    "legs": [
+      {
+        "fromTeamId": 9,
+        "fromName": "Lavar Balls",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2543499,
+            "name": "Derek Carr",
+            "pos": "QB",
+            "proTeam": "NO"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 9,
+        "toName": "Lavar Balls",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562681,
+            "name": "Dawson Knox",
+            "pos": "TE",
+            "proTeam": "BUF"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-2619",
+    "season": 2023,
+    "week": 0,
+    "date": "Dec 3, 11:23pm",
+    "legs": [
+      {
+        "fromTeamId": 11,
+        "fromName": "Cleveland",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2558125,
+            "name": "Patrick Mahomes",
+            "pos": "QB",
+            "proTeam": "KC"
+          },
+          {
+            "kind": "player",
+            "playerId": 2562238,
+            "name": "A.J. Brown",
+            "pos": "WR",
+            "proTeam": "PHI"
+          },
+          {
+            "kind": "player",
+            "playerId": 2563965,
+            "name": "D'Andre Swift",
+            "pos": "RB",
+            "proTeam": "CHI"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 11,
+        "toName": "Cleveland",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2561215,
+            "name": "Tanner Hudson",
+            "pos": "TE",
+            "proTeam": "CIN"
+          },
+          {
+            "kind": "player",
+            "playerId": 2561534,
+            "name": "Greg Joseph",
+            "pos": "K",
+            "proTeam": "GB"
+          },
+          {
+            "kind": "player",
+            "playerId": 2566442,
+            "name": "Pat Freiermuth",
+            "pos": "TE",
+            "proTeam": "PIT"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-2210",
+    "season": 2023,
+    "week": 0,
+    "date": "Nov 13, 9:21pm",
+    "legs": [
+      {
+        "fromTeamId": 10,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562502,
+            "name": "David Montgomery",
+            "pos": "RB",
+            "proTeam": "DET"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 1"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 2"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 10,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2569573,
+            "name": "Zay Flowers",
+            "pos": "WR",
+            "proTeam": "BAL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 5"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 8"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-1477",
+    "season": 2023,
+    "week": 0,
+    "date": "Oct 15, 3:25am",
+    "legs": [
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 100010,
+            "name": "Detroit Lions",
+            "pos": "DEF",
+            "proTeam": ""
+          },
+          {
+            "kind": "player",
+            "playerId": 2558172,
+            "name": "Jake Elliott",
+            "pos": "K",
+            "proTeam": "PHI"
+          },
+          {
+            "kind": "player",
+            "playerId": 2558266,
+            "name": "George Kittle",
+            "pos": "TE",
+            "proTeam": "SF"
+          },
+          {
+            "kind": "player",
+            "playerId": 2563848,
+            "name": "CeeDee Lamb",
+            "pos": "WR",
+            "proTeam": "DAL"
+          },
+          {
+            "kind": "player",
+            "playerId": 2565045,
+            "name": "Justin Herbert",
+            "pos": "QB",
+            "proTeam": "LAC"
+          },
+          {
+            "kind": "player",
+            "playerId": 2565941,
+            "name": "Ja'Marr Chase",
+            "pos": "WR",
+            "proTeam": "CIN"
+          },
+          {
+            "kind": "player",
+            "playerId": 2567328,
+            "name": "James Cook",
+            "pos": "RB",
+            "proTeam": "BUF"
+          },
+          {
+            "kind": "player",
+            "playerId": 2568108,
+            "name": "Keaontay Ingram",
+            "pos": "RB",
+            "proTeam": "KC"
+          },
+          {
+            "kind": "player",
+            "playerId": 2569573,
+            "name": "Zay Flowers",
+            "pos": "WR",
+            "proTeam": "BAL"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 100008,
+            "name": "Dallas Cowboys",
+            "pos": "DEF",
+            "proTeam": ""
+          },
+          {
+            "kind": "player",
+            "playerId": 2536340,
+            "name": "Justin Tucker",
+            "pos": "K",
+            "proTeam": "BAL"
+          },
+          {
+            "kind": "player",
+            "playerId": 2540154,
+            "name": "Keenan Allen",
+            "pos": "WR",
+            "proTeam": "CHI"
+          },
+          {
+            "kind": "player",
+            "playerId": 2552608,
+            "name": "Stefon Diggs",
+            "pos": "WR",
+            "proTeam": "HOU"
+          },
+          {
+            "kind": "player",
+            "playerId": 2556075,
+            "name": "Derrick Henry",
+            "pos": "RB",
+            "proTeam": "BAL"
+          },
+          {
+            "kind": "player",
+            "playerId": 2557898,
+            "name": "Cooper Kupp",
+            "pos": "WR",
+            "proTeam": "LA"
+          },
+          {
+            "kind": "player",
+            "playerId": 2557997,
+            "name": "Christian McCaffrey",
+            "pos": "RB",
+            "proTeam": "SF"
+          },
+          {
+            "kind": "player",
+            "playerId": 2562378,
+            "name": "T.J. Hockenson",
+            "pos": "TE",
+            "proTeam": "MIN"
+          },
+          {
+            "kind": "player",
+            "playerId": 2565920,
+            "name": "Justin Fields",
+            "pos": "QB",
+            "proTeam": "PIT"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2023-1454",
+    "season": 2023,
+    "week": 0,
+    "date": "Oct 12, 2:08pm",
+    "legs": [
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2566073,
+            "name": "Amon-Ra St. Brown",
+            "pos": "WR",
+            "proTeam": "DET"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 7"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 9"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2563848,
+            "name": "CeeDee Lamb",
+            "pos": "WR",
+            "proTeam": "DAL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 3"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2024 Rd 6"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-2231",
+    "season": 2022,
+    "week": 15,
+    "date": "Dec 15, 5:04pm",
+    "legs": [
+      {
+        "fromTeamId": 5,
+        "fromName": "The Bills",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2566502,
+            "name": "Josh Palmer",
+            "pos": "WR",
+            "proTeam": "LAC"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 6"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 6"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 5,
+        "toName": "The Bills",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562721,
+            "name": "Deebo Samuel",
+            "pos": "WR",
+            "proTeam": "SF"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 9"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 10"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-2209",
+    "season": 2022,
+    "week": 15,
+    "date": "Dec 14, 11:25pm",
+    "legs": [
+      {
+        "fromTeamId": 11,
+        "fromName": "Cleveland",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2557858,
+            "name": "Evan Engram",
+            "pos": "TE",
+            "proTeam": "JAX"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 14"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 11,
+        "toName": "Cleveland",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2560866,
+            "name": "Dalton Schultz",
+            "pos": "TE",
+            "proTeam": "HOU"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 9"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-2204",
+    "season": 2022,
+    "week": 15,
+    "date": "Dec 14, 7:44pm",
+    "legs": [
+      {
+        "fromTeamId": 12,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2566163,
+            "name": "Trevor Lawrence",
+            "pos": "QB",
+            "proTeam": "JAX"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 9"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 12,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2568216,
+            "name": "Brock Purdy",
+            "pos": "QB",
+            "proTeam": "SF"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 7"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-2167",
+    "season": 2022,
+    "week": 15,
+    "date": "Dec 13, 6:41pm",
+    "legs": [
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2540165,
+            "name": "DeAndre Hopkins",
+            "pos": "WR",
+            "proTeam": "ARI"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 15"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 12"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2552430,
+            "name": "Tyler Lockett",
+            "pos": "WR",
+            "proTeam": "SEA"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 1"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 3"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-2166",
+    "season": 2022,
+    "week": 15,
+    "date": "Dec 13, 6:35pm",
+    "legs": [
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2568315,
+            "name": "Rachaad White",
+            "pos": "RB",
+            "proTeam": "TB"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562734,
+            "name": "Devin Singletary",
+            "pos": "RB",
+            "proTeam": "HOU"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-2158",
+    "season": 2022,
+    "week": 15,
+    "date": "Dec 13, 4:18am",
+    "legs": [
+      {
+        "fromTeamId": 11,
+        "fromName": "Cleveland",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2565920,
+            "name": "Justin Fields",
+            "pos": "QB",
+            "proTeam": "CHI"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 15"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 11,
+        "toName": "Cleveland",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562382,
+            "name": "Kyler Murray",
+            "pos": "QB",
+            "proTeam": "ARI"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 6"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-2148",
+    "season": 2022,
+    "week": 15,
+    "date": "Dec 13, 2:54am",
+    "legs": [
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2506363,
+            "name": "Aaron Rodgers",
+            "pos": "QB",
+            "proTeam": "NYJ"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 6"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2555334,
+            "name": "Jared Goff",
+            "pos": "QB",
+            "proTeam": "DET"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 13"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-2147",
+    "season": 2022,
+    "week": 15,
+    "date": "Dec 13, 2:54am",
+    "legs": [
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2558846,
+            "name": "Mike Williams",
+            "pos": "WR",
+            "proTeam": "LAC"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562379,
+            "name": "Marquise Brown",
+            "pos": "WR",
+            "proTeam": "ARI"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-2135",
+    "season": 2022,
+    "week": 15,
+    "date": "Dec 13, 2:18am",
+    "legs": [
+      {
+        "fromTeamId": 12,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2557978,
+            "name": "James Conner",
+            "pos": "RB",
+            "proTeam": "ARI"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 8"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 12,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2566448,
+            "name": "Najee Harris",
+            "pos": "RB",
+            "proTeam": "PIT"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 4"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-2134",
+    "season": 2022,
+    "week": 15,
+    "date": "Dec 13, 2:18am",
+    "legs": [
+      {
+        "fromTeamId": 5,
+        "fromName": "The Bills",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562722,
+            "name": "Miles Sanders",
+            "pos": "RB",
+            "proTeam": "CAR"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 14"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 5,
+        "toName": "The Bills",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2568159,
+            "name": "George Pickens",
+            "pos": "WR",
+            "proTeam": "PIT"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 7"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-2133",
+    "season": 2022,
+    "week": 15,
+    "date": "Dec 13, 2:18am",
+    "legs": [
+      {
+        "fromTeamId": 5,
+        "fromName": "The Bills",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2558105,
+            "name": "Chris Godwin",
+            "pos": "WR",
+            "proTeam": "TB"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 14"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 5,
+        "toName": "The Bills",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2543468,
+            "name": "Mike Evans",
+            "pos": "WR",
+            "proTeam": "TB"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 8"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-1858",
+    "season": 2022,
+    "week": 13,
+    "date": "Dec 1, 10:27pm",
+    "legs": [
+      {
+        "fromTeamId": 11,
+        "fromName": "Cleveland",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2552487,
+            "name": "Amari Cooper",
+            "pos": "WR",
+            "proTeam": "CLE"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 6"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 11,
+        "toName": "Cleveland",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2558138,
+            "name": "Samaje Perine",
+            "pos": "RB",
+            "proTeam": "DEN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 10"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-1834",
+    "season": 2022,
+    "week": 13,
+    "date": "Dec 1, 5:31pm",
+    "legs": [
+      {
+        "fromTeamId": 5,
+        "fromName": "The Bills",
+        "toTeamId": 12,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2564676,
+            "name": "Juwan Johnson",
+            "pos": "TE",
+            "proTeam": "NO"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 3"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 12,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 5,
+        "toName": "The Bills",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562722,
+            "name": "Miles Sanders",
+            "pos": "RB",
+            "proTeam": "CAR"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 7"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-1771",
+    "season": 2022,
+    "week": 13,
+    "date": "Nov 29, 12:24am",
+    "legs": [
+      {
+        "fromTeamId": 5,
+        "fromName": "The Bills",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2557863,
+            "name": "Zay Jones",
+            "pos": "WR",
+            "proTeam": "JAX"
+          },
+          {
+            "kind": "player",
+            "playerId": 2560787,
+            "name": "Allen Lazard",
+            "pos": "WR",
+            "proTeam": "NYJ"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 11"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 5,
+        "toName": "The Bills",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2558066,
+            "name": "Curtis Samuel",
+            "pos": "WR",
+            "proTeam": "WAS"
+          },
+          {
+            "kind": "player",
+            "playerId": 2562502,
+            "name": "David Montgomery",
+            "pos": "RB",
+            "proTeam": "DET"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 7"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-1702",
+    "season": 2022,
+    "week": 12,
+    "date": "Nov 24, 4:55am",
+    "legs": [
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 5,
+        "toName": "The Bills",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562699,
+            "name": "Tony Pollard",
+            "pos": "RB",
+            "proTeam": "DAL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 8"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 5,
+        "fromName": "The Bills",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2567808,
+            "name": "Isiah Pacheco",
+            "pos": "RB",
+            "proTeam": "KC"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 2"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-1625",
+    "season": 2022,
+    "week": 12,
+    "date": "Nov 22, 12:03am",
+    "legs": [
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2540243,
+            "name": "Brett Maher",
+            "pos": "K",
+            "proTeam": "DAL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 14"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 15"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2561534,
+            "name": "Greg Joseph",
+            "pos": "K",
+            "proTeam": "MIN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 7"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 11"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-1492",
+    "season": 2022,
+    "week": 11,
+    "date": "Nov 16, 3:53am",
+    "legs": [
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 12,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2552408,
+            "name": "Darren Waller",
+            "pos": "TE",
+            "proTeam": "NYG"
+          },
+          {
+            "kind": "player",
+            "playerId": 2562722,
+            "name": "Miles Sanders",
+            "pos": "RB",
+            "proTeam": "CAR"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 1"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 12,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2557889,
+            "name": "Gerald Everett",
+            "pos": "TE",
+            "proTeam": "LAC"
+          },
+          {
+            "kind": "player",
+            "playerId": 2558019,
+            "name": "Alvin Kamara",
+            "pos": "RB",
+            "proTeam": "NO"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 2"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-1490",
+    "season": 2022,
+    "week": 11,
+    "date": "Nov 16, 2:40am",
+    "legs": [
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2568159,
+            "name": "George Pickens",
+            "pos": "WR",
+            "proTeam": "PIT"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 14"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 100026,
+            "name": "Arizona Cardinals",
+            "pos": "DEF",
+            "proTeam": ""
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 13"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-1458",
+    "season": 2022,
+    "week": 11,
+    "date": "Nov 15, 10:06pm",
+    "legs": [
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2566502,
+            "name": "Josh Palmer",
+            "pos": "WR",
+            "proTeam": "LAC"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2564271,
+            "name": "Clyde Edwards-Helaire",
+            "pos": "RB",
+            "proTeam": "KC"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-1327",
+    "season": 2022,
+    "week": 10,
+    "date": "Nov 10, 12:53am",
+    "legs": [
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 5,
+        "toName": "The Bills",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2563602,
+            "name": "Gabe Davis",
+            "pos": "WR",
+            "proTeam": "BUF"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 6"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 14"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 5,
+        "fromName": "The Bills",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2566409,
+            "name": "DeVonta Smith",
+            "pos": "WR",
+            "proTeam": "PHI"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 4"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 12"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-1326",
+    "season": 2022,
+    "week": 10,
+    "date": "Nov 10, 12:53am",
+    "legs": [
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 100026,
+            "name": "Arizona Cardinals",
+            "pos": "DEF",
+            "proTeam": ""
+          }
+        ]
+      },
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2555334,
+            "name": "Jared Goff",
+            "pos": "QB",
+            "proTeam": "DET"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-1325",
+    "season": 2022,
+    "week": 10,
+    "date": "Nov 10, 12:53am",
+    "legs": [
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2506363,
+            "name": "Aaron Rodgers",
+            "pos": "QB",
+            "proTeam": "NYJ"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 10"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2563848,
+            "name": "CeeDee Lamb",
+            "pos": "WR",
+            "proTeam": "DAL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 12"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-1324",
+    "season": 2022,
+    "week": 10,
+    "date": "Nov 10, 12:53am",
+    "legs": [
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2564271,
+            "name": "Clyde Edwards-Helaire",
+            "pos": "RB",
+            "proTeam": "KC"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 15"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 14"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562502,
+            "name": "David Montgomery",
+            "pos": "RB",
+            "proTeam": "DET"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 13"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 14"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-1251",
+    "season": 2022,
+    "week": 9,
+    "date": "Nov 5, 12:46am",
+    "legs": [
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2536340,
+            "name": "Justin Tucker",
+            "pos": "K",
+            "proTeam": "BAL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 15"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2565953,
+            "name": "Evan McPherson",
+            "pos": "K",
+            "proTeam": "CIN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 6"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-1192",
+    "season": 2022,
+    "week": 9,
+    "date": "Nov 1, 2:48pm",
+    "legs": [
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562699,
+            "name": "Tony Pollard",
+            "pos": "RB",
+            "proTeam": "DAL"
+          },
+          {
+            "kind": "player",
+            "playerId": 2566157,
+            "name": "Travis Etienne",
+            "pos": "RB",
+            "proTeam": "JAX"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 4"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2558194,
+            "name": "Josh Reynolds",
+            "pos": "WR",
+            "proTeam": "DET"
+          },
+          {
+            "kind": "player",
+            "playerId": 2558846,
+            "name": "Mike Williams",
+            "pos": "WR",
+            "proTeam": "LAC"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 2"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-977",
+    "season": 2022,
+    "week": 7,
+    "date": "Oct 20, 12:26am",
+    "legs": [
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2552430,
+            "name": "Tyler Lockett",
+            "pos": "WR",
+            "proTeam": "SEA"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 9"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2543498,
+            "name": "Brandin Cooks",
+            "pos": "WR",
+            "proTeam": "DAL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-878",
+    "season": 2022,
+    "week": 6,
+    "date": "Oct 15, 12:46am",
+    "legs": [
+      {
+        "fromTeamId": 5,
+        "fromName": "The Bills",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2558954,
+            "name": "Taysom Hill",
+            "pos": "TE",
+            "proTeam": "NO"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 6"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 5,
+        "toName": "The Bills",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562681,
+            "name": "Dawson Knox",
+            "pos": "TE",
+            "proTeam": "BUF"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 7"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-766",
+    "season": 2022,
+    "week": 5,
+    "date": "Oct 9, 12:25am",
+    "legs": [
+      {
+        "fromTeamId": 5,
+        "fromName": "The Bills",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2563896,
+            "name": "Jerry Jeudy",
+            "pos": "WR",
+            "proTeam": "DEN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 5"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 5,
+        "toName": "The Bills",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2558262,
+            "name": "Mack Hollins",
+            "pos": "WR",
+            "proTeam": "ATL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 6"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-748",
+    "season": 2022,
+    "week": 5,
+    "date": "Oct 7, 12:45am",
+    "legs": [
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 12,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2568030,
+            "name": "Breece Hall",
+            "pos": "RB",
+            "proTeam": "NYJ"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 9"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 12,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2558204,
+            "name": "Jamaal Williams",
+            "pos": "RB",
+            "proTeam": "NO"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 2"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-684",
+    "season": 2022,
+    "week": 5,
+    "date": "Oct 5, 12:47am",
+    "legs": [
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562378,
+            "name": "T.J. Hockenson",
+            "pos": "TE",
+            "proTeam": "MIN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 13"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 14"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2566163,
+            "name": "Trevor Lawrence",
+            "pos": "QB",
+            "proTeam": "JAX"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 3"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 4"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-683",
+    "season": 2022,
+    "week": 5,
+    "date": "Oct 5, 12:47am",
+    "legs": [
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562712,
+            "name": "Hunter Renfrow",
+            "pos": "WR",
+            "proTeam": "LV"
+          },
+          {
+            "kind": "player",
+            "playerId": 2565045,
+            "name": "Justin Herbert",
+            "pos": "QB",
+            "proTeam": "LAC"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 7"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2504211,
+            "name": "Tom Brady",
+            "pos": "QB",
+            "proTeam": "TB"
+          },
+          {
+            "kind": "player",
+            "playerId": 2566073,
+            "name": "Amon-Ra St. Brown",
+            "pos": "WR",
+            "proTeam": "DET"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 6"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-639",
+    "season": 2022,
+    "week": 4,
+    "date": "Oct 2, 12:15am",
+    "legs": [
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562492,
+            "name": "Jakobi Meyers",
+            "pos": "WR",
+            "proTeam": "LV"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 7"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2558262,
+            "name": "Mack Hollins",
+            "pos": "WR",
+            "proTeam": "ATL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 6"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-618",
+    "season": 2022,
+    "week": 4,
+    "date": "Oct 1, 12:23am",
+    "legs": [
+      {
+        "fromTeamId": 11,
+        "fromName": "Cleveland",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2540154,
+            "name": "Keenan Allen",
+            "pos": "WR",
+            "proTeam": "LAC"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 5"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 11,
+        "toName": "Cleveland",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2555259,
+            "name": "Carson Wentz",
+            "pos": "QB",
+            "proTeam": "WAS"
+          },
+          {
+            "kind": "player",
+            "playerId": 2556370,
+            "name": "Michael Thomas",
+            "pos": "WR",
+            "proTeam": "NO"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 8"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 11,
+        "fromName": "Cleveland",
+        "toTeamId": null,
+        "toName": "Waivers",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2563707,
+            "name": "Darnell Mooney",
+            "pos": "WR",
+            "proTeam": "CHI"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-617",
+    "season": 2022,
+    "week": 4,
+    "date": "Oct 1, 12:23am",
+    "legs": [
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2565926,
+            "name": "Khalil Herbert",
+            "pos": "RB",
+            "proTeam": "CHI"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 5"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 1"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562721,
+            "name": "Deebo Samuel",
+            "pos": "WR",
+            "proTeam": "SF"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 8"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 15"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-588",
+    "season": 2022,
+    "week": 4,
+    "date": "Sep 30, 12:45am",
+    "legs": [
+      {
+        "fromTeamId": 12,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562712,
+            "name": "Hunter Renfrow",
+            "pos": "WR",
+            "proTeam": "LV"
+          },
+          {
+            "kind": "player",
+            "playerId": 2564223,
+            "name": "James Robinson",
+            "pos": "RB",
+            "proTeam": "NE"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 9"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 12,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2540169,
+            "name": "Robert Woods",
+            "pos": "WR",
+            "proTeam": "HOU"
+          },
+          {
+            "kind": "player",
+            "playerId": 2558019,
+            "name": "Alvin Kamara",
+            "pos": "RB",
+            "proTeam": "NO"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 3"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-587",
+    "season": 2022,
+    "week": 4,
+    "date": "Sep 30, 12:45am",
+    "legs": [
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 12,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2568048,
+            "name": "Garrett Wilson",
+            "pos": "WR",
+            "proTeam": "NYJ"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 9"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 12,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562378,
+            "name": "T.J. Hockenson",
+            "pos": "TE",
+            "proTeam": "MIN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 5"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-497",
+    "season": 2022,
+    "week": 4,
+    "date": "Sep 27, 12:25am",
+    "legs": [
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2540165,
+            "name": "DeAndre Hopkins",
+            "pos": "WR",
+            "proTeam": "ARI"
+          },
+          {
+            "kind": "player",
+            "playerId": 2557991,
+            "name": "Dalvin Cook",
+            "pos": "RB",
+            "proTeam": "MIN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 5"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2556214,
+            "name": "Tyreek Hill",
+            "pos": "WR",
+            "proTeam": "MIA"
+          },
+          {
+            "kind": "player",
+            "playerId": 2562722,
+            "name": "Miles Sanders",
+            "pos": "RB",
+            "proTeam": "CAR"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 11"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-402",
+    "season": 2022,
+    "week": 2,
+    "date": "Sep 15, 12:33am",
+    "legs": [
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2507225,
+            "name": "Nick Folk",
+            "pos": "K",
+            "proTeam": "NE"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 2"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 5"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2552430,
+            "name": "Tyler Lockett",
+            "pos": "WR",
+            "proTeam": "SEA"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 10"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 15"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-376",
+    "season": 2022,
+    "week": 2,
+    "date": "Sep 13, 5:23am",
+    "legs": [
+      {
+        "fromTeamId": 11,
+        "fromName": "Cleveland",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562674,
+            "name": "Diontae Johnson",
+            "pos": "WR",
+            "proTeam": "PIT"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 11,
+        "toName": "Cleveland",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2540154,
+            "name": "Keenan Allen",
+            "pos": "WR",
+            "proTeam": "LAC"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-314",
+    "season": 2022,
+    "week": 1,
+    "date": "Sep 8, 12:15am",
+    "legs": [
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2558266,
+            "name": "George Kittle",
+            "pos": "TE",
+            "proTeam": "SF"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 15"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 10"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2561021,
+            "name": "Nick Chubb",
+            "pos": "RB",
+            "proTeam": "CLE"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 10"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 15"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-270",
+    "season": 2022,
+    "week": 1,
+    "date": "Aug 29, 12:14am",
+    "legs": [
+      {
+        "fromTeamId": 1,
+        "fromName": "Thomo",
+        "toTeamId": 12,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562712,
+            "name": "Hunter Renfrow",
+            "pos": "WR",
+            "proTeam": "LV"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 2"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 12,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 1,
+        "toName": "Thomo",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2566049,
+            "name": "Javonte Williams",
+            "pos": "RB",
+            "proTeam": "DEN"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 15"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-2262",
+    "season": 2022,
+    "week": 0,
+    "date": "Dec 19, 9:54pm",
+    "legs": [
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2558105,
+            "name": "Chris Godwin",
+            "pos": "WR",
+            "proTeam": "TB"
+          },
+          {
+            "kind": "player",
+            "playerId": 2562722,
+            "name": "Miles Sanders",
+            "pos": "RB",
+            "proTeam": "CAR"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2539265,
+            "name": "Rex Burkhead",
+            "pos": "RB",
+            "proTeam": "HOU"
+          },
+          {
+            "kind": "player",
+            "playerId": 2566196,
+            "name": "Tutu Atwell",
+            "pos": "WR",
+            "proTeam": "LA"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-2224",
+    "season": 2022,
+    "week": 0,
+    "date": "Dec 15, 3:51am",
+    "legs": [
+      {
+        "fromTeamId": 12,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2565093,
+            "name": "Brandon Aiyuk",
+            "pos": "WR",
+            "proTeam": "SF"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 4"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 14"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 12,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562721,
+            "name": "Deebo Samuel",
+            "pos": "WR",
+            "proTeam": "SF"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 8"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 9"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-1358",
+    "season": 2022,
+    "week": 0,
+    "date": "Nov 10, 1:32am",
+    "legs": [
+      {
+        "fromTeamId": 12,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 9,
+        "toName": "Sir Doug",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2565093,
+            "name": "Brandon Aiyuk",
+            "pos": "WR",
+            "proTeam": "SF"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 6"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 7"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 8"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 9"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 9"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 10"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 9,
+        "fromName": "Sir Doug",
+        "toTeamId": 12,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2540243,
+            "name": "Brett Maher",
+            "pos": "K",
+            "proTeam": "DAL"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 15"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 15"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 15"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 15"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 14"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 14"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-1355",
+    "season": 2022,
+    "week": 0,
+    "date": "Nov 10, 1:30am",
+    "legs": [
+      {
+        "fromTeamId": 12,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 6,
+        "toName": "Monke Vengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2558019,
+            "name": "Alvin Kamara",
+            "pos": "RB",
+            "proTeam": "NO"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 1"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 2"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 3"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 3"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 4"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Vengence",
+        "toTeamId": 12,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2566502,
+            "name": "Josh Palmer",
+            "pos": "WR",
+            "proTeam": "LAC"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 15"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 14"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 13"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 12"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2023 Rd 12"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2022-1354",
+    "season": 2022,
+    "week": 0,
+    "date": "Nov 10, 1:30am",
+    "legs": [
+      {
+        "fromTeamId": 12,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": 2,
+        "toName": "Brownlowrowbottom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2560813,
+            "name": "D.J. Moore",
+            "pos": "WR",
+            "proTeam": "CHI"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 2,
+        "fromName": "Brownlowrowbottom",
+        "toTeamId": 12,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2543498,
+            "name": "Brandin Cooks",
+            "pos": "WR",
+            "proTeam": "DAL"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2021-1527",
+    "season": 2021,
+    "week": 12,
+    "date": "Nov 27, 12:45am",
+    "legs": [
+      {
+        "fromTeamId": 8,
+        "fromName": "De'Aaron Fox",
+        "toTeamId": 6,
+        "toName": "Monke Avengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2564148,
+            "name": "Jonathan Taylor",
+            "pos": "RB",
+            "proTeam": "IND"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Avengence",
+        "toTeamId": 8,
+        "toName": "De'Aaron Fox",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2564499,
+            "name": "Tua Tagovailoa",
+            "pos": "QB",
+            "proTeam": "MIA"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2021-958",
+    "season": 2021,
+    "week": 8,
+    "date": "Oct 29, 12:24am",
+    "legs": [
+      {
+        "fromTeamId": 2,
+        "fromName": "Garytrentjr",
+        "toTeamId": 6,
+        "toName": "Monke Avengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2564970,
+            "name": "Chase Claypool",
+            "pos": "WR",
+            "proTeam": "PIT"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Avengence",
+        "toTeamId": 2,
+        "toName": "Garytrentjr",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2552559,
+            "name": "C.J. Uzomah",
+            "pos": "TE",
+            "proTeam": "NYJ"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2021-885",
+    "season": 2021,
+    "week": 8,
+    "date": "Oct 27, 12:31am",
+    "legs": [
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 1,
+        "toName": "Tom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562721,
+            "name": "Deebo Samuel",
+            "pos": "WR",
+            "proTeam": "SF"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 1,
+        "fromName": "Tom",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2565310,
+            "name": "Marquez Callaway",
+            "pos": "WR",
+            "proTeam": "NO"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2021-884",
+    "season": 2021,
+    "week": 8,
+    "date": "Oct 27, 12:31am",
+    "legs": [
+      {
+        "fromTeamId": 2,
+        "fromName": "Garytrentjr",
+        "toTeamId": 1,
+        "toName": "Tom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2552033,
+            "name": "Jameis Winston",
+            "pos": "QB",
+            "proTeam": "NO"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 1,
+        "fromName": "Tom",
+        "toTeamId": 2,
+        "toName": "Garytrentjr",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2564832,
+            "name": "Jalen Hurts",
+            "pos": "QB",
+            "proTeam": "PHI"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2021-796",
+    "season": 2021,
+    "week": 7,
+    "date": "Oct 22, 12:15am",
+    "legs": [
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2556601,
+            "name": "Wil Lutz",
+            "pos": "K",
+            "proTeam": "NO"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2495454,
+            "name": "Julio Jones",
+            "pos": "WR",
+            "proTeam": "TEN"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2021-629",
+    "season": 2021,
+    "week": 6,
+    "date": "Oct 13, 1:01am",
+    "legs": [
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2552430,
+            "name": "Tyler Lockett",
+            "pos": "WR",
+            "proTeam": "SEA"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2565276,
+            "name": "Antonio Gibson",
+            "pos": "RB",
+            "proTeam": "WAS"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2021-584",
+    "season": 2021,
+    "week": 5,
+    "date": "Oct 11, 12:16am",
+    "legs": [
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 1,
+        "toName": "Tom",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2557917,
+            "name": "Kareem Hunt",
+            "pos": "RB",
+            "proTeam": "CLE"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 1,
+        "fromName": "Tom",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2562502,
+            "name": "David Montgomery",
+            "pos": "RB",
+            "proTeam": "CHI"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2021-513",
+    "season": 2021,
+    "week": 5,
+    "date": "Oct 9, 1:10am",
+    "legs": [
+      {
+        "fromTeamId": 7,
+        "fromName": "Dalts",
+        "toTeamId": 3,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2565276,
+            "name": "Antonio Gibson",
+            "pos": "RB",
+            "proTeam": "WAS"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 3,
+        "fromName": "Paho",
+        "toTeamId": 7,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 2552430,
+            "name": "Tyler Lockett",
+            "pos": "WR",
+            "proTeam": "SEA"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2021-339",
+    "season": 2021,
+    "week": 4,
+    "date": "Sep 28, 1:14am",
+    "legs": [
+      {
+        "fromTeamId": 9,
+        "fromName": "Lavar Ball",
+        "toTeamId": 6,
+        "toName": "Monke Avengence",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 100028,
+            "name": "Los Angeles Chargers",
+            "pos": "DEF",
+            "proTeam": ""
+          },
+          {
+            "kind": "player",
+            "playerId": 2558149,
+            "name": "JuJu Smith-Schuster",
+            "pos": "WR",
+            "proTeam": "KC"
+          }
+        ]
+      },
+      {
+        "fromTeamId": 6,
+        "fromName": "Monke Avengence",
+        "toTeamId": 9,
+        "toName": "Lavar Ball",
+        "items": [
+          {
+            "kind": "player",
+            "playerId": 100007,
+            "name": "Cleveland Browns",
+            "pos": "DEF",
+            "proTeam": ""
+          },
+          {
+            "kind": "player",
+            "playerId": 2566433,
+            "name": "Rondale Moore",
+            "pos": "WR",
+            "proTeam": "ARI"
+          }
+        ]
+      }
+    ]
+  }
+]

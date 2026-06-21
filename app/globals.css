@@ -1,26 +1,99 @@
 @import "tailwindcss";
 
+/* ===========================================================================
+   MGL — styled to mirror the old NFL.com Fantasy app:
+   light grey backdrop, bright teal header, white rounded cards, hexagon rank
+   badges, circular team avatars and big italic condensed scores.
+   =========================================================================== */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #e7e8ea;
+  --card: #ffffff;
+  --card-hover: #f4f5f6;
+  --section: #eef0f2;
+  --border: #e2e4e7;
+  --border-strong: #d3d7dd;
+
+  --text: #15181d;
+  --text-muted: #6a7280;
+  --text-dim: #9aa1ad;
+
+  /* NFL Fantasy teal */
+  --teal: #16a7c6;
+  --teal-dark: #0e8aa6;
+  --teal-deep: #0b6f86;
+  --accent: #16a7c6;
+
+  --gold: #f5b400;
+  --up: #21a366;
+  --down: #e0322b;
+  --live: #e0322b;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-card: var(--card);
+  --color-card-hover: var(--card-hover);
+  --color-section: var(--section);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-text-dim: var(--text-dim);
+  --color-teal: var(--teal);
+  --color-teal-dark: var(--teal-dark);
+  --color-accent: var(--accent);
+  --color-gold: var(--gold);
+  --color-up: var(--up);
+  --color-down: var(--down);
+  --color-live: var(--live);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-cond: var(--font-saira), "Arial Narrow", sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100dvh;
 }
+
+/* Condensed display type for headings, scores and labels (NFL feel). */
+.font-cond {
+  font-family: var(--font-cond);
+}
+
+/* Big italic condensed score, e.g. 117 with a small superscript .90 */
+.score {
+  font-family: var(--font-cond);
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+.score-dec {
+  font-size: 0.5em;
+  font-weight: 700;
+  vertical-align: 0.55em;
+}
+
+/* Flat-top hexagon used for rank badges. */
+.hexagon {
+  clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+}
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.live-dot { animation: livePulse 1.3s ease-in-out infinite; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 9999px; }
+::-webkit-scrollbar-track { background: transparent; }

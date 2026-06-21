@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MGL Fantasy
+
+A private fantasy football website for the MGL league: live 2026 scoring,
+standings, team pages, history and all-time records.
+
+## Stack
+
+- **Next.js 16** (App Router) + **React 19**
+- **TypeScript**
+- **Tailwind CSS v4**
+- **ESPN Fantasy API** for the active season (server-side only)
+- Scraped NFL.com data for completed historical seasons
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
+cp .env.local.example .env.local   # then fill in your ESPN values
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The active season is 2026. Without ESPN credentials, current standings,
+matchups and roster views show empty states; the historical 2021-2025 pages
+still work from the scraped NFL.com data in `data/`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ESPN Credentials
 
-## Learn More
+Private ESPN leagues need three values, kept **server-side only** in `.env.local`:
 
-To learn more about Next.js, take a look at the following resources:
+| Variable          | What it is                                  |
+| ----------------- | ------------------------------------------- |
+| `ESPN_LEAGUE_ID`  | the `leagueId` from your league URL         |
+| `ESPN_S2`         | the `espn_s2` browser cookie                |
+| `ESPN_SWID`       | the `SWID` browser cookie (braces optional) |
+| `ESPN_SEASON`     | season year (defaults to 2026)              |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+These have **no `NEXT_PUBLIC_` prefix**, and all ESPN access lives in
+[`lib/espn.ts`](lib/espn.ts), which starts with `import "server-only"`. The
+cookies are therefore never bundled into client JavaScript. They only travel in
+the server-to-ESPN request.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Architecture
 
-## Deploy on Vercel
+```text
+lib/
+  types.ts        Frontend-safe shared types (no secrets)
+  teams.ts        Curated franchise metadata + colours
+  league-data.ts  2026 constants + real 2021-2025 history aggregators
+  espn.ts         Server-only ESPN fetcher: cookies + Next fetch cache
+components/       Nav, cards, scoreboard tiles, standings table, UI primitives
+app/
+  page.tsx              /              live scoreboard / dashboard
+  standings/            /standings     current ladder
+  matchups/             /matchups      weekly matchups (?week=N)
+  teams/                /teams         current and historical ladders
+  teams/[teamId]/       /teams/:id     individual team + history
+  drafts/               /drafts        historical draft results
+  history/              /history       2021-2025 champions & final standings
+  records/              /records       all-time records
+  head-to-head/         /head-to-head  team vs team comparison (?a=&b=)
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+ESPN views used: `mStandings`, `mTeam`, `mMatchup`, `mMatchupScore`, `mRoster`.
+Responses are cached via Next's `fetch` cache (`revalidate`). Missing config or
+ESPN errors produce empty current-season data instead of local stand-ins.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## League History
+
+MGL historical pages use real data scraped from NFL.com Fantasy league history.
+
+```bash
+node scripts/scrape-history.mjs   # -> data/history.json (2021-2025)
+```
+
+The scraper reads each season's regular-season standings (W-L-T, points
+for/against) and final standings (playoff finish / champion). Because NFL lets
+teams rename year to year and the league grew 8 to 10 to 12 teams, cross-season
+identity is resolved by a hand-verified alias map in
+[lib/franchises.ts](lib/franchises.ts). Re-run the scraper to refresh; edit the
+alias map if a franchise mapping is wrong.
+
+### Every Game + Player Scores
+
+```bash
+node scripts/scrape-games.mjs          # all seasons -> data/games/<season>.json
+node scripts/scrape-games.mjs 2024     # one season
+node scripts/scrape-games.mjs 2024 1   # one week
+node scripts/scrape-drafts.mjs         # all seasons -> data/drafts/<season>.json
+```
+
+This reads every matchup's NFL.com "Game Center" boxscore for all historical
+games from 2021-2025. Browse them at `/games` (by season/week) and
+`/games/<id>` (full boxscore). Team pages list a franchise's real recent
+historical games linking to boxscores.
+
+The Scoreboard, Matchups and current Standings views are 2026-only and require
+live ESPN data. Older seasons live under History, Records, Head to Head and
+Every Game.

@@ -1,0 +1,27 @@
+[
+  {
+    "season": 2021,
+    "games": 64,
+    "playerLines": 1997
+  },
+  {
+    "season": 2022,
+    "games": 81,
+    "playerLines": 2531
+  },
+  {
+    "season": 2023,
+    "games": 100,
+    "playerLines": 3167
+  },
+  {
+    "season": 2024,
+    "games": 100,
+    "playerLines": 3123
+  },
+  {
+    "season": 2025,
+    "games": 100,
+    "playerLines": 3241
+  }
+]
