@@ -30,9 +30,10 @@ import {
 // ===========================================================================
 
 const SLEEPER_BASE = "https://api.sleeper.app/v1";
+const DEFAULT_SLEEPER_LEAGUE_ID = "1374614405412560896";
 
 function readLeagueId(): string | null {
-  return process.env.SLEEPER_LEAGUE_ID || null;
+  return process.env.SLEEPER_LEAGUE_ID || DEFAULT_SLEEPER_LEAGUE_ID;
 }
 
 export function isLiveConfigured(): boolean {
