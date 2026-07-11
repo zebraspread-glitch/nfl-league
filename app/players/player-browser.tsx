@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { POS_COLOR } from "@/lib/player-images";
 
 export interface PlayerStats {
   passYds: number;
@@ -33,6 +32,11 @@ export interface PlayerBrowserItem {
   opponent: string;
   manager: string;
   status: "FA" | "Taken";
+  ownerTeamName?: string;
+  ownerTeamAbbrev?: string;
+  ownerTeamLogo?: string;
+  ownerTeamPrimary?: string;
+  ownerTeamSecondary?: string;
   matchup: string;
   posRank: number;
   injuryStatus?: string;
@@ -71,7 +75,9 @@ export function PlayerBrowser({ players, mode = "search" }: { players: PlayerBro
       })
       .filter((player) => {
         if (!q) return true;
-        return `${player.displayName} ${player.fullName} ${player.proTeam} ${player.pos} ${player.manager}`.toLowerCase().includes(q);
+        return `${player.displayName} ${player.fullName} ${player.proTeam} ${player.pos} ${player.manager} ${player.ownerTeamName ?? ""}`
+          .toLowerCase()
+          .includes(q);
       })
       .sort((a, b) => b.stats.points - a.stats.points || a.displayName.localeCompare(b.displayName));
   }, [players, position, query, status]);
@@ -169,7 +175,7 @@ function PlayerStatsTable({ players }: { players: PlayerBrowserItem[] }) {
             <GroupHead label="Sleeper" colSpan={3} />
           </tr>
           <tr className="h-7 border-b border-[#c8c8c8] text-[9px]">
-            <Head>Action</Head>
+            <Head>Team</Head>
             <Head align="left">Player</Head>
             <Head>Opp</Head>
             <Head>Manager</Head>
@@ -193,8 +199,8 @@ function PlayerStatsTable({ players }: { players: PlayerBrowserItem[] }) {
           </tr>
         </thead>
         <tbody>
-          {players.map((player, index) => (
-            <PlayerRow key={player.playerId} player={player} action={index === 0 ? "minus" : "move"} />
+          {players.map((player) => (
+            <PlayerRow key={player.playerId} player={player} />
           ))}
         </tbody>
       </table>
@@ -202,12 +208,12 @@ function PlayerStatsTable({ players }: { players: PlayerBrowserItem[] }) {
   );
 }
 
-function PlayerRow({ player, action }: { player: PlayerBrowserItem; action: "minus" | "move" }) {
+function PlayerRow({ player }: { player: PlayerBrowserItem }) {
   const s = player.stats;
   return (
     <tr className="h-[42px] border-b border-[#dddddd] even:bg-[#f7f7f7]">
       <td className="w-11 px-1 text-center">
-        <ActionBadge type={action} />
+        <OwnerTeamLogo player={player} />
       </td>
       <td className="w-[172px] px-1">
         <div className="flex min-w-0 items-center gap-2">
@@ -271,21 +277,36 @@ function Cell({ children, blue = false, strong = false }: { children: React.Reac
   );
 }
 
-function ActionBadge({ type }: { type: "minus" | "move" }) {
+function OwnerTeamLogo({ player }: { player: PlayerBrowserItem }) {
+  if (player.ownerTeamLogo) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={player.ownerTeamLogo}
+        alt={player.ownerTeamName ?? "MGL team"}
+        className="mx-auto h-8 w-8 rounded-full object-cover"
+        suppressHydrationWarning
+      />
+    );
+  }
+
+  if (player.status === "Taken") {
+    return (
+      <span
+        className="mx-auto grid h-8 w-8 place-items-center rounded-full text-[9px] font-bold text-white"
+        style={{
+          background: `linear-gradient(135deg, ${player.ownerTeamPrimary ?? "#667085"}, ${player.ownerTeamSecondary ?? "#98a2b3"})`,
+        }}
+        title={player.ownerTeamName}
+      >
+        {player.ownerTeamAbbrev ?? "MGL"}
+      </span>
+    );
+  }
+
   return (
-    <span className={`mx-auto grid h-8 w-8 place-items-center rounded-md text-white ${type === "minus" ? "bg-[#ef2b00]" : "bg-[#ef7d00]"}`}>
-      {type === "minus" ? (
-        <svg width="20" height="5" viewBox="0 0 20 5" aria-hidden="true">
-          <path d="M2 2.5h16" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-        </svg>
-      ) : (
-        <svg width="21" height="17" viewBox="0 0 21 17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M4 5h13" />
-          <path d="M8 2 4 5l4 3" />
-          <path d="M17 12H4" />
-          <path d="m13 9 4 3-4 3" />
-        </svg>
-      )}
+    <span className="mx-auto grid h-8 w-8 place-items-center rounded-full bg-[#eeeeee] text-[9px] font-bold text-[#777777]">
+      FA
     </span>
   );
 }
@@ -298,16 +319,12 @@ function PlayerImage({ player }: { player: PlayerBrowserItem }) {
         src={player.imageUrl}
         alt={player.displayName}
         className={`h-9 w-9 shrink-0 rounded ${player.isLogo ? "object-contain p-1" : "object-cover"}`}
-        style={{ background: player.isLogo ? "#fff" : POS_COLOR[player.pos] ?? "#d2d2d2" }}
         suppressHydrationWarning
       />
     );
   }
   return (
-    <span
-      className="grid h-9 w-9 shrink-0 place-items-center rounded text-[9px] font-bold text-white"
-      style={{ background: POS_COLOR[player.pos] ?? "#9aa1ad" }}
-    >
+    <span className="grid h-9 w-9 shrink-0 place-items-center rounded bg-white text-[9px] font-bold text-[#5d6065] ring-1 ring-[#d6d6d6]">
       {player.pos}
     </span>
   );

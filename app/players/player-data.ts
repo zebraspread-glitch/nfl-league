@@ -1,4 +1,6 @@
 import type { PlayerBrowserItem, PlayerStats } from "./player-browser";
+import { getTeam, getTeamByName, TEAMS } from "@/lib/teams";
+import type { TeamId, TeamMeta } from "@/lib/types";
 
 const SLEEPER_API = "https://api.sleeper.app/v1";
 const SLEEPER_DATA_API = "https://api.sleeper.com";
@@ -41,7 +43,28 @@ interface SleeperUser {
 interface OwnedBy {
   status: "FA" | "Taken";
   manager: string;
+  ownerTeamName: string;
+  ownerTeamAbbrev: string;
+  ownerTeamLogo?: string;
+  ownerTeamPrimary: string;
+  ownerTeamSecondary: string;
 }
+
+const SLEEPER_USERNAME_TO_TEAM_ID: Record<string, TeamId> = {
+  pahomgl: 9,
+  brownlowrow: 11,
+  chicook: 10,
+  thomopatto: 2,
+  thomoo: 2,
+  dimmymgl: 1,
+  monkevengence: 6,
+  lucasdalts98746: 8,
+  tyhillmgl: 8,
+  luckybison: 12,
+  lavarballs27: 5,
+  lavarballsmgl: 5,
+  ginnivanjefferson: 4,
+};
 
 function n(stats: Record<string, number> | undefined, key: string): number {
   return Number(stats?.[key] ?? 0);
@@ -80,6 +103,27 @@ function ownerName(roster: SleeperRoster, user?: SleeperUser): string {
   return roster.metadata?.team_name || user?.metadata?.team_name || user?.display_name || `Roster ${roster.roster_id}`;
 }
 
+function normalized(value?: string | null): string {
+  return (value ?? "").trim().toLowerCase();
+}
+
+function ownerTeam(roster: SleeperRoster, user?: SleeperUser): TeamMeta {
+  const byUsername = SLEEPER_USERNAME_TO_TEAM_ID[normalized(user?.display_name)];
+  if (byUsername) {
+    const team = getTeam(byUsername);
+    if (team) return team;
+  }
+
+  const name = ownerName(roster, user);
+  const byName = TEAMS.find((team) => normalized(team.name) === normalized(name));
+  if (byName) return byName;
+
+  const byManager = TEAMS.find((team) => normalized(team.manager) === normalized(user?.display_name));
+  if (byManager) return byManager;
+
+  return getTeamByName(name || `Roster ${roster.roster_id}`, -roster.roster_id);
+}
+
 async function getOwnership(): Promise<Map<string, OwnedBy>> {
   const [rosters, users] = await Promise.all([
     fetchJson<SleeperRoster[]>(`${SLEEPER_API}/league/${LEAGUE_ID}/rosters`),
@@ -91,8 +135,19 @@ async function getOwnership(): Promise<Map<string, OwnedBy>> {
   for (const roster of rosters ?? []) {
     const user = roster.owner_id ? userById.get(roster.owner_id) : undefined;
     const manager = ownerName(roster, user);
+    const team = ownerTeam(roster, user);
     const players = new Set([...(roster.players ?? []), ...(roster.starters ?? []), ...(roster.reserve ?? [])].filter(Boolean));
-    for (const playerId of players) ownership.set(playerId, { status: "Taken", manager });
+    for (const playerId of players) {
+      ownership.set(playerId, {
+        status: "Taken",
+        manager,
+        ownerTeamName: team.name,
+        ownerTeamAbbrev: team.abbrev,
+        ownerTeamLogo: team.logo,
+        ownerTeamPrimary: team.primary,
+        ownerTeamSecondary: team.secondary,
+      });
+    }
   }
 
   return ownership;
@@ -164,6 +219,11 @@ export async function getPlayerBrowserItems(): Promise<PlayerBrowserItem[]> {
         opponent: row.opponent || "",
         manager: owned?.manager ?? "FA",
         status: owned?.status ?? "FA",
+        ownerTeamName: owned?.ownerTeamName,
+        ownerTeamAbbrev: owned?.ownerTeamAbbrev,
+        ownerTeamLogo: owned?.ownerTeamLogo,
+        ownerTeamPrimary: owned?.ownerTeamPrimary,
+        ownerTeamSecondary: owned?.ownerTeamSecondary,
         matchup: row.opponent ? `@${row.opponent}` : "-",
         posRank: 999,
         injuryStatus: row.player?.injury_status || undefined,
