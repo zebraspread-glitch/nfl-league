@@ -1,355 +1,291 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
-import type { PlayerSummaryTeam } from "@/lib/players";
 import { POS_COLOR } from "@/lib/player-images";
 
+export interface PlayerStats {
+  passYds: number;
+  passTD: number;
+  passInt: number;
+  passSack: number;
+  rushYds: number;
+  rushTD: number;
+  rec: number;
+  recYds: number;
+  recTD: number;
+  retTD: number;
+  fumTD: number;
+  twoPt: number;
+  fumLost: number;
+  points: number;
+  projected: number;
+  gp: number;
+}
+
 export interface PlayerBrowserItem {
-  playerId: number;
-  name: string;
+  playerId: string;
   displayName: string;
+  fullName: string;
   imageUrl?: string;
   isLogo: boolean;
   pos: string;
   proTeam: string;
-  firstSeason: number;
-  lastSeason: number;
-  seasons: number[];
-  rosteredGames: number;
-  gamesPlayed: number;
-  starts: number;
-  totalPoints: number;
-  avgPoints: number;
-  bestGamePoints: number;
-  bestGameId?: string;
-  passYds: number;
-  passTD: number;
-  passInt: number;
-  rushYds: number;
-  rushTD: number;
-  recYds: number;
-  recTD: number;
-  fgMade: number;
-  fgMiss: number;
-  patMade: number;
-  defSack: number;
-  defInt: number;
-  defFumRec: number;
-  defTD: number;
-  defSafety: number;
-  totalTDs: number;
-  teamCount: number;
-  proTeamCount: number;
-  teams: PlayerSummaryTeam[];
+  opponent: string;
+  manager: string;
+  status: "FA" | "Taken";
+  matchup: string;
+  posRank: number;
+  injuryStatus?: string;
+  stats: PlayerStats;
 }
 
 type PlayerBrowserMode = "all" | "records" | "search";
-type Picker = "availability" | "season" | null;
+type View = "PROJECTIONS" | "STATS" | "TRENDS";
+type PositionFilter = "All Offense" | "QB" | "RB" | "WR" | "TE" | "W/R" | "K" | "DEF";
+type StatusFilter = "All Available Players" | "All Players" | "Taken" | "Free Agents" | "On Waivers";
 
-const POSITIONS = ["ALL", "QB", "RB", "WR", "TE", "W/R", "K", "DEF"];
-const VIEWS = ["PROJECTIONS", "STATS", "TRENDS"] as const;
-const SEASONS = ["2025 Season", "All Seasons", "2024 Season", "2023 Season", "2022 Season", "2021 Season"];
+const VIEWS: View[] = ["PROJECTIONS", "STATS", "TRENDS"];
+const POSITIONS: PositionFilter[] = ["All Offense", "QB", "RB", "WR", "TE", "W/R", "K", "DEF"];
+const STATUS_OPTIONS: StatusFilter[] = ["All Available Players", "All Players", "Taken", "Free Agents", "On Waivers"];
+const WEEKS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "Last 2 WKS", "Last 4 WKS", "2025 Season"];
 
 export function PlayerBrowser({ players, mode = "search" }: { players: PlayerBrowserItem[]; mode?: PlayerBrowserMode }) {
   void mode;
   const [query, setQuery] = useState("");
-  const [view, setView] = useState<(typeof VIEWS)[number]>("STATS");
-  const [position, setPosition] = useState("ALL");
-  const [availability, setAvailability] = useState("All Players");
-  const [season, setSeason] = useState("2025 Season");
-  const [picker, setPicker] = useState<Picker>(null);
-
-  const teamOptions = useMemo(() => {
-    const names = new Set<string>();
-    for (const player of players) {
-      for (const team of player.teams) names.add(team.name);
-    }
-    return [...names].sort((a, b) => a.localeCompare(b));
-  }, [players]);
-
-  const positionRanks = useMemo(() => buildPositionRanks(players), [players]);
+  const [status, setStatus] = useState<StatusFilter>("All Available Players");
+  const [position, setPosition] = useState<PositionFilter>("All Offense");
+  const [view, setView] = useState<View>("STATS");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return [...players]
+    return players
       .filter((player) => {
-        if (position === "ALL") return true;
+        if (status === "All Players") return true;
+        if (status === "Taken") return player.status === "Taken";
+        return player.status === "FA";
+      })
+      .filter((player) => {
+        if (position === "All Offense") return player.pos === "QB" || player.pos === "RB" || player.pos === "WR" || player.pos === "TE";
         if (position === "W/R") return player.pos === "WR" || player.pos === "RB";
         return player.pos === position;
       })
       .filter((player) => {
-        if (availability === "Taken") return player.teamCount > 0;
-        if (availability === "Available" || availability === "Free Agents" || availability === "On Waivers") {
-          return player.teamCount === 0;
-        }
-        if (availability !== "All Players") return player.teams.some((team) => team.name === availability);
-        return true;
-      })
-      .filter((player) => {
         if (!q) return true;
-        const teams = player.teams.map((team) => team.name).join(" ");
-        return `${player.displayName} ${player.name} ${player.pos} ${player.proTeam} ${teams}`.toLowerCase().includes(q);
+        return `${player.displayName} ${player.fullName} ${player.proTeam} ${player.pos} ${player.manager}`.toLowerCase().includes(q);
       })
-      .sort((a, b) => b.totalPoints - a.totalPoints || b.gamesPlayed - a.gamesPlayed || a.displayName.localeCompare(b.displayName));
-  }, [availability, players, position, query]);
-
-  const availabilityOptions = ["All Players", "Available", "Free Agents", "On Waivers", "Taken", ...teamOptions];
+      .sort((a, b) => b.stats.points - a.stats.points || a.displayName.localeCompare(b.displayName));
+  }, [players, position, query, status]);
 
   return (
-    <div className="-mx-3 bg-[#deddd8] pb-24">
-      <div className="px-3 pt-3">
-        <section className="overflow-hidden rounded-[14px] bg-white px-3 py-4 shadow-[0_2px_0_rgba(0,0,0,0.16)]">
-          <label className="flex h-12 items-center gap-2 rounded-[11px] border-2 border-[#dedede] bg-white px-3">
+    <div className="-mx-3 bg-white pb-24 text-[#1d3550]">
+      <section className="border-b border-[#d8d8d8] bg-white px-1 py-2">
+        <div className="flex items-center gap-2 text-[11px] leading-none">
+          <span className="font-cond font-bold uppercase text-[#555]">Status:</span>
+          <select
+            value={status}
+            onChange={(event) => setStatus(event.target.value as StatusFilter)}
+            className="max-w-[13rem] bg-transparent font-cond text-[11px] font-bold uppercase text-[#0070b8] outline-none"
+            aria-label="Player status"
+          >
+            {STATUS_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+          <label className="ml-auto flex h-7 w-[220px] max-w-[45vw] items-center rounded border border-[#c8c8c8] bg-white px-2">
             <input
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search by name"
-              className="min-w-0 flex-1 bg-transparent font-cond text-[24px] font-medium leading-none text-[#383a3f] outline-none placeholder:text-[#777]"
+              placeholder="Search Player By Name"
+              className="min-w-0 flex-1 text-xs text-[#333] outline-none placeholder:text-[#777]"
             />
             <SearchIcon />
           </label>
-
-          <div className="mt-5 grid grid-cols-3 gap-3">
-            {VIEWS.map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setView(tab)}
-                className={`h-12 min-w-0 rounded-[7px] border-2 px-1 font-cond text-[19px] font-medium uppercase tracking-[0.07em] ${
-                  view === tab
-                    ? "border-[#b8dce4] bg-[#d5f3f8] text-[#65686c]"
-                    : "border-[#f0f0f0] bg-white text-[#696c71]"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-5 grid grid-cols-4 gap-2">
-            {POSITIONS.map((pos) => (
-              <button
-                key={pos}
-                type="button"
-                onClick={() => setPosition(pos)}
-                className={`h-11 min-w-0 rounded-[7px] border-2 px-1 font-cond text-[20px] font-medium uppercase tracking-[0.06em] ${
-                  position === pos
-                    ? "border-[#b8dce4] bg-[#d5f3f8] text-[#55585d]"
-                    : "border-[#f0f0f0] bg-white text-[#5d6065]"
-                }`}
-              >
-                {pos}
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-5 grid grid-cols-2 gap-3">
-            <PickerButton label={availability} onClick={() => setPicker("availability")} />
-            <PickerButton label={season} onClick={() => setPicker("season")} />
-          </div>
-        </section>
-
-        <h2 className="px-3 pb-6 pt-9 font-cond text-[24px] font-bold uppercase tracking-wide text-[#66686d]">
-          Filter Results
-        </h2>
-      </div>
-
-      <PlayerTable players={filtered} positionRanks={positionRanks} />
-
-      {picker ? (
-        <PickerSheet
-          title={picker === "availability" ? "Player pool" : "Season"}
-          value={picker === "availability" ? availability : season}
-          options={picker === "availability" ? availabilityOptions : SEASONS}
-          onSelect={(value) => {
-            if (picker === "availability") setAvailability(value);
-            else setSeason(value);
-          }}
-          onClose={() => setPicker(null)}
-        />
-      ) : null}
-    </div>
-  );
-}
-
-function PlayerTable({
-  players,
-  positionRanks,
-}: {
-  players: PlayerBrowserItem[];
-  positionRanks: Map<number, number>;
-}) {
-  return (
-    <div className="overflow-hidden bg-white">
-      <div className="w-full">
-        <div className="grid grid-cols-[4.75rem_minmax(0,1fr)_4.9rem] border-b border-[#e5e5e5] bg-white font-cond text-[15px] font-bold uppercase text-[#5d6065]">
-          <div className="h-16" />
-          <div className="h-16" />
-          <div className="flex h-16 items-center justify-center border-l border-[#dfdfdf]">Points</div>
-        </div>
-        <div className="grid grid-cols-[4.75rem_minmax(0,1fr)_4.9rem] border-b border-[#ececec] bg-white font-cond text-[14px] font-bold uppercase text-[#5d6065]">
-          <div className="h-12" />
-          <div className="h-12" />
-          <div className="flex h-12 items-center justify-center gap-1 bg-[#d5f3f8]">
-            <ChevronDown small /> Season
-          </div>
         </div>
 
-        {players.map((player, index) => (
-          <PlayerRow
-            key={player.playerId}
-            player={player}
-            rank={index + 1}
-            posRank={positionRanks.get(player.playerId) ?? index + 1}
-            action={index === 0 ? "minus" : "move"}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function PlayerRow({
-  player,
-  rank,
-  posRank,
-  action,
-}: {
-  player: PlayerBrowserItem;
-  rank: number;
-  posRank: number;
-  action: "minus" | "move";
-}) {
-  return (
-    <Link
-      href={`/players/${player.playerId}`}
-      className={`grid min-h-[90px] grid-cols-[4.75rem_minmax(0,1fr)_4.9rem] items-center border-b border-[#ececec] ${
-        rank % 2 === 0 ? "bg-white" : "bg-[#f7f7f7]"
-      }`}
-    >
-      <div className="flex justify-center">
-        <ActionBadge type={action} />
-      </div>
-      <div className="flex min-w-0 items-center gap-2 pr-2">
-        <div className="relative shrink-0">
-          <PlayerImage player={player} />
-          <RankBadge value={posRank} />
-        </div>
-        <div className="min-w-0">
-          <div className="truncate font-cond text-[23px] font-bold leading-none tracking-wide text-[#33363b]">
-            {player.displayName}
-          </div>
-          <div className="mt-1.5 truncate font-cond text-[17px] font-bold uppercase leading-none tracking-wide text-[#66696f]">
-            {player.proTeam || "FA"} - {player.pos}
-          </div>
-          <div className="mt-1.5 truncate font-cond text-[14px] font-bold uppercase leading-none text-[#35383d]">
-            {player.gamesPlayed} GP - {player.starts} starts
-          </div>
-        </div>
-      </div>
-      <div className="flex h-full items-center justify-center bg-[#d5f3f8] font-cond text-[20px] font-medium tabular-nums text-[#676a70]">
-        {player.totalPoints.toFixed(2)}
-      </div>
-    </Link>
-  );
-}
-
-function PickerButton({ label, onClick }: { label: string; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex h-14 min-w-0 items-center justify-between rounded-[10px] bg-[#f4f4f4] px-4 text-left font-cond text-[22px] font-bold tracking-wide text-[#33363b]"
-    >
-      <span className="truncate">{label}</span>
-      <ChevronDown />
-    </button>
-  );
-}
-
-function PickerSheet({
-  title,
-  value,
-  options,
-  onSelect,
-  onClose,
-}: {
-  title: string;
-  value: string;
-  options: string[];
-  onSelect: (value: string) => void;
-  onClose: () => void;
-}) {
-  return (
-    <div className="fixed inset-0 z-50 mx-auto max-w-xl bg-black/55" role="dialog" aria-modal="true" aria-label={title}>
-      <button type="button" className="absolute inset-0 cursor-default" onClick={onClose} aria-label="Close picker" />
-      <div className="absolute inset-x-0 bottom-0 overflow-hidden rounded-t-[12px] bg-white pb-[calc(env(safe-area-inset-bottom)+1rem)]">
-        <div className="flex h-16 items-center justify-end border-b border-[#eeeeee] px-6">
-          <button type="button" onClick={onClose} className="font-cond text-[22px] font-bold text-[#16a7c6]">
-            Done
-          </button>
-        </div>
-        <div className="max-h-[330px] overflow-y-auto py-5">
-          {options.map((option) => (
+        <div className="mt-2 flex items-center gap-1 overflow-x-auto bg-[#f4f4f4] px-2 py-1 text-[11px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <span className="mr-3 text-[#555]">Position:</span>
+          {POSITIONS.map((pos) => (
             <button
-              key={option}
+              key={pos}
               type="button"
-              onClick={() => onSelect(option)}
-              className={`block h-14 w-full px-6 text-center font-cond text-[28px] font-bold ${
-                option === value ? "rounded-[10px] bg-[#e6e7ea] text-[#5d6065]" : "text-[#c7c9cc]"
-              }`}
+              onClick={() => setPosition(pos)}
+              className={`shrink-0 px-2 py-1 ${position === pos ? "font-bold text-[#0070b8]" : "text-[#41536a]"}`}
             >
-              {option}
+              {pos}
             </button>
           ))}
         </div>
-      </div>
+
+        <div className="mt-4 flex border-b border-[#d8d8d8]">
+          {VIEWS.map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => setView(tab)}
+              className={`h-9 px-5 font-cond text-xs font-bold uppercase ${
+                view === tab ? "border-b-4 border-[#009bd7] text-[#111]" : "text-[#333]"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-3 overflow-x-auto bg-[#f7f7f7] px-2 py-2 text-[11px] text-[#566171] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <span className="font-bold text-[#555]">Weeks:</span>
+          {WEEKS.map((week) => (
+            <span key={week} className={`shrink-0 ${week === "2025 Season" ? "font-bold text-[#0070b8]" : ""}`}>
+              {week}
+            </span>
+          ))}
+          <span className="ml-auto shrink-0 text-[#777]">1 of {filtered.length}</span>
+        </div>
+      </section>
+
+      <PlayerStatsTable players={filtered} />
     </div>
   );
 }
 
-function SearchIcon() {
+function PlayerStatsTable({ players }: { players: PlayerBrowserItem[] }) {
   return (
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#777" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="11" cy="11" r="7" />
-      <path d="m16.5 16.5 4.5 4.5" />
-    </svg>
+    <div className="overflow-x-auto [scrollbar-width:thin]">
+      <table className="min-w-[920px] border-collapse text-[10px] leading-tight text-[#17365d]">
+        <thead className="bg-[#d9d9d9] text-[10px] text-[#555]">
+          <tr className="h-5">
+            <GroupHead colSpan={2} />
+            <GroupHead colSpan={1} />
+            <GroupHead colSpan={1} />
+            <GroupHead label="Passing" colSpan={4} />
+            <GroupHead label="Rushing" colSpan={2} />
+            <GroupHead label="Receiving" colSpan={3} />
+            <GroupHead label="Ret" colSpan={1} />
+            <GroupHead label="Misc" colSpan={2} />
+            <GroupHead label="Fum" colSpan={1} />
+            <GroupHead label="Fantasy" colSpan={1} />
+            <GroupHead label="Sleeper" colSpan={3} />
+          </tr>
+          <tr className="h-7 border-b border-[#c8c8c8] text-[9px]">
+            <Head>Action</Head>
+            <Head align="left">Player</Head>
+            <Head>Opp</Head>
+            <Head>Manager</Head>
+            <Head>Yds</Head>
+            <Head>TD</Head>
+            <Head>Int</Head>
+            <Head>Sck</Head>
+            <Head>Yds</Head>
+            <Head>TD</Head>
+            <Head>Rec</Head>
+            <Head>Yds</Head>
+            <Head>TD</Head>
+            <Head>TD</Head>
+            <Head>FumTD</Head>
+            <Head>2PT</Head>
+            <Head>Lost</Head>
+            <Head blue>Points</Head>
+            <Head blue>ECR</Head>
+            <Head blue>Proj</Head>
+            <Head blue>Matchup</Head>
+          </tr>
+        </thead>
+        <tbody>
+          {players.map((player, index) => (
+            <PlayerRow key={player.playerId} player={player} action={index === 0 ? "minus" : "move"} />
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
-function ChevronDown({ small = false }: { small?: boolean }) {
+function PlayerRow({ player, action }: { player: PlayerBrowserItem; action: "minus" | "move" }) {
+  const s = player.stats;
   return (
-    <svg width={small ? 14 : 24} height={small ? 9 : 16} viewBox="0 0 28 18" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="m3 3 11 11L25 3" />
-    </svg>
+    <tr className="h-[42px] border-b border-[#dddddd] even:bg-[#f7f7f7]">
+      <td className="w-11 px-1 text-center">
+        <ActionBadge type={action} />
+      </td>
+      <td className="w-[172px] px-1">
+        <div className="flex min-w-0 items-center gap-2">
+          <PlayerImage player={player} />
+          <div className="min-w-0">
+            <div className="flex items-center gap-1">
+              <span className="truncate text-[11px] text-[#064f9e]">{player.displayName}</span>
+              {player.status === "FA" ? <span className="rounded-sm bg-[#6ac878] px-1 text-[8px] font-bold text-white">F</span> : null}
+              {player.injuryStatus ? <span className="text-[9px] font-bold text-[#c23030]">{player.injuryStatus[0]}</span> : null}
+            </div>
+            <div className="truncate text-[10px] text-[#333]">
+              {player.pos} - {player.proTeam || "FA"}
+            </div>
+          </div>
+        </div>
+      </td>
+      <Cell>{player.matchup}</Cell>
+      <Cell>{player.manager}</Cell>
+      <Cell>{fmt(s.passYds, 0)}</Cell>
+      <Cell>{fmt(s.passTD, 0)}</Cell>
+      <Cell>{fmt(s.passInt, 0)}</Cell>
+      <Cell>{fmt(s.passSack, 0)}</Cell>
+      <Cell>{fmt(s.rushYds, 0)}</Cell>
+      <Cell>{fmt(s.rushTD, 0)}</Cell>
+      <Cell>{fmt(s.rec, 0)}</Cell>
+      <Cell>{fmt(s.recYds, 0)}</Cell>
+      <Cell>{fmt(s.recTD, 0)}</Cell>
+      <Cell>{fmt(s.retTD, 0)}</Cell>
+      <Cell>{fmt(s.fumTD, 0)}</Cell>
+      <Cell>{fmt(s.twoPt, 0)}</Cell>
+      <Cell>{fmt(s.fumLost, 0)}</Cell>
+      <Cell blue strong>{fmt(s.points, 2)}</Cell>
+      <Cell blue>{player.pos}{player.posRank}</Cell>
+      <Cell blue>{fmt(s.projected, 2)}</Cell>
+      <Cell blue>{starsFor(player.posRank)}</Cell>
+    </tr>
+  );
+}
+
+function GroupHead({ label = "", colSpan }: { label?: string; colSpan: number }) {
+  return (
+    <th colSpan={colSpan} className="border border-white px-1 py-0.5 text-center font-bold">
+      {label}
+    </th>
+  );
+}
+
+function Head({ children, align = "center", blue = false }: { children: React.ReactNode; align?: "left" | "center"; blue?: boolean }) {
+  return (
+    <th className={`border border-white px-1 font-bold ${align === "left" ? "text-left" : "text-center"} ${blue ? "bg-[#dff1fb] text-[#064f9e]" : ""}`}>
+      {children}
+    </th>
+  );
+}
+
+function Cell({ children, blue = false, strong = false }: { children: React.ReactNode; blue?: boolean; strong?: boolean }) {
+  return (
+    <td className={`w-10 px-1 text-center ${blue ? "bg-[#e7f5fd]" : ""} ${strong ? "font-bold text-[#111]" : ""}`}>
+      {children}
+    </td>
   );
 }
 
 function ActionBadge({ type }: { type: "minus" | "move" }) {
   return (
-    <span className={`grid h-12 w-12 place-items-center rounded-[9px] text-white ${type === "minus" ? "bg-[#ef2b00]" : "bg-[#ef7d00]"}`}>
+    <span className={`mx-auto grid h-8 w-8 place-items-center rounded-md text-white ${type === "minus" ? "bg-[#ef2b00]" : "bg-[#ef7d00]"}`}>
       {type === "minus" ? (
-        <svg width="32" height="8" viewBox="0 0 32 8" fill="none" aria-hidden="true">
-          <path d="M3 4h26" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+        <svg width="20" height="5" viewBox="0 0 20 5" aria-hidden="true">
+          <path d="M2 2.5h16" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
         </svg>
       ) : (
-        <svg width="35" height="28" viewBox="0 0 35 28" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M6 9h22" />
-          <path d="M13 3 6 9l7 6" />
-          <path d="M29 19H7" />
-          <path d="m22 13 7 6-7 6" />
+        <svg width="21" height="17" viewBox="0 0 21 17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M4 5h13" />
+          <path d="M8 2 4 5l4 3" />
+          <path d="M17 12H4" />
+          <path d="m13 9 4 3-4 3" />
         </svg>
       )}
-    </span>
-  );
-}
-
-function RankBadge({ value }: { value: number }) {
-  return (
-    <span className="hexagon absolute -left-2 -top-2 grid h-7 w-7 place-items-center border border-[#cfd1d4] bg-white font-cond text-[13px] font-bold leading-none text-black shadow-sm">
-      {value}
     </span>
   );
 }
@@ -360,39 +296,38 @@ function PlayerImage({ player }: { player: PlayerBrowserItem }) {
       // eslint-disable-next-line @next/next/no-img-element
       <img
         src={player.imageUrl}
-        alt={player.isLogo ? `${player.displayName} logo` : player.displayName}
-        width={56}
-        height={56}
-        className={`h-14 w-14 shrink-0 rounded-full ${
-          player.isLogo ? "bg-white object-contain p-2" : "bg-[#d2d2d2] object-cover"
-        }`}
+        alt={player.displayName}
+        className={`h-9 w-9 shrink-0 rounded ${player.isLogo ? "object-contain p-1" : "object-cover"}`}
+        style={{ background: player.isLogo ? "#fff" : POS_COLOR[player.pos] ?? "#d2d2d2" }}
         suppressHydrationWarning
       />
     );
   }
-
   return (
     <span
-      className="grid h-14 w-14 shrink-0 place-items-center rounded-full font-cond text-xs font-bold text-white"
+      className="grid h-9 w-9 shrink-0 place-items-center rounded text-[9px] font-bold text-white"
       style={{ background: POS_COLOR[player.pos] ?? "#9aa1ad" }}
     >
-      {player.pos || "-"}
+      {player.pos}
     </span>
   );
 }
 
-function buildPositionRanks(players: PlayerBrowserItem[]): Map<number, number> {
-  const map = new Map<number, number>();
-  const byPos = new Map<string, PlayerBrowserItem[]>();
-  for (const player of players) {
-    const list = byPos.get(player.pos) ?? [];
-    list.push(player);
-    byPos.set(player.pos, list);
-  }
-  for (const list of byPos.values()) {
-    list
-      .sort((a, b) => b.totalPoints - a.totalPoints || b.gamesPlayed - a.gamesPlayed)
-      .forEach((player, index) => map.set(player.playerId, index + 1));
-  }
-  return map;
+function SearchIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#777" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="11" cy="11" r="7" />
+      <path d="m16.5 16.5 4.5 4.5" />
+    </svg>
+  );
+}
+
+function fmt(value: number, decimals = 0): string {
+  if (!value) return decimals ? "0.00" : "-";
+  return value.toFixed(decimals);
+}
+
+function starsFor(rank: number): string {
+  const count = rank <= 5 ? 5 : rank <= 12 ? 4 : rank <= 24 ? 3 : rank <= 36 ? 2 : 1;
+  return "★".repeat(count) + "☆".repeat(5 - count);
 }
