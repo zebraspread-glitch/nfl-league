@@ -23,7 +23,10 @@ export default async function HomePage() {
   const matchup = matchups.find((m) => m.home.team.id === team.id || m.away.team.id === team.id);
 
   return (
-    <div className="-mt-px">
+    <div>
+      <div className="px-1 pb-2 pt-1 font-cond text-sm uppercase tracking-widest text-text-muted">
+        Mike Glennon League · {snapshot.season}
+      </div>
       <MyTeamLineup team={team} roster={roster} standing={standing} matchup={matchup} week={snapshot.currentWeek} />
     </div>
   );

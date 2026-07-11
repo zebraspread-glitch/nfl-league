@@ -61,7 +61,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <TopBar />
             <main
               className="flex-1 px-3 pb-24"
-              style={{ paddingTop: "calc(env(safe-area-inset-top) + var(--topbar-height, 3.5rem))" }}
+              style={{ paddingTop: "calc(env(safe-area-inset-top) + 3.5rem + 0.75rem)" }}
             >
               {children}
             </main>
