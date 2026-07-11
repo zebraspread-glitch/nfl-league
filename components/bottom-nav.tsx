@@ -33,10 +33,10 @@ const TABS: Tab[] = [
     icon: I("M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2|M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8|M23 21v-2a4 4 0 0 0-3-3.87|M16 3.13a4 4 0 0 1 0 7.75"),
   },
   {
-    href: "/standings",
-    label: "League",
-    match: (p) => p.startsWith("/standings"),
-    icon: I("M8 21h8|M12 17v4|M7 4h10v5a5 5 0 0 1-10 0V4z|M17 5h3v2a3 3 0 0 1-3 3|M7 5H4v2a3 3 0 0 0 3 3"),
+    href: "/players",
+    label: "Players",
+    match: (p) => p.startsWith("/players"),
+    icon: I("M12 4a3 3 0 1 1 0 6 3 3 0 0 1 0-6Z|M8.5 20 10 12h4l1.5 8|m8 13-2 3.2|m16 13 2 3.2"),
   },
   {
     href: "/more",
@@ -50,7 +50,7 @@ const TABS: Tab[] = [
       p.startsWith("/trades") ||
       p.startsWith("/transactions") ||
       p.startsWith("/playoffs") ||
-      p.startsWith("/players") ||
+      p.startsWith("/standings") ||
       p.startsWith("/managers") ||
       p.startsWith("/history") ||
       p.startsWith("/records") ||
