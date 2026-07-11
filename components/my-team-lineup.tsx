@@ -89,9 +89,15 @@ function PlayerRow({ slot, entry, muted }: { slot: string; entry: RosterEntry; m
         started || muted ? "bg-[#d7d5cf]" : "bg-white"
       }`}
     >
-      <div className="grid min-h-[104px] grid-cols-[2.15rem_2.2rem_4.55rem_3.25rem_minmax(0,1fr)_4.65rem] items-center gap-2 px-3 py-4">
+      <div
+        className={`grid min-h-[104px] items-center gap-2 px-3 py-4 ${
+          started
+            ? "grid-cols-[2.15rem_2.2rem_4.55rem_3.25rem_minmax(0,1fr)_4.65rem]"
+            : "grid-cols-[2.15rem_4.55rem_3.25rem_minmax(0,1fr)_4.65rem]"
+        }`}
+      >
         <div className="font-cond text-[20px] font-bold uppercase leading-none text-[#35383d]">{slot}</div>
-        <LockCell locked={started} />
+        {started ? <LockCell /> : null}
         <div className="relative h-16 w-16">
           <SleeperPlayerAvatar sleeperId={entry.sleeperId ?? ""} pos={entry.position} name={entry.name} size="lg" />
           {entry.posRank ? <RankBadge value={entry.posRank} /> : null}
@@ -136,8 +142,7 @@ function PlayerRow({ slot, entry, muted }: { slot: string; entry: RosterEntry; m
   );
 }
 
-function LockCell({ locked }: { locked: boolean }) {
-  if (!locked) return <div aria-hidden="true" />;
+function LockCell() {
   return (
     <div className="grid place-items-center text-[#aeb0b3]" aria-label="Locked">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
