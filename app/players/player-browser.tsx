@@ -98,26 +98,26 @@ export function PlayerBrowser({ players, mode = "search" }: { players: PlayerBro
 
   return (
     <div className="-mx-3 bg-[#deddd8] pb-24">
-      <div className="px-3 pt-4">
-        <section className="overflow-hidden rounded-[16px] bg-white px-4 py-5 shadow-[0_3px_0_rgba(0,0,0,0.18)]">
-          <label className="flex h-14 items-center gap-2 rounded-[13px] border-[3px] border-[#dedede] bg-white px-4">
+      <div className="px-3 pt-3">
+        <section className="overflow-hidden rounded-[14px] bg-white px-3 py-4 shadow-[0_2px_0_rgba(0,0,0,0.16)]">
+          <label className="flex h-12 items-center gap-2 rounded-[11px] border-2 border-[#dedede] bg-white px-3">
             <input
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search by name"
-              className="min-w-0 flex-1 bg-transparent font-cond text-[28px] font-medium leading-none text-[#383a3f] outline-none placeholder:text-[#777]"
+              className="min-w-0 flex-1 bg-transparent font-cond text-[24px] font-medium leading-none text-[#383a3f] outline-none placeholder:text-[#777]"
             />
             <SearchIcon />
           </label>
 
-          <div className="mt-7 grid grid-cols-3 gap-4">
+          <div className="mt-5 grid grid-cols-3 gap-3">
             {VIEWS.map((tab) => (
               <button
                 key={tab}
                 type="button"
                 onClick={() => setView(tab)}
-                className={`h-14 min-w-0 rounded-[7px] border-[3px] px-2 font-cond text-[22px] font-medium uppercase tracking-[0.09em] ${
+                className={`h-12 min-w-0 rounded-[7px] border-2 px-1 font-cond text-[19px] font-medium uppercase tracking-[0.07em] ${
                   view === tab
                     ? "border-[#b8dce4] bg-[#d5f3f8] text-[#65686c]"
                     : "border-[#f0f0f0] bg-white text-[#696c71]"
@@ -128,13 +128,13 @@ export function PlayerBrowser({ players, mode = "search" }: { players: PlayerBro
             ))}
           </div>
 
-          <div className="mt-7 grid grid-cols-4 gap-3">
+          <div className="mt-5 grid grid-cols-4 gap-2">
             {POSITIONS.map((pos) => (
               <button
                 key={pos}
                 type="button"
                 onClick={() => setPosition(pos)}
-                className={`h-14 min-w-0 rounded-[7px] border-[3px] px-2 font-cond text-[24px] font-medium uppercase tracking-[0.08em] ${
+                className={`h-11 min-w-0 rounded-[7px] border-2 px-1 font-cond text-[20px] font-medium uppercase tracking-[0.06em] ${
                   position === pos
                     ? "border-[#b8dce4] bg-[#d5f3f8] text-[#55585d]"
                     : "border-[#f0f0f0] bg-white text-[#5d6065]"
@@ -145,13 +145,13 @@ export function PlayerBrowser({ players, mode = "search" }: { players: PlayerBro
             ))}
           </div>
 
-          <div className="mt-7 grid grid-cols-2 gap-4">
+          <div className="mt-5 grid grid-cols-2 gap-3">
             <PickerButton label={availability} onClick={() => setPicker("availability")} />
             <PickerButton label={season} onClick={() => setPicker("season")} />
           </div>
         </section>
 
-        <h2 className="px-3 pb-8 pt-12 font-cond text-[28px] font-bold uppercase tracking-wide text-[#66686d]">
+        <h2 className="px-3 pb-6 pt-9 font-cond text-[24px] font-bold uppercase tracking-wide text-[#66686d]">
           Filter Results
         </h2>
       </div>
@@ -184,15 +184,15 @@ function PlayerTable({
   return (
     <div className="overflow-hidden bg-white">
       <div className="w-full">
-        <div className="grid grid-cols-[5.5rem_minmax(0,1fr)_5.5rem] border-b border-[#e5e5e5] bg-white font-cond text-[18px] font-bold uppercase text-[#5d6065]">
-          <div className="h-20" />
-          <div className="h-20" />
-          <div className="flex h-20 items-center justify-center border-l border-[#dfdfdf]">Points</div>
+        <div className="grid grid-cols-[4.75rem_minmax(0,1fr)_4.9rem] border-b border-[#e5e5e5] bg-white font-cond text-[15px] font-bold uppercase text-[#5d6065]">
+          <div className="h-16" />
+          <div className="h-16" />
+          <div className="flex h-16 items-center justify-center border-l border-[#dfdfdf]">Points</div>
         </div>
-        <div className="grid grid-cols-[5.5rem_minmax(0,1fr)_5.5rem] border-b border-[#ececec] bg-white font-cond text-[17px] font-bold uppercase text-[#5d6065]">
-          <div className="h-14" />
-          <div className="h-14" />
-          <div className="flex h-14 items-center justify-center gap-1 bg-[#d5f3f8]">
+        <div className="grid grid-cols-[4.75rem_minmax(0,1fr)_4.9rem] border-b border-[#ececec] bg-white font-cond text-[14px] font-bold uppercase text-[#5d6065]">
+          <div className="h-12" />
+          <div className="h-12" />
+          <div className="flex h-12 items-center justify-center gap-1 bg-[#d5f3f8]">
             <ChevronDown small /> Season
           </div>
         </div>
@@ -225,31 +225,31 @@ function PlayerRow({
   return (
     <Link
       href={`/players/${player.playerId}`}
-      className={`grid min-h-[112px] grid-cols-[5.5rem_minmax(0,1fr)_5.5rem] items-center border-b border-[#ececec] ${
+      className={`grid min-h-[90px] grid-cols-[4.75rem_minmax(0,1fr)_4.9rem] items-center border-b border-[#ececec] ${
         rank % 2 === 0 ? "bg-white" : "bg-[#f7f7f7]"
       }`}
     >
       <div className="flex justify-center">
         <ActionBadge type={action} />
       </div>
-      <div className="flex min-w-0 items-center gap-3 pr-2">
+      <div className="flex min-w-0 items-center gap-2 pr-2">
         <div className="relative shrink-0">
           <PlayerImage player={player} />
           <RankBadge value={posRank} />
         </div>
         <div className="min-w-0">
-          <div className="truncate font-cond text-[26px] font-bold leading-none tracking-wide text-[#33363b]">
+          <div className="truncate font-cond text-[23px] font-bold leading-none tracking-wide text-[#33363b]">
             {player.displayName}
           </div>
-          <div className="mt-2 truncate font-cond text-[19px] font-bold uppercase leading-none tracking-wide text-[#66696f]">
+          <div className="mt-1.5 truncate font-cond text-[17px] font-bold uppercase leading-none tracking-wide text-[#66696f]">
             {player.proTeam || "FA"} - {player.pos}
           </div>
-          <div className="mt-2 truncate font-cond text-[16px] font-bold uppercase leading-none text-[#35383d]">
+          <div className="mt-1.5 truncate font-cond text-[14px] font-bold uppercase leading-none text-[#35383d]">
             {player.gamesPlayed} GP - {player.starts} starts
           </div>
         </div>
       </div>
-      <div className="flex h-full items-center justify-center bg-[#d5f3f8] font-cond text-[22px] font-medium tabular-nums text-[#676a70]">
+      <div className="flex h-full items-center justify-center bg-[#d5f3f8] font-cond text-[20px] font-medium tabular-nums text-[#676a70]">
         {player.totalPoints.toFixed(2)}
       </div>
     </Link>
@@ -261,7 +261,7 @@ function PickerButton({ label, onClick }: { label: string; onClick: () => void }
     <button
       type="button"
       onClick={onClick}
-      className="flex h-16 min-w-0 items-center justify-between rounded-[12px] bg-[#f4f4f4] px-5 text-left font-cond text-[24px] font-bold tracking-wide text-[#33363b]"
+      className="flex h-14 min-w-0 items-center justify-between rounded-[10px] bg-[#f4f4f4] px-4 text-left font-cond text-[22px] font-bold tracking-wide text-[#33363b]"
     >
       <span className="truncate">{label}</span>
       <ChevronDown />
@@ -312,7 +312,7 @@ function PickerSheet({
 
 function SearchIcon() {
   return (
-    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#777" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#777" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <circle cx="11" cy="11" r="7" />
       <path d="m16.5 16.5 4.5 4.5" />
     </svg>
@@ -321,7 +321,7 @@ function SearchIcon() {
 
 function ChevronDown({ small = false }: { small?: boolean }) {
   return (
-    <svg width={small ? 18 : 28} height={small ? 11 : 18} viewBox="0 0 28 18" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width={small ? 14 : 24} height={small ? 9 : 16} viewBox="0 0 28 18" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="m3 3 11 11L25 3" />
     </svg>
   );
@@ -329,7 +329,7 @@ function ChevronDown({ small = false }: { small?: boolean }) {
 
 function ActionBadge({ type }: { type: "minus" | "move" }) {
   return (
-    <span className={`grid h-14 w-14 place-items-center rounded-[10px] text-white ${type === "minus" ? "bg-[#ef2b00]" : "bg-[#ef7d00]"}`}>
+    <span className={`grid h-12 w-12 place-items-center rounded-[9px] text-white ${type === "minus" ? "bg-[#ef2b00]" : "bg-[#ef7d00]"}`}>
       {type === "minus" ? (
         <svg width="32" height="8" viewBox="0 0 32 8" fill="none" aria-hidden="true">
           <path d="M3 4h26" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
@@ -348,7 +348,7 @@ function ActionBadge({ type }: { type: "minus" | "move" }) {
 
 function RankBadge({ value }: { value: number }) {
   return (
-    <span className="hexagon absolute -left-2 -top-2 grid h-8 w-8 place-items-center border border-[#cfd1d4] bg-white font-cond text-[15px] font-bold leading-none text-black shadow-sm">
+    <span className="hexagon absolute -left-2 -top-2 grid h-7 w-7 place-items-center border border-[#cfd1d4] bg-white font-cond text-[13px] font-bold leading-none text-black shadow-sm">
       {value}
     </span>
   );
@@ -361,9 +361,9 @@ function PlayerImage({ player }: { player: PlayerBrowserItem }) {
       <img
         src={player.imageUrl}
         alt={player.isLogo ? `${player.displayName} logo` : player.displayName}
-        width={64}
-        height={64}
-        className={`h-16 w-16 shrink-0 rounded-full ${
+        width={56}
+        height={56}
+        className={`h-14 w-14 shrink-0 rounded-full ${
           player.isLogo ? "bg-white object-contain p-2" : "bg-[#d2d2d2] object-cover"
         }`}
         suppressHydrationWarning
@@ -373,7 +373,7 @@ function PlayerImage({ player }: { player: PlayerBrowserItem }) {
 
   return (
     <span
-      className="grid h-16 w-16 shrink-0 place-items-center rounded-full font-cond text-sm font-bold text-white"
+      className="grid h-14 w-14 shrink-0 place-items-center rounded-full font-cond text-xs font-bold text-white"
       style={{ background: POS_COLOR[player.pos] ?? "#9aa1ad" }}
     >
       {player.pos || "-"}
