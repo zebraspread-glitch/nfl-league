@@ -1,5 +1,3 @@
-import Link from "next/link";
-import { TeamAvatar, Hexagon } from "@/components/ui";
 import { SleeperPlayerAvatar } from "@/components/sleeper-player-avatar";
 import { proTeamLogoUrl } from "@/lib/player-images";
 import type { Matchup, Roster, RosterEntry, RosterSlot, Standing, TeamMeta } from "@/lib/types";
@@ -17,216 +15,190 @@ export function MyTeamLineup({
   matchup?: Matchup;
   week: number;
 }) {
-  const opponent =
-    matchup && (matchup.home.team.id === team.id ? matchup.away.team : matchup.home.team);
+  void standing;
+  void matchup;
 
   const starters = roster?.starters ?? [];
   const bench = roster?.bench ?? [];
   const ir = roster?.ir ?? [];
   const hasAnyPlayer = [...starters, ...bench, ...ir].some((s) => s.entry);
 
-  return (
-    <div className="space-y-3">
-      {/* Team / matchup header */}
-      <div
-        className="rounded-xl px-4 py-3.5 text-white shadow-sm"
-        style={{ background: `linear-gradient(180deg, ${team.primary} 0%, ${team.secondary} 175%)` }}
-      >
-        <div className="flex items-center gap-3">
-          <div className="relative shrink-0">
-            <TeamAvatar team={team} size="lg" />
-            {standing ? (
-              <span className="absolute -left-2 -top-1">
-                <Hexagon value={standing.rank} tone="grey" size="sm" />
-              </span>
-            ) : null}
-          </div>
-          <div className="min-w-0 flex-1">
-            <Link href={`/teams/${team.id}`} className="block truncate font-cond text-2xl font-bold leading-none">
-              {team.name}
-            </Link>
-            <div className="mt-1 truncate text-sm text-white/85">
-              {standing ? `${standing.wins}-${standing.losses}${standing.ties ? `-${standing.ties}` : ""} · ` : ""}
-              Week {week}
-              {opponent ? <> · vs {opponent.name}</> : ""}
-            </div>
-          </div>
-          <Link
-            href="/settings"
-            aria-label="Change team"
-            className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white/15 hover:bg-white/25"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M11 4H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" />
-              <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z" />
-            </svg>
-          </Link>
-        </div>
-      </div>
-
-      {hasAnyPlayer ? (
-        <>
-          <LineupSection title="Starters" slots={starters} />
-          <LineupSection title="Bench" slots={bench} muted />
-          <LineupSection title="Injured Reserve" slots={ir} muted />
-        </>
-      ) : (
-        <div className="rounded-xl bg-card px-6 py-10 text-center text-sm text-text-muted shadow-sm">
+  if (!hasAnyPlayer) {
+    return (
+      <div className="px-2 pt-5">
+        <LineupTitle>Starters</LineupTitle>
+        <div className="rounded-[14px] bg-white px-6 py-10 text-center text-sm text-[#5f6369] shadow-[0_3px_0_rgba(0,0,0,0.16)]">
           {roster
             ? `${team.name} hasn't set a lineup for Week ${week} yet.`
             : `${team.name} hasn't joined the current Sleeper season yet.`}
         </div>
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="-mx-3 bg-[#deddd8] px-3 pb-6">
+      <LineupSection title="Starters" slots={starters} />
+      <LineupSection title="Bench" slots={bench} muted />
+      <LineupSection title="Injured Reserve" slots={ir} muted />
     </div>
   );
 }
 
 function LineupSection({ title, slots, muted = false }: { title: string; slots: RosterSlot[]; muted?: boolean }) {
-  if (!slots.length) return null;
+  const filled = slots.filter((slot) => slot.entry);
+  if (!filled.length) return null;
   return (
-    <div>
-      <h2 className="mb-2 px-1 font-cond text-sm font-semibold uppercase tracking-widest text-text-muted">{title}</h2>
-      <div className="space-y-2">
-        {slots.map((slot, i) =>
-          slot.entry ? (
-            <PlayerRow key={i} slot={slot.label} entry={slot.entry} muted={muted} />
-          ) : (
-            <EmptyRow key={i} slot={slot.label} />
-          ),
-        )}
+    <section className="pt-5">
+      <LineupTitle>{title}</LineupTitle>
+      <div className="space-y-3">
+        {filled.map((slot, i) => (
+          <PlayerRow key={`${slot.label}-${slot.entry?.sleeperId ?? i}`} slot={slot.label} entry={slot.entry!} muted={muted} />
+        ))}
       </div>
-    </div>
+    </section>
+  );
+}
+
+function LineupTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="mb-5 px-2 font-cond text-[25px] font-bold uppercase leading-none tracking-wide text-[#66686d]">
+      {children}
+    </h2>
   );
 }
 
 const INJURY: Record<string, { label: string; color: string }> = {
   Questionable: { label: "Q", color: "#f5b400" },
   Doubtful: { label: "D", color: "#f08a24" },
-  Out: { label: "O", color: "#e0322b" },
-  IR: { label: "IR", color: "#f08a24" },
-  PUP: { label: "PUP", color: "#f08a24" },
+  Out: { label: "O", color: "#ff4a00" },
+  IR: { label: "IA", color: "#ff4a00" },
+  PUP: { label: "IA", color: "#ff4a00" },
   Sus: { label: "SUS", color: "#e0322b" },
 };
 
-/** Opponent label from the player's perspective: "@ KC" / "vs. DEN". The game
- *  label is always from the player's team's perspective and may be either the
- *  pre-game form ("NYG vs DAL") or the completed form with scores embedded
- *  ("NYG 6 vs DAL 21 ((L))"), so match the separator + opponent and ignore the
- *  rest. */
-function opponentLabel(gameLabel: string | undefined): string | null {
-  if (!gameLabel) return null;
-  const m = gameLabel.match(/\s(@|vs)\s+([A-Z]{2,4})/);
-  if (!m) return null;
-  const [, sep, opp] = m;
-  return sep === "@" ? `@ ${opp}` : `vs. ${opp}`;
-}
-
 function PlayerRow({ slot, entry, muted }: { slot: string; entry: RosterEntry; muted: boolean }) {
-  const showLogo = entry.position !== "DEF";
-  const logo = showLogo ? proTeamLogoUrl(entry.proTeam) : undefined;
+  const logo = entry.position !== "DEF" ? proTeamLogoUrl(entry.proTeam) : proTeamLogoUrl(entry.sleeperId);
   const badge = entry.injuryStatus ? INJURY[entry.injuryStatus] : undefined;
-  const opp = opponentLabel(entry.gameLabel);
-  const onBye = !entry.gameLabel && !entry.gameWhen;
+  const started = Boolean(entry.gameStarted);
+  const projected = entry.projected;
 
   return (
-    <div className="overflow-hidden rounded-xl shadow-sm ring-1 ring-border/60">
-      <div className={`flex items-center gap-2 px-2.5 py-2.5 ${muted ? "bg-section" : "bg-card"}`}>
-        <span className="w-7 shrink-0 text-center font-cond text-xs font-bold uppercase text-text-muted">{slot}</span>
-
-        {/* swap-lineup affordance (visual, mirrors NFL.com) */}
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-teal text-white">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M8 4v15 M8 19l-3-3 M8 19l3-3" />
-            <path d="M16 20V5 M16 5l-3 3 M16 5l3 3" />
-          </svg>
-        </span>
-
-        {/* headshot with rank badge + injury dot */}
-        <div className="relative shrink-0">
-          <SleeperPlayerAvatar sleeperId={entry.sleeperId ?? ""} pos={entry.position} name={entry.name} size="md" />
-          {entry.posRank ? (
-            <span className="absolute -left-1.5 -top-1.5">
-              <Hexagon value={entry.posRank} tone="grey" size="sm" />
-            </span>
-          ) : null}
+    <article
+      className={`overflow-hidden rounded-[14px] shadow-[0_3px_0_rgba(0,0,0,0.18)] ${
+        started || muted ? "bg-[#d7d5cf]" : "bg-white"
+      }`}
+    >
+      <div className="grid min-h-[104px] grid-cols-[2.15rem_2.2rem_4.55rem_3.25rem_minmax(0,1fr)_4.65rem] items-center gap-2 px-3 py-4">
+        <div className="font-cond text-[20px] font-bold uppercase leading-none text-[#35383d]">{slot}</div>
+        <LockCell locked={started} />
+        <div className="relative h-16 w-16">
+          <SleeperPlayerAvatar sleeperId={entry.sleeperId ?? ""} pos={entry.position} name={entry.name} size="lg" />
+          {entry.posRank ? <RankBadge value={entry.posRank} /> : null}
           {badge ? (
             <span
-              className="absolute -bottom-1 left-1/2 grid h-4 -translate-x-1/2 place-items-center rounded-full px-1 text-[8px] font-bold text-black"
+              className="absolute -bottom-2 left-1/2 grid h-6 min-w-8 -translate-x-1/2 place-items-center rounded-full px-2 font-cond text-[13px] font-bold leading-none text-black"
               style={{ background: badge.color }}
             >
               {badge.label}
             </span>
           ) : null}
         </div>
-
-        {/* team logo */}
-        {logo ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={logo}
-            alt={entry.proTeam}
-            className="h-8 w-8 shrink-0 rounded-full object-contain p-0.5"
-            style={{ background: "#b9bec6" }}
-          />
-        ) : (
-          <span className="h-8 w-8 shrink-0" />
-        )}
-
-        {/* name + team-position */}
-        <div className="min-w-0 flex-1 pl-0.5">
-          <div className={`truncate font-cond text-lg font-semibold leading-tight ${muted ? "text-text-muted" : ""}`}>
+        <div className="grid h-12 w-12 place-items-center rounded-full bg-[#efefed]">
+          {logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logo} alt={entry.proTeam ?? entry.position} className="h-8 w-8 object-contain" />
+          ) : (
+            <span className="font-cond text-xs font-bold text-[#6a6d72]">{entry.position}</span>
+          )}
+        </div>
+        <div className="min-w-0">
+          <div className="truncate font-cond text-[28px] font-bold leading-[1.05] tracking-wide text-[#383a3f]">
             {entry.name}
           </div>
-          <div className="truncate text-[11px] uppercase tracking-wide text-text-dim">
-            {entry.proTeam ?? "FA"} · {entry.position}
+          <div className="mt-1 truncate font-cond text-[20px] font-bold uppercase leading-none tracking-wide text-[#6a6d72]">
+            {entry.proTeam ?? "FA"} - {entry.position}
           </div>
         </div>
-
-        {/* score + projected */}
-        <div className="shrink-0 pl-1 text-right">
-          <div className="score text-2xl text-text">
-            {entry.gameStarted ? entry.points.toFixed(2) : "—"}
+        <div className="text-right">
+          <div className={`score text-[28px] ${started ? "text-[#25282d]" : "text-[#33363b]"}`}>
+            {started ? entry.points.toFixed(2) : "-"}
           </div>
-          {entry.projected !== undefined ? (
-            <div className="font-cond text-sm italic tabular-nums text-text-muted">{entry.projected.toFixed(2)}</div>
+          {projected !== undefined ? (
+            <div className="mt-2 font-cond text-[18px] font-bold italic leading-none text-[#6a6d72]">
+              {projected.toFixed(2)}
+            </div>
           ) : null}
         </div>
       </div>
+      {started ? <StartedFooter entry={entry} /> : <PregameFooter entry={entry} />}
+    </article>
+  );
+}
 
-      {onBye ? (
-        <div className="bg-down/15 py-1.5 text-center font-cond text-xs font-bold uppercase tracking-wide text-down">
-          Bye · no game this week
-        </div>
-      ) : (
-        <div className="flex items-center justify-between gap-2 border-t border-border bg-row px-3 py-1.5 text-[11px]">
-          <span className="shrink-0 font-cond font-semibold text-text">{entry.gameWhen ?? "—"}</span>
-          {opp ? (
-            <span className="truncate font-cond font-semibold text-text-muted">
-              {opp} <span className="text-text-dim">vs {entry.position}</span>
-            </span>
-          ) : (
-            <span />
-          )}
-        </div>
-      )}
+function LockCell({ locked }: { locked: boolean }) {
+  if (!locked) return <div aria-hidden="true" />;
+  return (
+    <div className="grid place-items-center text-[#aeb0b3]" aria-label="Locked">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="5" y="10" width="14" height="10" rx="1.8" />
+        <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+        <path d="M12 14v2.5" />
+      </svg>
     </div>
   );
 }
 
-function EmptyRow({ slot }: { slot: string }) {
+function RankBadge({ value }: { value: number }) {
   return (
-    <div className="flex items-center gap-2 rounded-xl bg-section px-2.5 py-2.5 ring-1 ring-border/60">
-      <span className="w-7 shrink-0 text-center font-cond text-xs font-bold uppercase text-text-muted">{slot}</span>
-      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-teal/40 text-white">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M8 4v15 M8 19l-3-3 M8 19l3-3" />
-          <path d="M16 20V5 M16 5l-3 3 M16 5l3 3" />
-        </svg>
+    <span className="hexagon absolute -left-2 -top-2 grid h-8 w-8 place-items-center border border-[#cfd1d4] bg-white font-cond text-[15px] font-bold leading-none text-black shadow-sm">
+      {value}
+    </span>
+  );
+}
+
+function PregameFooter({ entry }: { entry: RosterEntry }) {
+  const matchup = pregameMatchupText(entry);
+  return (
+    <div className="grid grid-cols-[6.5rem_minmax(0,1fr)_4.35rem] items-center gap-2 bg-[#f6f6f5] px-4 py-1.5 font-cond text-[18px] leading-none">
+      <span className="truncate font-bold text-[#3d4045]">{entry.gameWhen ?? "Bye"}</span>
+      <span className={`truncate text-center font-bold ${matchup.tone}`}>{matchup.text}</span>
+      <span className="text-right font-bold italic text-[#62656b]">
+        {entry.projected !== undefined ? entry.projected.toFixed(2) : "-"}
       </span>
-      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-card font-cond text-[10px] font-bold text-text-dim">
-        {slot}
-      </span>
-      <span className="flex-1 text-sm font-medium text-text-dim">Empty</span>
     </div>
   );
+}
+
+function StartedFooter({ entry }: { entry: RosterEntry }) {
+  return (
+    <div className="bg-[#cccac4] px-4 py-2 text-center font-cond text-[20px] font-bold uppercase leading-none text-[#3f4247]">
+      {startedGameText(entry.gameLabel)}
+    </div>
+  );
+}
+
+function pregameMatchupText(entry: RosterEntry): { text: string; tone: string } {
+  if (!entry.gameLabel) return { text: "Bye - no game this week", tone: "text-[#e0322b]" };
+  const label = entry.gameLabel.replace(/\s+/g, " ").trim();
+  const m = label.match(/^([A-Z]{2,4})\s+(@|vs)\s+([A-Z]{2,4})/);
+  if (!m) return { text: label, tone: "text-[#3d4045]" };
+  const [, team, sep, opp] = m;
+  const text = sep === "@" ? `${team} @ ${opp} vs ${entry.position}` : `${team} vs ${opp} vs ${entry.position}`;
+  const rank = entry.posRank ? ` #${entry.posRank}` : "";
+  const isGreen = entry.posRank !== undefined && entry.posRank >= 12;
+  const isRed = entry.posRank !== undefined && entry.posRank <= 6;
+  return {
+    text: text.replace(`vs ${entry.position}`, `${rank} vs ${entry.position}`),
+    tone: isGreen ? "text-[#36ad55]" : isRed ? "text-[#f24812]" : "text-[#3d4045]",
+  };
+}
+
+function startedGameText(label: string | undefined): string {
+  if (!label) return "In progress";
+  return label
+    .replace(/\s+/g, " ")
+    .replace(/\(\(([WLT])\)\)/, "FINAL ($1)")
+    .replace(/\sFINAL/, "  FINAL")
+    .trim();
 }

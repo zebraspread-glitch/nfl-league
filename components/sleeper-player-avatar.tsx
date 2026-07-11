@@ -6,6 +6,7 @@ import { sleeperPlayerImage, POS_COLOR } from "@/lib/player-images";
 const SIZES = {
   sm: { box: "h-8 w-8", text: "text-[10px]", px: 32 },
   md: { box: "h-10 w-10", text: "text-xs", px: 40 },
+  lg: { box: "h-16 w-16", text: "text-sm", px: 64 },
 } as const;
 
 /** Circular player headshot sourced from Sleeper's own CDN (keyed by Sleeper's

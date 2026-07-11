@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+import { useSettings } from "@/components/settings-provider";
+import { getTeam } from "@/lib/teams";
 
 const TITLES: Record<string, string> = {
   "/": "My Team",
@@ -36,6 +39,62 @@ function titleFor(pathname: string): string {
 
 export function TopBar() {
   const pathname = usePathname();
+  const { teamId } = useSettings();
+  const selectedTeam = teamId ? getTeam(teamId) : undefined;
+  const isHome = pathname === "/";
+
+  useEffect(() => {
+    document.documentElement.style.setProperty("--topbar-height", isHome ? "9.4rem" : "3.5rem");
+    return () => {
+      document.documentElement.style.removeProperty("--topbar-height");
+    };
+  }, [isHome]);
+
+  if (isHome) {
+    return (
+      <header
+        className="fixed inset-x-0 top-0 z-30 mx-auto max-w-xl text-[#00284d]"
+        style={{
+          background: "var(--teal)",
+          paddingTop: "env(safe-area-inset-top)",
+        }}
+      >
+        <div className="flex h-[9.4rem] items-center justify-between px-8 pt-6">
+          <Link
+            href="/"
+            aria-label="Home"
+            className="grid h-16 w-16 place-items-center rounded-[14px] bg-[#0f9fba] text-[#00284d]"
+          >
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M3 10.8 12 3l9 7.8v9.7a.5.5 0 0 1-.5.5h-5.3v-6.4a.6.6 0 0 0-.6-.6H9.4a.6.6 0 0 0-.6.6V21H3.5a.5.5 0 0 1-.5-.5z" />
+            </svg>
+          </Link>
+
+          <Link
+            href="/settings"
+            className="flex h-16 min-w-36 items-center justify-center gap-3 rounded-[14px] bg-[#0f9fba] px-5 font-cond text-[25px] font-bold leading-none text-[#00284d]"
+          >
+            <span className="max-w-28 truncate">{selectedTeam?.name ?? "Team"}</span>
+            <svg width="25" height="15" viewBox="0 0 25 15" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="m2 2 10.5 10.5L23 2" />
+            </svg>
+          </Link>
+
+          <Link
+            href="/settings"
+            aria-label="Settings"
+            className="relative grid h-16 w-16 place-items-center rounded-[14px] bg-[#003968] text-white"
+          >
+            <span className="absolute -right-1 -top-1 h-4 w-4 rounded-full bg-[#ff4a00]" />
+            <span className="relative font-cond text-[36px] font-extrabold leading-none tracking-[-0.02em]">
+              F<span className="absolute -bottom-1 -right-4 text-[25px] text-[#2ed466]">+</span>
+            </span>
+          </Link>
+        </div>
+      </header>
+    );
+  }
+
   return (
     <header
       className="fixed inset-x-0 top-0 z-30 mx-auto max-w-xl text-white"

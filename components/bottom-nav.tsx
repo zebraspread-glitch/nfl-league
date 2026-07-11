@@ -5,77 +5,108 @@ import { usePathname } from "next/navigation";
 
 type Tab = { href: string; label: string; match: (p: string) => boolean; icon: React.ReactNode };
 
-const I = (d: string) => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    {d.split("|").map((p, i) => (
-      <path key={i} d={p} />
-    ))}
-  </svg>
-);
+const strokeProps = {
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 2.4,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+};
 
 const TABS: Tab[] = [
   {
     href: "/",
-    label: "My Team",
+    label: "Team",
     match: (p) => p === "/",
-    icon: I("M12 17.3l-5.4 3.3 1.5-6.2L3 10.2l6.3-.5L12 4l2.7 5.7 6.3.5-5.1 4.2 1.5 6.2z"),
+    icon: (
+      <svg width="34" height="34" viewBox="0 0 24 24" {...strokeProps}>
+        <path d="M3 15c.8-5.3 4.6-9 9.4-9 3.6 0 6.4 1.8 8.1 4.8" />
+        <path d="M4.2 14.5 9 17.2h7.3c1.4 0 2.4.9 2.8 2.3" />
+        <path d="M7.3 10.7h4.2" />
+      </svg>
+    ),
   },
   {
     href: "/matchups",
     label: "Matchup",
     match: (p) => p.startsWith("/matchups"),
-    icon: I("M2 12h20|M6 8v8|M18 8v8|M12 6v12"),
+    icon: (
+      <svg width="34" height="34" viewBox="0 0 24 24" {...strokeProps}>
+        <path d="M5 19c5.9-.6 10.9-5.6 11.8-11.8" />
+        <path d="M9.4 20.3C4.7 19.1 2.5 14.6 4.2 10.7 6 6.5 11 4.1 18.6 3.4c.5 7.6-1.9 12.6-6.1 14.4" />
+        <path d="M7.8 14.8 14.8 7.8" />
+      </svg>
+    ),
   },
   {
-    href: "/teams",
-    label: "Ladder",
-    match: (p) => p.startsWith("/teams"),
-    icon: I("M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2|M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8|M23 21v-2a4 4 0 0 0-3-3.87|M16 3.13a4 4 0 0 1 0 7.75"),
+    href: "/mock-draft",
+    label: "Zone",
+    match: (p) => p.startsWith("/mock-draft"),
+    icon: (
+      <span className="grid h-8 w-8 place-items-center rounded-b-md bg-current [clip-path:polygon(12%_0,88%_0,88%_62%,50%_100%,12%_62%)]">
+        <span className="font-cond text-[13px] font-extrabold leading-none text-white">FZ</span>
+      </span>
+    ),
+  },
+  {
+    href: "/players",
+    label: "Players",
+    match: (p) => p.startsWith("/players"),
+    icon: (
+      <svg width="34" height="34" viewBox="0 0 24 24" {...strokeProps}>
+        <path d="M12 4a3 3 0 1 1 0 6 3 3 0 0 1 0-6Z" />
+        <path d="M8.5 20 10 12h4l1.5 8" />
+        <path d="m8 13-2 3.2" />
+        <path d="m16 13 2 3.2" />
+      </svg>
+    ),
   },
   {
     href: "/standings",
     label: "League",
-    match: (p) => p.startsWith("/standings"),
-    icon: I("M8 21h8|M12 17v4|M7 4h10v5a5 5 0 0 1-10 0V4z|M17 5h3v2a3 3 0 0 1-3 3|M7 5H4v2a3 3 0 0 0 3 3"),
-  },
-  {
-    href: "/more",
-    label: "More",
     match: (p) =>
-      p === "/more" ||
+      p.startsWith("/standings") ||
+      p.startsWith("/teams") ||
       p.startsWith("/settings") ||
-      p.startsWith("/mock-draft") ||
+      p.startsWith("/more") ||
       p.startsWith("/games") ||
       p.startsWith("/drafts") ||
       p.startsWith("/trades") ||
       p.startsWith("/transactions") ||
       p.startsWith("/playoffs") ||
-      p.startsWith("/players") ||
       p.startsWith("/managers") ||
       p.startsWith("/history") ||
       p.startsWith("/records") ||
       p.startsWith("/head-to-head"),
-    icon: I("M4 6h16|M4 12h16|M4 18h16"),
+    icon: (
+      <svg width="34" height="34" viewBox="0 0 24 24" {...strokeProps}>
+        <path d="M8 21h8" />
+        <path d="M12 17v4" />
+        <path d="M7 4h10v5a5 5 0 0 1-10 0z" />
+        <path d="M17 5h3v2a3 3 0 0 1-3 3" />
+        <path d="M7 5H4v2a3 3 0 0 0 3 3" />
+      </svg>
+    ),
   },
 ];
 
 export function BottomNav() {
   const pathname = usePathname();
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-xl border-t border-border bg-card">
-      <div className="grid grid-cols-5">
-        {TABS.map((t) => {
-          const active = t.match(pathname);
+    <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-xl border-t border-[#e4e4e4] bg-white">
+      <div className="grid h-[76px] grid-cols-5">
+        {TABS.map((tab) => {
+          const active = tab.match(pathname);
           return (
             <Link
-              key={t.href}
-              href={t.href}
-              className={`flex flex-col items-center gap-1 py-2.5 text-[11px] font-semibold tracking-wide transition-colors ${
-                active ? "text-teal" : "text-text-dim hover:text-text-muted"
+              key={tab.href}
+              href={tab.href}
+              className={`flex flex-col items-center justify-center gap-1 font-cond text-[16px] font-bold uppercase leading-none tracking-wide transition-colors ${
+                active ? "text-[#00284d]" : "text-[#a5a7ac] hover:text-[#6f737b]"
               }`}
             >
-              {t.icon}
-              <span className="font-cond uppercase">{t.label}</span>
+              {tab.icon}
+              <span>{tab.label}</span>
             </Link>
           );
         })}
