@@ -1,14 +1,22 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
+import type { ReactNode } from "react";
+
+export type PlayerAvailability = "FA" | "Taken" | "Waivers";
 
 export interface PlayerStats {
+  passAtt: number;
+  passCmp: number;
   passYds: number;
   passTD: number;
   passInt: number;
   passSack: number;
+  rushAtt: number;
   rushYds: number;
   rushTD: number;
+  targets: number;
   rec: number;
   recYds: number;
   recTD: number;
@@ -16,9 +24,20 @@ export interface PlayerStats {
   fumTD: number;
   twoPt: number;
   fumLost: number;
+  fgMade: number;
+  fgAtt: number;
+  xpMade: number;
+  defSack: number;
+  defInt: number;
+  defTD: number;
   points: number;
   projected: number;
   gp: number;
+}
+
+interface FantasyAgainstValue {
+  rank: number;
+  avg: number;
 }
 
 export interface PlayerBrowserItem {
@@ -31,7 +50,8 @@ export interface PlayerBrowserItem {
   proTeam: string;
   opponent: string;
   manager: string;
-  status: "FA" | "Taken";
+  status: PlayerAvailability;
+  rosterId?: number;
   ownerTeamName?: string;
   ownerTeamAbbrev?: string;
   ownerTeamLogo?: string;
@@ -39,19 +59,87 @@ export interface PlayerBrowserItem {
   ownerTeamSecondary?: string;
   matchup: string;
   posRank: number;
+  projectionRank: number;
   injuryStatus?: string;
+  sleeperStatus?: string;
+  searchRank?: number;
+  yearsExp?: number;
+  age?: number;
+  depthChartOrder?: number;
+  addTrend: number;
+  dropTrend: number;
+  rosterAdds: number;
+  rosterDrops: number;
+  waiverAdds: number;
+  fantasyAgainst?: FantasyAgainstValue;
   stats: PlayerStats;
+  projection: PlayerStats;
+  statsByPeriod: Record<string, PlayerStats>;
+  projectionsByPeriod: Record<string, PlayerStats>;
 }
 
 type PlayerBrowserMode = "all" | "records" | "search";
 type View = "PROJECTIONS" | "STATS" | "TRENDS";
 type PositionFilter = "All Offense" | "QB" | "RB" | "WR" | "TE" | "W/R" | "K" | "DEF";
 type StatusFilter = "All Available Players" | "All Players" | "Taken" | "Free Agents" | "On Waivers";
+type SortDirection = "asc" | "desc";
+
+interface SortState {
+  key: string;
+  direction: SortDirection;
+}
+
+interface Column {
+  key: string;
+  label: string;
+  group?: string;
+  blue?: boolean;
+  strong?: boolean;
+  wide?: boolean;
+  decimals?: number;
+  zeroDash?: boolean;
+  get: (player: PlayerBrowserItem, stats: PlayerStats, actual: PlayerStats, projection: PlayerStats) => ReactNode;
+}
 
 const VIEWS: View[] = ["PROJECTIONS", "STATS", "TRENDS"];
 const POSITIONS: PositionFilter[] = ["All Offense", "QB", "RB", "WR", "TE", "W/R", "K", "DEF"];
 const STATUS_OPTIONS: StatusFilter[] = ["All Available Players", "All Players", "Taken", "Free Agents", "On Waivers"];
-const WEEKS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "Last 2 WKS", "Last 4 WKS", "2025 Season"];
+const PERIODS = ["2025 Season", "Last 4 WKS", "Last 2 WKS", "18", "17", "16", "15", "14", "13", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "1"];
+
+const EMPTY_STATS: PlayerStats = {
+  passAtt: 0,
+  passCmp: 0,
+  passYds: 0,
+  passTD: 0,
+  passInt: 0,
+  passSack: 0,
+  rushAtt: 0,
+  rushYds: 0,
+  rushTD: 0,
+  targets: 0,
+  rec: 0,
+  recYds: 0,
+  recTD: 0,
+  retTD: 0,
+  fumTD: 0,
+  twoPt: 0,
+  fumLost: 0,
+  fgMade: 0,
+  fgAtt: 0,
+  xpMade: 0,
+  defSack: 0,
+  defInt: 0,
+  defTD: 0,
+  points: 0,
+  projected: 0,
+  gp: 0,
+};
+
+const DEFAULT_SORT: Record<View, SortState> = {
+  PROJECTIONS: { key: "projected", direction: "desc" },
+  STATS: { key: "points", direction: "desc" },
+  TRENDS: { key: "trendNet", direction: "desc" },
+};
 
 export function PlayerBrowser({ players, mode = "search" }: { players: PlayerBrowserItem[]; mode?: PlayerBrowserMode }) {
   void mode;
@@ -59,6 +147,14 @@ export function PlayerBrowser({ players, mode = "search" }: { players: PlayerBro
   const [status, setStatus] = useState<StatusFilter>("All Available Players");
   const [position, setPosition] = useState<PositionFilter>("All Offense");
   const [view, setView] = useState<View>("STATS");
+  const [period, setPeriod] = useState("2025 Season");
+  const [team, setTeam] = useState("All MGL Teams");
+  const [sort, setSort] = useState<SortState>(DEFAULT_SORT.STATS);
+
+  const teamOptions = useMemo(() => {
+    const names = new Set(players.map((player) => player.ownerTeamName).filter((name): name is string => Boolean(name)));
+    return ["All MGL Teams", ...[...names].sort((a, b) => a.localeCompare(b))];
+  }, [players]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -66,7 +162,13 @@ export function PlayerBrowser({ players, mode = "search" }: { players: PlayerBro
       .filter((player) => {
         if (status === "All Players") return true;
         if (status === "Taken") return player.status === "Taken";
-        return player.status === "FA";
+        if (status === "Free Agents") return player.status === "FA";
+        if (status === "On Waivers") return player.status === "Waivers";
+        return player.status !== "Taken";
+      })
+      .filter((player) => {
+        if (team === "All MGL Teams") return true;
+        return player.ownerTeamName === team;
       })
       .filter((player) => {
         if (position === "All Offense") return player.pos === "QB" || player.pos === "RB" || player.pos === "WR" || player.pos === "TE";
@@ -75,206 +177,426 @@ export function PlayerBrowser({ players, mode = "search" }: { players: PlayerBro
       })
       .filter((player) => {
         if (!q) return true;
-        return `${player.displayName} ${player.fullName} ${player.proTeam} ${player.pos} ${player.manager} ${player.ownerTeamName ?? ""}`
+        return [
+          player.displayName,
+          player.fullName,
+          player.proTeam,
+          player.pos,
+          player.manager,
+          player.ownerTeamName,
+          player.sleeperStatus,
+        ]
+          .filter(Boolean)
+          .join(" ")
           .toLowerCase()
           .includes(q);
       })
-      .sort((a, b) => b.stats.points - a.stats.points || a.displayName.localeCompare(b.displayName));
-  }, [players, position, query, status]);
+      .sort((a, b) => comparePlayers(a, b, sort, view, period));
+  }, [players, period, position, query, sort, status, team, view]);
+
+  const changeView = (next: View) => {
+    setView(next);
+    setSort(DEFAULT_SORT[next]);
+  };
+
+  const requestSort = (key: string) => {
+    setSort((current) => ({
+      key,
+      direction: current.key === key && current.direction === "desc" ? "asc" : "desc",
+    }));
+  };
 
   return (
-    <div className="-mx-3 bg-white pb-24 text-[#1d3550]">
-      <section className="border-b border-[#d8d8d8] bg-white px-1 py-2">
-        <div className="flex items-center gap-2 text-[11px] leading-none">
-          <span className="font-cond font-bold uppercase text-[#555]">Status:</span>
-          <select
-            value={status}
-            onChange={(event) => setStatus(event.target.value as StatusFilter)}
-            className="max-w-[13rem] bg-transparent font-cond text-[11px] font-bold uppercase text-[#0070b8] outline-none"
-            aria-label="Player status"
-          >
-            {STATUS_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-          <label className="ml-auto flex h-7 w-[220px] max-w-[45vw] items-center rounded border border-[#c8c8c8] bg-white px-2">
+    <div className="-mx-3 -mt-3 min-h-screen bg-[#dfddd8] pb-28 text-[#353638]">
+      <section className="px-3 pt-4">
+        <div className="rounded-2xl bg-white px-3 py-4 shadow-[0_2px_0_rgba(0,0,0,0.22)]">
+          <label className="flex h-12 items-center gap-2 rounded-xl border-2 border-[#d8d8d8] bg-white px-3">
             <input
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search Player By Name"
-              className="min-w-0 flex-1 text-xs text-[#333] outline-none placeholder:text-[#777]"
+              placeholder="Search by name"
+              className="min-w-0 flex-1 bg-transparent text-[22px] font-medium text-[#333] outline-none placeholder:text-[#787878]"
             />
             <SearchIcon />
           </label>
-        </div>
 
-        <div className="mt-2 flex items-center gap-1 overflow-x-auto bg-[#f4f4f4] px-2 py-1 text-[11px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <span className="mr-3 text-[#555]">Position:</span>
-          {POSITIONS.map((pos) => (
-            <button
-              key={pos}
-              type="button"
-              onClick={() => setPosition(pos)}
-              className={`shrink-0 px-2 py-1 ${position === pos ? "font-bold text-[#0070b8]" : "text-[#41536a]"}`}
-            >
-              {pos}
-            </button>
-          ))}
-        </div>
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            {VIEWS.map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => changeView(tab)}
+                className={`h-10 rounded-md border-2 font-cond text-[21px] font-semibold uppercase ${
+                  view === tab ? "border-[#b8dfe8] bg-[#d9f5fb] text-[#4a4d50]" : "border-[#eeeeee] bg-white text-[#666]"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
 
-        <div className="mt-4 flex border-b border-[#d8d8d8]">
-          {VIEWS.map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => setView(tab)}
-              className={`h-9 px-5 font-cond text-xs font-bold uppercase ${
-                view === tab ? "border-b-4 border-[#009bd7] text-[#111]" : "text-[#333]"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+          <div className="mt-4 grid grid-cols-4 gap-2">
+            {POSITIONS.map((pos) => (
+              <button
+                key={pos}
+                type="button"
+                onClick={() => setPosition(pos)}
+                className={`h-9 rounded-md border-2 font-cond text-[18px] font-semibold uppercase ${
+                  position === pos ? "border-[#b8dfe8] bg-[#d9f5fb] text-[#4a4d50]" : "border-[#eeeeee] bg-white text-[#5f6266]"
+                }`}
+              >
+                {pos === "All Offense" ? "ALL" : pos}
+              </button>
+            ))}
+          </div>
 
-        <div className="flex items-center gap-3 overflow-x-auto bg-[#f7f7f7] px-2 py-2 text-[11px] text-[#566171] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <span className="font-bold text-[#555]">Weeks:</span>
-          {WEEKS.map((week) => (
-            <span key={week} className={`shrink-0 ${week === "2025 Season" ? "font-bold text-[#0070b8]" : ""}`}>
-              {week}
-            </span>
-          ))}
-          <span className="ml-auto shrink-0 text-[#777]">1 of {filtered.length}</span>
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <SelectShell>
+              <select
+                value={status}
+                onChange={(event) => setStatus(event.target.value as StatusFilter)}
+                className="h-full w-full appearance-none bg-transparent px-3 pr-8 font-cond text-[18px] font-bold text-[#2f3338] outline-none"
+                aria-label="Player status"
+              >
+                {STATUS_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </SelectShell>
+            <SelectShell>
+              <select
+                value={period}
+                onChange={(event) => setPeriod(event.target.value)}
+                className="h-full w-full appearance-none bg-transparent px-3 pr-8 font-cond text-[18px] font-bold text-[#2f3338] outline-none"
+                aria-label="Stats period"
+              >
+                {PERIODS.map((option) => (
+                  <option key={option} value={option}>
+                    {option.length <= 2 ? `Week ${option}` : option}
+                  </option>
+                ))}
+              </select>
+            </SelectShell>
+          </div>
+
+          <div className="mt-2 grid grid-cols-[1fr_auto] gap-2">
+            <SelectShell>
+              <select
+                value={team}
+                onChange={(event) => setTeam(event.target.value)}
+                className="h-full w-full appearance-none bg-transparent px-3 pr-8 font-cond text-[18px] font-bold text-[#2f3338] outline-none"
+                aria-label="MGL team"
+              >
+                {teamOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </SelectShell>
+            <div className="flex h-10 min-w-20 items-center justify-center rounded-md bg-[#f4f4f4] px-3 font-cond text-[16px] font-bold text-[#6a6d72]">
+              {filtered.length}
+            </div>
+          </div>
         </div>
       </section>
 
-      <PlayerStatsTable players={filtered} />
+      <div className="px-5 pb-4 pt-7 font-cond text-[26px] font-bold uppercase text-[#5b5d61]">
+        Filter Results
+      </div>
+
+      <PlayerStatsTable players={filtered} view={view} period={period} sort={sort} onSort={requestSort} />
     </div>
   );
 }
 
-function PlayerStatsTable({ players }: { players: PlayerBrowserItem[] }) {
+function SelectShell({ children }: { children: ReactNode }) {
   return (
-    <div className="overflow-x-auto [scrollbar-width:thin]">
-      <table className="min-w-[920px] border-collapse text-[10px] leading-tight text-[#17365d]">
-        <thead className="bg-[#d9d9d9] text-[10px] text-[#555]">
-          <tr className="h-5">
-            <GroupHead colSpan={2} />
-            <GroupHead colSpan={1} />
-            <GroupHead colSpan={1} />
-            <GroupHead label="Passing" colSpan={4} />
-            <GroupHead label="Rushing" colSpan={2} />
-            <GroupHead label="Receiving" colSpan={3} />
-            <GroupHead label="Ret" colSpan={1} />
-            <GroupHead label="Misc" colSpan={2} />
-            <GroupHead label="Fum" colSpan={1} />
-            <GroupHead label="Fantasy" colSpan={1} />
-            <GroupHead label="Sleeper" colSpan={3} />
+    <div className="relative h-10 overflow-hidden rounded-md bg-[#f4f4f4]">
+      {children}
+      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
+        <ChevronIcon />
+      </span>
+    </div>
+  );
+}
+
+function PlayerStatsTable({
+  players,
+  view,
+  period,
+  sort,
+  onSort,
+}: {
+  players: PlayerBrowserItem[];
+  view: View;
+  period: string;
+  sort: SortState;
+  onSort: (key: string) => void;
+}) {
+  const columns = columnsFor(view);
+  const groups = groupColumns(columns);
+
+  return (
+    <div className="relative overflow-x-auto bg-white [scrollbar-width:thin]">
+      <table className="min-w-[1240px] border-collapse text-[#3d3f43]">
+        <thead className="font-cond uppercase text-[#63666b]">
+          <tr className="h-11 bg-white text-[15px]">
+            <StickyHead rowSpan={2} left="left-0" width="w-12">
+              Team
+            </StickyHead>
+            <StickyHead rowSpan={2} left="left-12" width="w-56" align="left">
+              Player
+            </StickyHead>
+            {groups.map((group) => (
+              <th key={group.name || "base"} colSpan={group.count} className="border-l border-[#eeeeee] px-2 text-center font-bold">
+                {group.name}
+              </th>
+            ))}
           </tr>
-          <tr className="h-7 border-b border-[#c8c8c8] text-[9px]">
-            <Head>Team</Head>
-            <Head align="left">Player</Head>
-            <Head>Opp</Head>
-            <Head>Manager</Head>
-            <Head>Yds</Head>
-            <Head>TD</Head>
-            <Head>Int</Head>
-            <Head>Sck</Head>
-            <Head>Yds</Head>
-            <Head>TD</Head>
-            <Head>Rec</Head>
-            <Head>Yds</Head>
-            <Head>TD</Head>
-            <Head>TD</Head>
-            <Head>FumTD</Head>
-            <Head>2PT</Head>
-            <Head>Lost</Head>
-            <Head blue>Points</Head>
-            <Head blue>ECR</Head>
-            <Head blue>Proj</Head>
-            <Head blue>Matchup</Head>
+          <tr className="h-12 border-t border-[#f0f0f0] bg-white text-[14px]">
+            {columns.map((column) => (
+              <th
+                key={column.key}
+                className={`border-l border-[#eeeeee] px-2 text-center font-bold ${
+                  column.blue ? "bg-[#d8f6fb]" : ""
+                } ${column.wide ? "min-w-24" : "min-w-16"}`}
+              >
+                <button type="button" onClick={() => onSort(column.key)} className="inline-flex items-center gap-1">
+                  {sort.key === column.key ? <span className="text-[#009cbb]">{sort.direction === "desc" ? "v" : "^"}</span> : null}
+                  {column.label}
+                </button>
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
           {players.map((player) => (
-            <PlayerRow key={player.playerId} player={player} />
+            <PlayerRow key={player.playerId} player={player} columns={columns} view={view} period={period} />
           ))}
+          {players.length === 0 ? (
+            <tr>
+              <td colSpan={columns.length + 2} className="px-4 py-10 text-center font-cond text-xl font-bold text-[#72757a]">
+                No players match those filters.
+              </td>
+            </tr>
+          ) : null}
         </tbody>
       </table>
     </div>
   );
 }
 
-function PlayerRow({ player }: { player: PlayerBrowserItem }) {
-  const s = player.stats;
+function PlayerRow({ player, columns, view, period }: { player: PlayerBrowserItem; columns: Column[]; view: View; period: string }) {
+  const actual = statsFor(player, "stats", period);
+  const projection = statsFor(player, "projection", period);
+  const active = view === "PROJECTIONS" ? projection : actual;
+
   return (
-    <tr className="h-[42px] border-b border-[#dddddd] even:bg-[#f7f7f7]">
-      <td className="w-11 px-1 text-center">
+    <tr className="h-[72px] border-t border-[#e8e8e8] bg-white text-[18px] even:bg-[#f6f6f6]">
+      <td className="sticky left-0 z-20 w-12 bg-inherit px-1 text-center shadow-[8px_0_14px_rgba(255,255,255,0.88)]">
         <OwnerTeamLogo player={player} />
       </td>
-      <td className="w-[172px] px-1">
+      <td className="sticky left-12 z-20 w-56 bg-inherit px-2 shadow-[12px_0_18px_rgba(255,255,255,0.9)]">
         <div className="flex min-w-0 items-center gap-2">
           <PlayerImage player={player} />
           <div className="min-w-0">
-            <div className="flex items-center gap-1">
-              <span className="truncate text-[11px] text-[#064f9e]">{player.displayName}</span>
-              {player.status === "FA" ? <span className="rounded-sm bg-[#6ac878] px-1 text-[8px] font-bold text-white">F</span> : null}
-              {player.injuryStatus ? <span className="text-[9px] font-bold text-[#c23030]">{player.injuryStatus[0]}</span> : null}
+            <div className="flex min-w-0 items-center gap-1">
+              <RankBadge rank={view === "PROJECTIONS" ? player.projectionRank : player.posRank} />
+              <Link href={`/players/${player.playerId}`} className="truncate font-cond text-[22px] font-bold text-[#303236]">
+                {player.displayName}
+              </Link>
+              <AvailabilityBadge status={player.status} />
+              {player.injuryStatus ? <span className="font-cond text-[13px] font-bold text-[#e23313]">{player.injuryStatus[0]}</span> : null}
             </div>
-            <div className="truncate text-[10px] text-[#333]">
-              {player.pos} - {player.proTeam || "FA"}
+            <div className="font-cond text-[17px] font-bold text-[#666a70]">
+              {player.proTeam || "FA"} - {player.pos}
             </div>
+            <div className="truncate font-cond text-[15px] font-bold text-[#333]">{player.matchup}</div>
           </div>
         </div>
       </td>
-      <Cell>{player.matchup}</Cell>
-      <Cell>{player.manager}</Cell>
-      <Cell>{fmt(s.passYds, 0)}</Cell>
-      <Cell>{fmt(s.passTD, 0)}</Cell>
-      <Cell>{fmt(s.passInt, 0)}</Cell>
-      <Cell>{fmt(s.passSack, 0)}</Cell>
-      <Cell>{fmt(s.rushYds, 0)}</Cell>
-      <Cell>{fmt(s.rushTD, 0)}</Cell>
-      <Cell>{fmt(s.rec, 0)}</Cell>
-      <Cell>{fmt(s.recYds, 0)}</Cell>
-      <Cell>{fmt(s.recTD, 0)}</Cell>
-      <Cell>{fmt(s.retTD, 0)}</Cell>
-      <Cell>{fmt(s.fumTD, 0)}</Cell>
-      <Cell>{fmt(s.twoPt, 0)}</Cell>
-      <Cell>{fmt(s.fumLost, 0)}</Cell>
-      <Cell blue strong>{fmt(s.points, 2)}</Cell>
-      <Cell blue>{player.pos}{player.posRank}</Cell>
-      <Cell blue>{fmt(s.projected, 2)}</Cell>
-      <Cell blue>{starsFor(player.posRank)}</Cell>
+      {columns.map((column) => (
+        <td
+          key={column.key}
+          className={`px-2 text-center font-cond ${column.blue ? "bg-[#d8f6fb]" : ""} ${
+            column.strong ? "text-[20px] font-bold text-[#222]" : "font-semibold text-[#686b70]"
+          } ${column.wide ? "min-w-24" : "min-w-16"}`}
+        >
+          {column.get(player, active, actual, projection)}
+        </td>
+      ))}
     </tr>
   );
 }
 
-function GroupHead({ label = "", colSpan }: { label?: string; colSpan: number }) {
-  return (
-    <th colSpan={colSpan} className="border border-white px-1 py-0.5 text-center font-bold">
-      {label}
-    </th>
-  );
+function columnsFor(view: View): Column[] {
+  const base: Column[] = [
+    { key: "matchup", label: "Opp", group: "", wide: true, get: (player) => player.matchup },
+    { key: "manager", label: "Manager", group: "", wide: true, get: (player) => player.manager },
+  ];
+
+  if (view === "TRENDS") {
+    return [
+      ...base,
+      { key: "addTrend", label: "Adds", group: "24H Trend", blue: true, strong: true, get: (player) => fmt(player.addTrend) },
+      { key: "dropTrend", label: "Drops", group: "24H Trend", get: (player) => fmt(player.dropTrend) },
+      { key: "trendNet", label: "Net", group: "24H Trend", blue: true, get: (player) => fmt(player.addTrend - player.dropTrend) },
+      { key: "rosterAdds", label: "Adds", group: "League Moves", get: (player) => fmt(player.rosterAdds) },
+      { key: "rosterDrops", label: "Drops", group: "League Moves", get: (player) => fmt(player.rosterDrops) },
+      { key: "waiverAdds", label: "Waivers", group: "League Moves", get: (player) => fmt(player.waiverAdds) },
+      { key: "points", label: "Points", group: "Fantasy", blue: true, get: (_player, _stats, actual) => fmt(actual.points, 2, false) },
+      { key: "projected", label: "Proj", group: "Fantasy", blue: true, get: (_player, _stats, _actual, projection) => fmt(projection.projected, 2, false) },
+      { key: "posRank", label: "Pos Rank", group: "Fantasy", get: (player) => `${player.pos}${player.posRank}` },
+      { key: "status", label: "Status", group: "Sleeper", wide: true, get: (player) => statusLabel(player.status) },
+    ];
+  }
+
+  const scoringKey = view === "PROJECTIONS" ? "projected" : "points";
+  const scoringLabel = view === "PROJECTIONS" ? "Proj" : "Points";
+  const scoringGetter =
+    view === "PROJECTIONS"
+      ? (_player: PlayerBrowserItem, stats: PlayerStats) => fmt(stats.projected, 2, false)
+      : (_player: PlayerBrowserItem, stats: PlayerStats) => fmt(stats.points, 2, false);
+
+  return [
+    ...base,
+    { key: scoringKey, label: scoringLabel, group: "Fantasy", blue: true, strong: true, get: scoringGetter },
+    { key: "rank", label: "Pos Rank", group: "Fantasy", get: (player) => `${player.pos}${view === "PROJECTIONS" ? player.projectionRank : player.posRank}` },
+    { key: "fpaRank", label: "Rank", group: "Fan Pts Agnst", get: (player) => player.fantasyAgainst?.rank ?? "-" },
+    { key: "fpaAvg", label: "Avg", group: "Fan Pts Agnst", get: (player) => fmt(player.fantasyAgainst?.avg ?? 0, 2) },
+    { key: "passAtt", label: "Att", group: "Passing", get: (_player, stats) => fmt(stats.passAtt) },
+    { key: "passCmp", label: "Cmp", group: "Passing", get: (_player, stats) => fmt(stats.passCmp) },
+    { key: "passYds", label: "Yds", group: "Passing", get: (_player, stats) => fmt(stats.passYds) },
+    { key: "passTD", label: "TD", group: "Passing", get: (_player, stats) => fmt(stats.passTD) },
+    { key: "passInt", label: "Int", group: "Passing", get: (_player, stats) => fmt(stats.passInt) },
+    { key: "passSack", label: "Sck", group: "Passing", get: (_player, stats) => fmt(stats.passSack) },
+    { key: "rushAtt", label: "Att", group: "Rushing", get: (_player, stats) => fmt(stats.rushAtt) },
+    { key: "rushYds", label: "Rush Yds", group: "Rushing", wide: true, get: (_player, stats) => fmt(stats.rushYds) },
+    { key: "rushTD", label: "Rush TD", group: "Rushing", wide: true, get: (_player, stats) => fmt(stats.rushTD) },
+    { key: "targets", label: "Tgt", group: "Receiving", get: (_player, stats) => fmt(stats.targets) },
+    { key: "rec", label: "Rec", group: "Receiving", get: (_player, stats) => fmt(stats.rec) },
+    { key: "recYds", label: "Rec Yds", group: "Receiving", wide: true, get: (_player, stats) => fmt(stats.recYds) },
+    { key: "recTD", label: "Rec TD", group: "Receiving", wide: true, get: (_player, stats) => fmt(stats.recTD) },
+    { key: "fgMade", label: "FGM", group: "Kicking", get: (_player, stats) => fmt(stats.fgMade) },
+    { key: "fgAtt", label: "FGA", group: "Kicking", get: (_player, stats) => fmt(stats.fgAtt) },
+    { key: "xpMade", label: "XPM", group: "Kicking", get: (_player, stats) => fmt(stats.xpMade) },
+    { key: "retTD", label: "Ret TD", group: "Misc", wide: true, get: (_player, stats) => fmt(stats.retTD) },
+    { key: "fumTD", label: "FumTD", group: "Misc", get: (_player, stats) => fmt(stats.fumTD) },
+    { key: "twoPt", label: "2PT", group: "Misc", get: (_player, stats) => fmt(stats.twoPt) },
+    { key: "fumLost", label: "Lost", group: "Fum", get: (_player, stats) => fmt(stats.fumLost) },
+  ];
 }
 
-function Head({ children, align = "center", blue = false }: { children: React.ReactNode; align?: "left" | "center"; blue?: boolean }) {
+function groupColumns(columns: Column[]): { name: string; count: number }[] {
+  const groups: { name: string; count: number }[] = [];
+  for (const column of columns) {
+    const name = column.group ?? "";
+    const last = groups[groups.length - 1];
+    if (last && last.name === name) {
+      last.count += 1;
+    } else {
+      groups.push({ name, count: 1 });
+    }
+  }
+  return groups;
+}
+
+function StickyHead({
+  children,
+  rowSpan,
+  left,
+  width,
+  align = "center",
+}: {
+  children: ReactNode;
+  rowSpan: number;
+  left: string;
+  width: string;
+  align?: "left" | "center";
+}) {
   return (
-    <th className={`border border-white px-1 font-bold ${align === "left" ? "text-left" : "text-center"} ${blue ? "bg-[#dff1fb] text-[#064f9e]" : ""}`}>
+    <th
+      rowSpan={rowSpan}
+      className={`sticky ${left} z-40 ${width} bg-white px-2 font-bold shadow-[10px_0_18px_rgba(255,255,255,0.92)] ${
+        align === "left" ? "text-left" : "text-center"
+      }`}
+    >
       {children}
     </th>
   );
 }
 
-function Cell({ children, blue = false, strong = false }: { children: React.ReactNode; blue?: boolean; strong?: boolean }) {
-  return (
-    <td className={`w-10 px-1 text-center ${blue ? "bg-[#e7f5fd]" : ""} ${strong ? "font-bold text-[#111]" : ""}`}>
-      {children}
-    </td>
-  );
+function comparePlayers(a: PlayerBrowserItem, b: PlayerBrowserItem, sort: SortState, view: View, period: string): number {
+  const aValue = sortValue(a, sort.key, view, period);
+  const bValue = sortValue(b, sort.key, view, period);
+  const direction = sort.direction === "asc" ? 1 : -1;
+
+  if (typeof aValue === "number" && typeof bValue === "number") {
+    const diff = aValue - bValue;
+    if (diff) return diff * direction;
+  } else {
+    const diff = String(aValue).localeCompare(String(bValue));
+    if (diff) return diff * direction;
+  }
+
+  return b.stats.points - a.stats.points || b.projection.projected - a.projection.projected || a.displayName.localeCompare(b.displayName);
+}
+
+function sortValue(player: PlayerBrowserItem, key: string, view: View, period: string): string | number {
+  const actual = statsFor(player, "stats", period);
+  const projection = statsFor(player, "projection", period);
+  const active = view === "PROJECTIONS" ? projection : actual;
+
+  switch (key) {
+    case "team":
+      return player.ownerTeamName ?? statusLabel(player.status);
+    case "player":
+      return player.displayName;
+    case "matchup":
+      return player.matchup;
+    case "manager":
+      return player.manager;
+    case "points":
+      return actual.points;
+    case "projected":
+      return projection.projected;
+    case "rank":
+    case "posRank":
+      return view === "PROJECTIONS" ? player.projectionRank : player.posRank;
+    case "fpaRank":
+      return player.fantasyAgainst?.rank ?? 999;
+    case "fpaAvg":
+      return player.fantasyAgainst?.avg ?? 0;
+    case "status":
+      return statusLabel(player.status);
+    case "addTrend":
+      return player.addTrend;
+    case "dropTrend":
+      return player.dropTrend;
+    case "trendNet":
+      return player.addTrend - player.dropTrend;
+    case "rosterAdds":
+      return player.rosterAdds;
+    case "rosterDrops":
+      return player.rosterDrops;
+    case "waiverAdds":
+      return player.waiverAdds;
+    default:
+      return numericStat(active, key);
+  }
+}
+
+function numericStat(stats: PlayerStats, key: string): number {
+  return stats[key as keyof PlayerStats] ?? 0;
+}
+
+function statsFor(player: PlayerBrowserItem, type: "stats" | "projection", period: string): PlayerStats {
+  const source = type === "stats" ? player.statsByPeriod : player.projectionsByPeriod;
+  return source[period] ?? EMPTY_STATS;
 }
 
 function OwnerTeamLogo({ player }: { player: PlayerBrowserItem }) {
@@ -290,10 +612,14 @@ function OwnerTeamLogo({ player }: { player: PlayerBrowserItem }) {
     );
   }
 
+  if (player.status === "Waivers") {
+    return <span className="mx-auto grid h-8 w-8 place-items-center rounded-md bg-[#f07600] font-cond text-[15px] font-bold text-white">W</span>;
+  }
+
   if (player.status === "Taken") {
     return (
       <span
-        className="mx-auto grid h-8 w-8 place-items-center rounded-full text-[9px] font-bold text-white"
+        className="mx-auto grid h-8 w-8 place-items-center rounded-full font-cond text-[11px] font-bold text-white"
         style={{
           background: `linear-gradient(135deg, ${player.ownerTeamPrimary ?? "#667085"}, ${player.ownerTeamSecondary ?? "#98a2b3"})`,
         }}
@@ -304,11 +630,7 @@ function OwnerTeamLogo({ player }: { player: PlayerBrowserItem }) {
     );
   }
 
-  return (
-    <span className="mx-auto grid h-8 w-8 place-items-center rounded-full bg-[#eeeeee] text-[9px] font-bold text-[#777777]">
-      FA
-    </span>
-  );
+  return <span className="mx-auto grid h-8 w-8 place-items-center rounded-md bg-[#ef2b00] font-cond text-[15px] font-bold text-white">FA</span>;
 }
 
 function PlayerImage({ player }: { player: PlayerBrowserItem }) {
@@ -318,33 +640,60 @@ function PlayerImage({ player }: { player: PlayerBrowserItem }) {
       <img
         src={player.imageUrl}
         alt={player.displayName}
-        className={`h-9 w-9 shrink-0 rounded ${player.isLogo ? "object-contain p-1" : "object-cover"}`}
+        className={`h-12 w-12 shrink-0 rounded-full ${player.isLogo ? "object-contain p-1" : "object-cover"}`}
         suppressHydrationWarning
       />
     );
   }
   return (
-    <span className="grid h-9 w-9 shrink-0 place-items-center rounded bg-white text-[9px] font-bold text-[#5d6065] ring-1 ring-[#d6d6d6]">
+    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white font-cond text-[13px] font-bold text-[#5d6065] ring-1 ring-[#d6d6d6]">
       {player.pos}
+    </span>
+  );
+}
+
+function RankBadge({ rank }: { rank: number }) {
+  if (!Number.isFinite(rank) || rank > 999) return null;
+  return (
+    <span className="grid h-5 min-w-5 place-items-center rounded-full border border-[#d8d8d8] bg-white px-1 font-cond text-[13px] font-bold text-[#222]">
+      {rank}
+    </span>
+  );
+}
+
+function AvailabilityBadge({ status }: { status: PlayerAvailability }) {
+  if (status === "Taken") return null;
+  return (
+    <span className={`rounded-sm px-1 font-cond text-[12px] font-bold text-white ${status === "Waivers" ? "bg-[#f07600]" : "bg-[#67c777]"}`}>
+      {status === "Waivers" ? "W" : "F"}
     </span>
   );
 }
 
 function SearchIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#777" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#777" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <circle cx="11" cy="11" r="7" />
       <path d="m16.5 16.5 4.5 4.5" />
     </svg>
   );
 }
 
-function fmt(value: number, decimals = 0): string {
-  if (!value) return decimals ? "0.00" : "-";
+function ChevronIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4d5157" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+}
+
+function fmt(value: number, decimals = 0, zeroDash = true): string {
+  if (!Number.isFinite(value) || (zeroDash && value === 0)) return "-";
   return value.toFixed(decimals);
 }
 
-function starsFor(rank: number): string {
-  const count = rank <= 5 ? 5 : rank <= 12 ? 4 : rank <= 24 ? 3 : rank <= 36 ? 2 : 1;
-  return "★".repeat(count) + "☆".repeat(5 - count);
+function statusLabel(status: PlayerAvailability): string {
+  if (status === "FA") return "Free Agent";
+  if (status === "Waivers") return "On Waivers";
+  return "Taken";
 }
