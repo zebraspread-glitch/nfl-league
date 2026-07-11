@@ -11,6 +11,8 @@
   --card: #ffffff;
   --card-hover: #f4f5f6;
   --section: #eef0f2;
+  /* Zebra-stripe alt row background (pairs with --card in list rows). */
+  --row: #f7f8fa;
   --border: #e2e4e7;
   --border-strong: #d3d7dd;
 
@@ -30,11 +32,32 @@
   --live: #e0322b;
 }
 
+/* Dark theme — overrides the neutral surfaces/text; brand colours (teal, gold,
+   up/down/live, per-team) stay the same so the app keeps its identity. Applied
+   by toggling `class="dark"` on <html> (see SettingsProvider + the no-FOUC
+   script in layout.tsx). */
+html.dark {
+  --bg: #0d1014;
+  --card: #1e242c;
+  --card-hover: #262d37;
+  --section: #161b21;
+  --row: #1a2027;
+  --border: #2c333d;
+  --border-strong: #3a424d;
+
+  --text: #e8eaed;
+  --text-muted: #9aa1ad;
+  --text-dim: #6c7480;
+
+  color-scheme: dark;
+}
+
 @theme inline {
   --color-bg: var(--bg);
   --color-card: var(--card);
   --color-card-hover: var(--card-hover);
   --color-section: var(--section);
+  --color-row: var(--row);
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
   --color-text: var(--text);

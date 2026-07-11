@@ -4,6 +4,7 @@ import { Card, PageIntro } from "@/components/ui";
 export const metadata = { title: "More - MGL Fantasy" };
 
 const LINKS = [
+  { href: "/mock-draft", label: "Mock Draft", desc: "Simulate the 2026 draft board pick by pick", icon: "MD" },
   { href: "/games", label: "Every Game", desc: "445 games with full player boxscores", icon: "GM" },
   { href: "/players", label: "Players", desc: "Search NFL players, profiles and MGL records", icon: "PL" },
   { href: "/drafts", label: "Draft Results", desc: "Every historical MGL draft pick", icon: "DR" },
@@ -14,6 +15,7 @@ const LINKS = [
   { href: "/managers", label: "Managers", desc: "All-time managers, stats and legacy scores", icon: "MG" },
   { href: "/records", label: "Records", desc: "All-time wins, points and titles", icon: "RC" },
   { href: "/head-to-head", label: "Head to Head", desc: "Compare any two franchises", icon: "HH" },
+  { href: "/settings", label: "Settings", desc: "Theme (light/dark) and your team", icon: "⚙" },
 ];
 
 export default function MorePage() {
@@ -25,7 +27,7 @@ export default function MorePage() {
           <Link
             key={l.href}
             href={l.href}
-            className={`flex items-center gap-3 px-4 py-3.5 ${i % 2 ? "bg-card" : "bg-[#f7f8fa]"} hover:bg-card-hover`}
+            className={`flex items-center gap-3 px-4 py-3.5 ${i % 2 ? "bg-card" : "bg-row"} hover:bg-card-hover`}
           >
             <span className="grid h-9 w-9 place-items-center rounded-lg bg-section font-cond text-sm font-bold text-text-muted">
               {l.icon}

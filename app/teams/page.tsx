@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getSnapshot, getStandings } from "@/lib/espn";
+import { getSnapshot, getStandings } from "@/lib/sleeper";
 import { CURRENT_SEASON, getSeasonResults, HISTORY_SEASONS } from "@/lib/league-data";
 import { Card, EmptyState, Hexagon, PageIntro, TeamAvatar, rankBadgeTone } from "@/components/ui";
 import type { SeasonResult, SeasonStanding, Standing, TeamMeta } from "@/lib/types";
@@ -81,7 +81,7 @@ function normalizeCurrent(standings: Standing[]): LadderRow[] {
   return standings.map((s) => ({
     key: String(s.team.id),
     rank: s.rank,
-    href: `/teams/${s.team.id}`,
+    href: s.team.id > 0 ? `/teams/${s.team.id}` : undefined,
     team: s.team,
     name: s.team.name,
     sub: s.team.manager,
@@ -99,7 +99,7 @@ function normalizeHistorical(standings: SeasonStanding[]): LadderRow[] {
   return standings.map((row) => ({
     key: `${row.rank}-${row.name}`,
     rank: row.rank,
-    href: row.team ? `/teams/${row.team.id}` : undefined,
+    href: row.team && row.team.id > 0 ? `/teams/${row.team.id}` : undefined,
     team: row.team,
     name: row.name,
     sub: row.team && row.team.name !== row.name ? `Now ${row.team.name}` : row.team?.manager ?? "Historical team",
@@ -175,7 +175,7 @@ function LadderSwitch({ season, active }: { season: number; active: LadderView }
       <Link
         href={`/teams?season=${season}&ladder=regular`}
         className={`rounded-md px-2 py-2 text-center font-cond text-sm font-semibold uppercase tracking-wide transition-colors ${
-          active === "regular" ? "bg-white text-text shadow-sm" : "text-text-muted hover:text-text"
+          active === "regular" ? "bg-card text-text shadow-sm" : "text-text-muted hover:text-text"
         }`}
       >
         Regular Season
@@ -183,7 +183,7 @@ function LadderSwitch({ season, active }: { season: number; active: LadderView }
       <Link
         href={`/teams?season=${season}&ladder=final`}
         className={`rounded-md px-2 py-2 text-center font-cond text-sm font-semibold uppercase tracking-wide transition-colors ${
-          active === "final" ? "bg-white text-text shadow-sm" : "text-text-muted hover:text-text"
+          active === "final" ? "bg-card text-text shadow-sm" : "text-text-muted hover:text-text"
         }`}
       >
         Final
@@ -249,7 +249,7 @@ function LadderRowView({ row, index }: { row: LadderRow; index: number }) {
     </>
   );
 
-  const className = `flex items-center gap-3 px-3 py-2.5 ${index % 2 ? "bg-card" : "bg-[#f7f8fa]"} ${
+  const className = `flex items-center gap-3 px-3 py-2.5 ${index % 2 ? "bg-card" : "bg-row"} ${
     row.href ? "hover:bg-card-hover" : ""
   }`;
 

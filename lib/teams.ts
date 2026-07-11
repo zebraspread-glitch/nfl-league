@@ -31,11 +31,14 @@ export function getTeam(id: TeamId): TeamMeta | undefined {
   return BY_ID.get(id);
 }
 
-/** Resolve a franchise by its display name (used by the static history data). */
-export function getTeamByName(name: string): TeamMeta {
+/** Resolve a franchise by its display name (used by the static history data).
+ *  Unknown names fall back to a grey placeholder. Pass a unique `fallbackId`
+ *  (e.g. a negated roster id) so multiple unmapped teams don't collide on the
+ *  same id — a negative id also marks the team as having no franchise page. */
+export function getTeamByName(name: string, fallbackId = -1): TeamMeta {
   return (
     BY_NAME.get(name) ?? {
-      id: -1,
+      id: fallbackId,
       name,
       manager: "",
       abbrev: name.slice(0, 3).toUpperCase(),

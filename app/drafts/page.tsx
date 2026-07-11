@@ -158,7 +158,7 @@ function groupByTeam(picks: DraftPick[]): TeamGroup[] {
 function DraftRow({ pick, alt }: { pick: DraftPick; alt: boolean }) {
   const managers = pick.managers.length ? pick.managers.join(", ") : "Unknown manager";
   return (
-    <div className={`flex items-center gap-2.5 px-3 py-2.5 ${alt ? "bg-card" : "bg-[#f7f8fa]"}`}>
+    <div className={`flex items-center gap-2.5 px-3 py-2.5 ${alt ? "bg-card" : "bg-row"}`}>
       <div className="w-7 shrink-0 text-center font-cond text-lg font-bold tabular-nums text-text-muted">
         {pick.pick}
       </div>
@@ -186,7 +186,7 @@ function DraftRow({ pick, alt }: { pick: DraftPick; alt: boolean }) {
 
 function TeamPickRow({ pick, alt }: { pick: DraftPick; alt: boolean }) {
   return (
-    <div className={`flex items-center gap-2.5 px-3 py-2 ${alt ? "bg-card" : "bg-[#f7f8fa]"}`}>
+    <div className={`flex items-center gap-2.5 px-3 py-2 ${alt ? "bg-card" : "bg-row"}`}>
       <div className="w-7 shrink-0 text-center font-cond text-base font-bold tabular-nums text-text-muted">
         {pick.pick}
       </div>

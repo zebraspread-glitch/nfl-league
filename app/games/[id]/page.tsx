@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { gameCounts, getGame, weekLabel, type GameSide, type GamePlayer } from "@/lib/games";
-import { Card, TeamAvatar, Score } from "@/components/ui";
+import { gameCounts, getGame, getGameLiveChart, weekLabel, type GameSide, type GamePlayer } from "@/lib/games";
+import { Card, TeamAvatar, Score, SectionHeader } from "@/components/ui";
 import { PlayerBadge } from "@/components/player-badge";
+import { LiveMarginChart } from "@/components/live-margin-chart";
 import { resolvePlayerImage } from "@/lib/player-images";
 
 export const revalidate = 86400;
@@ -14,6 +15,7 @@ export default async function BoxscorePage({ params }: { params: Promise<{ id: s
 
   const homeWin = game.home.total >= game.away.total;
   const counts = gameCounts(game);
+  const chart = await getGameLiveChart(id);
 
   return (
     <div className="space-y-3">
@@ -32,8 +34,19 @@ export default async function BoxscorePage({ params }: { params: Promise<{ id: s
         </div>
       </div>
 
+      {chart && chart.points.length > 1 && (
+        <Card>
+          <SectionHeader>Live Margin</SectionHeader>
+          <LiveMarginChart
+            chart={chart}
+            home={{ name: game.home.name, color: game.home.team?.primary ?? "#e8112d" }}
+            away={{ name: game.away.name, color: game.away.team?.primary ?? "#2a6df0" }}
+          />
+        </Card>
+      )}
+
       {counts ? (
-        <div className="grid gap-3 sm:grid-cols-2 sm:items-start">
+        <div className="grid grid-cols-2 items-start gap-2">
           <TeamBox side={game.away} />
           <TeamBox side={game.home} />
         </div>
@@ -62,20 +75,18 @@ function TeamBox({ side }: { side: GameSide }) {
   const starters = side.players.filter((p) => p.started);
   const bench = side.players.filter((p) => !p.started);
   return (
-    <Card>
-      <div className="flex items-center justify-between bg-section px-4 py-2.5">
-        <div className="flex items-center gap-2">
-          {side.team && <TeamAvatar team={side.team} size="sm" />}
-          <span className="font-cond text-base font-semibold">{side.name}</span>
-        </div>
-        <span className="font-cond text-lg font-bold tabular-nums">{side.total.toFixed(2)}</span>
+    <Card className="overflow-hidden">
+      <div className="flex items-center gap-1.5 bg-section px-2 py-2">
+        {side.team && <TeamAvatar team={side.team} size="sm" />}
+        <span className="min-w-0 flex-1 truncate font-cond text-sm font-semibold">{side.name}</span>
+        <span className="shrink-0 font-cond text-sm font-bold tabular-nums">{side.total.toFixed(2)}</span>
       </div>
       {starters.map((p, i) => (
         <PlayerRow key={p.playerId + "-" + i} p={p} alt={i % 2 === 1} />
       ))}
       {bench.length > 0 && (
         <>
-          <div className="bg-section px-4 py-1.5 font-cond text-xs font-semibold uppercase tracking-wide text-text-muted">
+          <div className="bg-section px-2 py-1.5 font-cond text-xs font-semibold uppercase tracking-wide text-text-muted">
             Bench
           </div>
           {bench.map((p, i) => (
@@ -91,17 +102,17 @@ function PlayerRow({ p, alt, muted = false }: { p: GamePlayer; alt: boolean; mut
   const { displayName } = resolvePlayerImage(p.playerId, p.pos, p.name);
 
   return (
-    <div className={`flex items-center gap-2 px-3 py-2 ${alt ? "bg-card" : "bg-[#f7f8fa]"} ${muted ? "opacity-75" : ""}`}>
-      <span className="w-7 text-center font-cond text-xs font-bold text-text-muted">{p.slot}</span>
+    <div className={`flex items-center gap-1.5 px-2 py-2 ${alt ? "bg-card" : "bg-row"} ${muted ? "opacity-75" : ""}`}>
+      <span className="w-5 shrink-0 text-center font-cond text-[10px] font-bold text-text-muted">{p.slot}</span>
       <PlayerBadge playerId={p.playerId} pos={p.pos} name={p.name} />
       <Link href={`/players/${p.playerId}`} className="min-w-0 flex-1">
-        <div className="truncate text-sm font-medium">{displayName}</div>
-        <div className="text-[11px] text-text-muted">
+        <div className="truncate text-xs font-medium">{displayName}</div>
+        <div className="truncate text-[10px] text-text-muted">
           {p.proTeam}
           {p.opponent ? ` - ${p.opponent}` : ""}
         </div>
       </Link>
-      <Score value={p.points} className="text-sm sm:text-base" dim={p.points === 0} />
+      <Score value={p.points} className="shrink-0 text-xs" dim={p.points === 0} />
     </div>
   );
 }

@@ -163,11 +163,16 @@ export function getFranchiseSeasons(teamId: number): FranchiseSeason[] {
   for (const s of rawSeasons()) {
     const row = s.teams.find((t) => franchiseIdForName(t.name) === teamId);
     if (!row) continue;
+    const byRegular = [...s.teams].sort(
+      (a, b) => b.winPct - a.winPct || b.pointsFor - a.pointsFor,
+    );
+    const regularRank = byRegular.findIndex((t) => t === row) + 1;
     out.push({
       season: s.year,
       name: row.name,
       teamCount: s.teamCount,
       finalRank: row.finalRank,
+      regularRank,
       wins: row.wins,
       losses: row.losses,
       ties: row.ties,

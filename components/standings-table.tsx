@@ -20,12 +20,11 @@ export function StandingsTable({
       </div>
 
       <div>
-        {standings.map((s, i) => (
-            <Link
-              key={s.team.id}
-              href={`/teams/${s.team.id}`}
-              className={`flex items-center gap-3 px-3 py-2.5 ${i % 2 ? "bg-card" : "bg-[#f7f8fa]"} hover:bg-card-hover`}
-            >
+        {standings.map((s, i) => {
+          const linkable = s.team.id > 0;
+          const rowClass = `flex items-center gap-3 px-3 py-2.5 ${i % 2 ? "bg-card" : "bg-row"} ${linkable ? "hover:bg-card-hover" : ""}`;
+          const inner = (
+            <>
               {/* change arrow + hexagon */}
               <div className="flex w-9 flex-col items-center gap-0.5">
                 <Hexagon value={s.rank} tone={rankBadgeTone(s.rank)} />
@@ -36,7 +35,7 @@ export function StandingsTable({
 
               <div className="min-w-0 flex-1">
                 <div className="truncate font-cond text-lg font-semibold leading-tight">{s.team.name}</div>
-                <div className="truncate text-xs text-text-muted">{s.team.manager}</div>
+                <div className="truncate text-xs text-text-muted">{s.team.manager || "—"}</div>
               </div>
 
               <div className="w-12 text-center font-cond text-lg font-semibold tabular-nums">
@@ -46,8 +45,18 @@ export function StandingsTable({
               <div className="w-16 text-right font-cond text-lg font-semibold tabular-nums">
                 {s.pointsFor.toFixed(1)}
               </div>
+            </>
+          );
+          return linkable ? (
+            <Link key={s.team.id} href={`/teams/${s.team.id}`} className={rowClass}>
+              {inner}
             </Link>
-        ))}
+          ) : (
+            <div key={`ph-${s.rank}`} className={rowClass}>
+              {inner}
+            </div>
+          );
+        })}
       </div>
 
       <div className="flex items-center gap-2 border-t border-border px-3 py-2 text-xs text-text-muted">

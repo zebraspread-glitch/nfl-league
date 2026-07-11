@@ -12,14 +12,14 @@ function AvatarWithRank({
   align: "left" | "right";
 }) {
   return (
-    <Link href={`/teams/${side.team.id}`} className="relative block shrink-0" suppressHydrationWarning>
+    <div className="relative block shrink-0" suppressHydrationWarning>
       <TeamAvatar team={side.team} size="lg" />
       {rank ? (
         <span className={`absolute -top-1 ${align === "left" ? "-left-2" : "-right-2"}`}>
           <Hexagon value={rank} tone={rankBadgeTone(rank)} size="sm" />
         </span>
       ) : null}
-    </Link>
+    </div>
   );
 }
 
@@ -53,59 +53,61 @@ export function MatchupCard({
 
   return (
     <Card>
-      <div className="flex items-center justify-between bg-section px-4 py-2">
-        <span className="font-cond text-sm font-semibold uppercase tracking-wide text-text">
-          {title ?? `Week ${matchup.week}`}
-        </span>
-        {status === "live" ? (
-          <Pill tone="live">
-            <span className="live-dot">●</span> Live
-          </Pill>
-        ) : status === "final" ? (
-          <Pill>Final</Pill>
-        ) : (
-          <span className="font-cond text-xs uppercase text-text-muted">Upcoming</span>
-        )}
-      </div>
+      <Link href={`/matchups/${matchup.id}`} className="block" suppressHydrationWarning>
+        <div className="flex items-center justify-between bg-section px-4 py-2">
+          <span className="font-cond text-sm font-semibold uppercase tracking-wide text-text">
+            {title ?? `Week ${matchup.week}`}
+          </span>
+          {status === "live" ? (
+            <Pill tone="live">
+              <span className="live-dot">●</span> Live
+            </Pill>
+          ) : status === "final" ? (
+            <Pill>Final</Pill>
+          ) : (
+            <span className="font-cond text-xs uppercase text-text-muted">Upcoming</span>
+          )}
+        </div>
 
-      <div className="px-4 py-4">
-        <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2">
-          <AvatarWithRank side={away} rank={rankOf?.(away.team.id)} align="left" />
+        <div className="px-4 py-4">
+          <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2">
+            <AvatarWithRank side={away} rank={rankOf?.(away.team.id)} align="left" />
 
-          <div className="flex items-center justify-center gap-4">
-            <div className="text-right">
-              <ScoreBlock side={away} win={awayWin} upcoming={status === "upcoming"} />
+            <div className="flex items-center justify-center gap-4">
+              <div className="text-right">
+                <ScoreBlock side={away} win={awayWin} upcoming={status === "upcoming"} />
+              </div>
+              <div className="flex flex-col items-center gap-1 text-text-dim">
+                <span className="h-3 w-px bg-border-strong" />
+                <span className="font-cond text-xs font-bold">VS</span>
+                <span className="h-3 w-px bg-border-strong" />
+              </div>
+              <div className="text-left">
+                <ScoreBlock side={home} win={homeWin} upcoming={status === "upcoming"} />
+              </div>
             </div>
-            <div className="flex flex-col items-center gap-1 text-text-dim">
-              <span className="h-3 w-px bg-border-strong" />
-              <span className="font-cond text-xs font-bold">VS</span>
-              <span className="h-3 w-px bg-border-strong" />
-            </div>
-            <div className="text-left">
-              <ScoreBlock side={home} win={homeWin} upcoming={status === "upcoming"} />
-            </div>
+
+            <AvatarWithRank side={home} rank={rankOf?.(home.team.id)} align="right" />
           </div>
 
-          <AvatarWithRank side={home} rank={rankOf?.(home.team.id)} align="right" />
-        </div>
-
-        <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
-          <Link href={`/teams/${away.team.id}`} className="min-w-0 text-left" suppressHydrationWarning>
-            <div className="truncate font-cond text-lg font-semibold leading-tight">{away.team.name}</div>
-            <div className="truncate text-xs text-text-muted">
-              {away.team.manager}
-              {away.record ? ` · ${away.record.wins}-${away.record.losses}` : ""}
+          <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+            <div className="min-w-0 text-left">
+              <div className="truncate font-cond text-lg font-semibold leading-tight">{away.team.name}</div>
+              <div className="truncate text-xs text-text-muted">
+                {away.team.manager}
+                {away.record ? ` · ${away.record.wins}-${away.record.losses}` : ""}
+              </div>
             </div>
-          </Link>
-          <Link href={`/teams/${home.team.id}`} className="min-w-0 text-right" suppressHydrationWarning>
-            <div className="truncate font-cond text-lg font-semibold leading-tight">{home.team.name}</div>
-            <div className="truncate text-xs text-text-muted">
-              {home.record ? `${home.record.wins}-${home.record.losses} · ` : ""}
-              {home.team.manager}
+            <div className="min-w-0 text-right">
+              <div className="truncate font-cond text-lg font-semibold leading-tight">{home.team.name}</div>
+              <div className="truncate text-xs text-text-muted">
+                {home.record ? `${home.record.wins}-${home.record.losses} · ` : ""}
+                {home.team.manager}
+              </div>
             </div>
-          </Link>
+          </div>
         </div>
-      </div>
+      </Link>
     </Card>
   );
 }

@@ -1,4 +1,4 @@
-import { getStandings, getSnapshot } from "@/lib/espn";
+import { getStandings, getSnapshot } from "@/lib/sleeper";
 import { StandingsTable } from "@/components/standings-table";
 import { EmptyState, PageIntro } from "@/components/ui";
 

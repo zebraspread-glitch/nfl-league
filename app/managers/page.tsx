@@ -78,7 +78,7 @@ function LeaderTile({ label, manager, value }: { label: string; manager: Manager
 
 function ManagerRow({ manager, rank, alt }: { manager: ManagerProfile; rank: number; alt: boolean }) {
   return (
-    <div className={`flex items-center gap-2 px-3 py-2.5 ${alt ? "bg-card" : "bg-[#f7f8fa]"}`}>
+    <div className={`flex items-center gap-2 px-3 py-2.5 ${alt ? "bg-card" : "bg-row"}`}>
       <span className="flex w-9 justify-center">
         <Hexagon value={rank} tone={rankBadgeTone(rank)} size="sm" />
       </span>
@@ -124,7 +124,7 @@ function ManagerCard({ manager, rank }: { manager: ManagerProfile; rank: number 
           <Link
             key={item.team.id}
             href={`/teams/${item.team.id}`}
-            className={`flex items-center gap-2 px-3 py-2 ${index % 2 ? "bg-card" : "bg-[#f7f8fa]"} hover:bg-card-hover`}
+            className={`flex items-center gap-2 px-3 py-2 ${index % 2 ? "bg-card" : "bg-row"} hover:bg-card-hover`}
           >
             <TeamAvatar team={item.team} size="sm" />
             <div className="min-w-0 flex-1">

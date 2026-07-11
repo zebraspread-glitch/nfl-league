@@ -150,7 +150,7 @@ function PlayoffStandings({
         </span>
       </div>
       {stats.map((s, i) => (
-        <div key={s.id} className={`flex items-center gap-1.5 px-3 py-2.5 sm:gap-2 ${i % 2 === 1 ? "bg-card" : "bg-[#f7f8fa]"}`}>
+        <div key={s.id} className={`flex items-center gap-1.5 px-3 py-2.5 sm:gap-2 ${i % 2 === 1 ? "bg-card" : "bg-row"}`}>
           <span className="w-6 text-center font-cond text-sm font-semibold text-text-muted">{i + 1}</span>
           {s.team ? <TeamAvatar team={s.team} size="sm" /> : <span className="h-8 w-8 shrink-0 rounded-full bg-section" />}
           <span className="min-w-0 flex-1 truncate pl-2 text-sm font-semibold">{s.team?.name ?? s.name}</span>

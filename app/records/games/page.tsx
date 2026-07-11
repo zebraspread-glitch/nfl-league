@@ -8,14 +8,18 @@ import {
   type RivalryRecord,
   type RivalryStreakRecord,
   type PairRivalryRecord,
+  type ChartGameRecord,
 } from "@/lib/games";
+import { getPlayerRecords, type PlayerGameRecord, type LabeledPlayerRecord } from "@/lib/player-records";
 import type { TeamMeta } from "@/lib/types";
-import { Card, SectionHeader, PageIntro, TeamAvatar, Score } from "@/components/ui";
+import { Card, SectionHeader, SectionTitle, PageIntro, TeamAvatar, Score } from "@/components/ui";
+import { PlayerBadge } from "@/components/player-badge";
 
 export const revalidate = 3600;
 
 export default async function GameRecordsPage() {
   const rb = await getRecordBook();
+  const pr = await getPlayerRecords();
 
   return (
     <div className="space-y-3">
@@ -38,6 +42,8 @@ export default async function GameRecordsPage() {
       <PairRivalryList title="Teams that played each other the most" rows={rb.mostPlayedRivalries} metric="games" />
       <PairRivalryList title="Closest rivalries by total points" rows={rb.closestRivalries} metric="pointDiff" />
       <PairRivalryList title="Highest-scoring rivalries" rows={rb.highestScoringRivalries} metric="avgCombined" />
+      <RivalryList title="Most points scored on average against an opponent" rows={rb.bestAvgVsOpponent} metric="avgFor" />
+      <RivalryList title="Fewest points scored on average against an opponent" rows={rb.worstAvgVsOpponent} metric="avgFor" />
 
       <TeamGameList title="Highest scores ever" rows={rb.highestScores} />
       <TeamGameList title="Most points in a loss" rows={rb.mostInLoss} subtitle="heartbreak" />
@@ -45,6 +51,21 @@ export default async function GameRecordsPage() {
       <MatchupList title="Biggest blowouts" rows={rb.blowouts} metric="margin" />
       <MatchupList title="Closest games" rows={rb.nailbiters} metric="margin" />
       <MatchupList title="Highest-scoring shootouts" rows={rb.shootouts} metric="combined" />
+
+      <ChartRecordList title="Biggest comebacks" rows={rb.comebacks} unit="down" format={(v) => v.toFixed(1)} tone="up" />
+      <ChartRecordList title="Tightest games" rows={rb.tightest} unit="max lead" format={(v) => v.toFixed(1)} />
+      <ChartRecordList title="Most back-and-forth (lead changes)" rows={rb.mostLeadChanges} unit="lead changes" format={(v) => `${v}`} />
+      <ChartRecordList title="Won leading the least" rows={rb.wonLeadingLeast} unit="of game led" format={(v) => `${v}%`} />
+      <ChartRecordList title="Most comfortable wins" rows={rb.mostComfortable} unit="avg lead" format={(v) => `${v > 0 ? "+" : ""}${v.toFixed(1)}`} />
+      <ChartRecordList title="Biggest momentum swings" rows={rb.biggestSwings} unit="pt swing" format={(v) => v.toFixed(1)} />
+
+      <SectionTitle>Player single-game records</SectionTitle>
+      <PlayerGameList title="Highest-scoring games" rows={pr.highestGames} unit="pts" format={(v) => v.toFixed(1)} />
+      <LabeledPlayerList title="Best game by position" rows={pr.bestByPosition} unit="pts" format={(v) => v.toFixed(1)} />
+      <PlayerGameList title="Most points in a loss" rows={pr.mostInLoss} unit="pts" format={(v) => v.toFixed(1)} />
+      <PlayerGameList title="One-man shows (most of a team's score)" rows={pr.oneManShows} unit="of team" format={(v) => `${v}%`} />
+      <PlayerGameList title="Biggest points left on the bench" rows={pr.benchMistakes} unit="pts" format={(v) => v.toFixed(1)} />
+      <LabeledPlayerList title="Biggest stat lines" rows={pr.statLines} format={(v) => `${v}`} />
     </div>
   );
 }
@@ -152,7 +173,7 @@ function RivalryStreakList({ title, rows }: { title: string; rows: RivalryStreak
     <Card>
       <SectionHeader>{title}</SectionHeader>
       {rows.map((r, i) => (
-        <div key={`${r.teamName}-${r.opponentName}-${r.from}-${r.to}`} className={`flex items-center gap-3 px-3 py-2.5 ${i % 2 ? "bg-card" : "bg-[#f7f8fa]"}`}>
+        <div key={`${r.teamName}-${r.opponentName}-${r.from}-${r.to}`} className={`flex items-center gap-3 px-3 py-2.5 ${i % 2 ? "bg-card" : "bg-row"}`}>
           <span className="w-5 text-center font-cond text-sm font-bold text-text-muted">{i + 1}</span>
           <div className="min-w-0 flex-1">
             <TeamPair left={r.team} leftName={r.teamName} right={r.opponent} rightName={r.opponentName} />
@@ -167,21 +188,23 @@ function RivalryStreakList({ title, rows }: { title: string; rows: RivalryStreak
   );
 }
 
-function RivalryList({ title, rows, metric }: { title: string; rows: RivalryRecord[]; metric: "wins" | "pct" }) {
+function RivalryList({ title, rows, metric }: { title: string; rows: RivalryRecord[]; metric: "wins" | "pct" | "avgFor" }) {
   return (
     <Card>
       <SectionHeader>{title}</SectionHeader>
       {rows.map((r, i) => (
-        <div key={`${title}-${r.teamName}-${r.opponentName}`} className={`flex items-center gap-3 px-3 py-2.5 ${i % 2 ? "bg-card" : "bg-[#f7f8fa]"}`}>
+        <div key={`${title}-${r.teamName}-${r.opponentName}`} className={`flex items-center gap-3 px-3 py-2.5 ${i % 2 ? "bg-card" : "bg-row"}`}>
           <span className="w-5 text-center font-cond text-sm font-bold text-text-muted">{i + 1}</span>
           <div className="min-w-0 flex-1">
             <TeamPair left={r.team} leftName={r.teamName} right={r.opponent} rightName={r.opponentName} />
           </div>
           <div className="shrink-0 text-right">
             <div className="font-cond text-lg font-bold tabular-nums">
-              {metric === "wins" ? r.wins : r.winPct.toFixed(3).replace(/^0/, "")}
+              {metric === "wins" ? r.wins : metric === "pct" ? r.winPct.toFixed(3).replace(/^0/, "") : r.avgFor.toFixed(1)}
             </div>
-            <div className="text-[11px] text-text-muted">{r.wins}-{r.losses}{r.ties ? `-${r.ties}` : ""} / {r.games}</div>
+            <div className="text-[11px] text-text-muted">
+              {metric === "avgFor" ? `avg pts / ${r.games} games` : `${r.wins}-${r.losses}${r.ties ? `-${r.ties}` : ""} / ${r.games}`}
+            </div>
           </div>
         </div>
       ))}
@@ -202,7 +225,7 @@ function PairRivalryList({
     <Card>
       <SectionHeader>{title}</SectionHeader>
       {rows.map((r, i) => (
-        <div key={`${title}-${r.aName}-${r.bName}`} className={`flex items-center gap-3 px-3 py-2.5 ${i % 2 ? "bg-card" : "bg-[#f7f8fa]"}`}>
+        <div key={`${title}-${r.aName}-${r.bName}`} className={`flex items-center gap-3 px-3 py-2.5 ${i % 2 ? "bg-card" : "bg-row"}`}>
           <span className="w-5 text-center font-cond text-sm font-bold text-text-muted">{i + 1}</span>
           <div className="min-w-0 flex-1">
             <TeamPair left={r.a} leftName={r.aName} right={r.b} rightName={r.bName} />
@@ -232,7 +255,7 @@ function TeamGameList({ title, rows, subtitle }: { title: string; rows: TeamGame
         <Link
           key={r.gameId + r.teamName}
           href={`/games/${r.gameId}`}
-          className={`flex items-center gap-3 px-3 py-2.5 ${i % 2 ? "bg-card" : "bg-[#f7f8fa]"} hover:bg-card-hover`}
+          className={`flex items-center gap-3 px-3 py-2.5 ${i % 2 ? "bg-card" : "bg-row"} hover:bg-card-hover`}
         >
           <span className="w-5 text-center font-cond text-sm font-bold text-text-muted">{i + 1}</span>
           {r.team ? <TeamAvatar team={r.team} size="sm" /> : <span className="h-7 w-7 rounded-full bg-section" />}
@@ -250,6 +273,128 @@ function TeamGameList({ title, rows, subtitle }: { title: string; rows: TeamGame
   );
 }
 
+function PlayerGameList({
+  title,
+  rows,
+  unit,
+  format,
+}: {
+  title: string;
+  rows: PlayerGameRecord[];
+  unit: string;
+  format: (value: number) => string;
+}) {
+  return (
+    <Card>
+      <SectionHeader>{title}</SectionHeader>
+      {rows.map((r, i) => (
+        <div
+          key={`${r.gameId}-${r.playerId}-${i}`}
+          className={`flex items-center gap-3 px-3 py-2.5 ${i % 2 ? "bg-card" : "bg-row"}`}
+        >
+          <span className="w-5 shrink-0 text-center font-cond text-sm font-bold text-text-muted">{i + 1}</span>
+          <PlayerBadge playerId={r.playerId} pos={r.pos} name={r.playerName} />
+          <Link href={`/games/${r.gameId}`} className="min-w-0 flex-1 hover:underline">
+            <div className="truncate font-cond text-sm font-semibold leading-tight">{r.playerName}</div>
+            <div className="truncate text-[11px] text-text-muted">
+              {r.pos} · {r.teamName} · {r.season} {shortWeek(r.week)}
+              {r.detail ? ` · ${r.detail}` : ""}
+            </div>
+          </Link>
+          <div className="shrink-0 text-right">
+            <div className="font-cond text-lg font-bold tabular-nums">{format(r.value)}</div>
+            <div className="text-[11px] text-text-muted">{unit}</div>
+          </div>
+        </div>
+      ))}
+    </Card>
+  );
+}
+
+function LabeledPlayerList({
+  title,
+  rows,
+  unit,
+  format,
+}: {
+  title: string;
+  rows: LabeledPlayerRecord[];
+  unit?: string;
+  format: (value: number) => string;
+}) {
+  return (
+    <Card>
+      <SectionHeader>{title}</SectionHeader>
+      {rows.map((r, i) => (
+        <div key={r.label} className={`flex items-center gap-3 px-3 py-2.5 ${i % 2 ? "bg-card" : "bg-row"}`}>
+          <span className="w-9 shrink-0 font-cond text-xs font-bold uppercase tracking-wide text-text-muted">{r.label}</span>
+          {r.rec ? (
+            <>
+              <PlayerBadge playerId={r.rec.playerId} pos={r.rec.pos} name={r.rec.playerName} />
+              <Link href={`/games/${r.rec.gameId}`} className="min-w-0 flex-1 hover:underline">
+                <div className="truncate font-cond text-sm font-semibold leading-tight">{r.rec.playerName}</div>
+                <div className="truncate text-[11px] text-text-muted">
+                  {r.rec.teamName} · {r.rec.season} {shortWeek(r.rec.week)}
+                  {r.rec.detail ? ` · ${r.rec.detail}` : ""}
+                </div>
+              </Link>
+              <div className="shrink-0 text-right">
+                <div className="font-cond text-lg font-bold tabular-nums">{format(r.rec.value)}</div>
+                {unit && <div className="text-[11px] text-text-muted">{unit}</div>}
+              </div>
+            </>
+          ) : (
+            <span className="flex-1 text-sm text-text-muted">—</span>
+          )}
+        </div>
+      ))}
+    </Card>
+  );
+}
+
+function ChartRecordList({
+  title,
+  rows,
+  unit,
+  format,
+  tone,
+}: {
+  title: string;
+  rows: ChartGameRecord[];
+  unit: string;
+  format: (value: number) => string;
+  tone?: "up";
+}) {
+  return (
+    <Card>
+      <SectionHeader>{title}</SectionHeader>
+      {rows.map((r, i) => (
+        <Link
+          key={r.gameId}
+          href={`/games/${r.gameId}`}
+          className={`flex items-center gap-3 px-3 py-2.5 ${i % 2 ? "bg-card" : "bg-row"} hover:bg-card-hover`}
+        >
+          <span className="w-5 text-center font-cond text-sm font-bold text-text-muted">{i + 1}</span>
+          {r.winnerTeam ? <TeamAvatar team={r.winnerTeam} size="sm" /> : <span className="h-7 w-7 rounded-full bg-section" />}
+          <div className="min-w-0 flex-1">
+            <div className="truncate font-cond text-sm font-semibold leading-tight">
+              {r.winnerName} <span className="text-text-muted">def.</span> {r.loserName}
+            </div>
+            <div className="truncate text-[11px] text-text-muted">
+              won {r.winnerScore.toFixed(1)} – {r.loserScore.toFixed(1)} · {r.season} {shortWeek(r.week)}
+              {r.detail ? ` · ${r.detail}` : ""}
+            </div>
+          </div>
+          <div className="shrink-0 text-right">
+            <div className={`font-cond text-lg font-bold tabular-nums ${tone === "up" ? "text-up" : ""}`}>{format(r.value)}</div>
+            <div className="text-[11px] text-text-muted">{unit}</div>
+          </div>
+        </Link>
+      ))}
+    </Card>
+  );
+}
+
 function MatchupList({ title, rows, metric }: { title: string; rows: MatchupRecord[]; metric: "margin" | "combined" }) {
   return (
     <Card>
@@ -258,7 +403,7 @@ function MatchupList({ title, rows, metric }: { title: string; rows: MatchupReco
         <Link
           key={r.gameId}
           href={`/games/${r.gameId}`}
-          className={`flex items-center gap-3 px-3 py-2.5 ${i % 2 ? "bg-card" : "bg-[#f7f8fa]"} hover:bg-card-hover`}
+          className={`flex items-center gap-3 px-3 py-2.5 ${i % 2 ? "bg-card" : "bg-row"} hover:bg-card-hover`}
         >
           <span className="w-5 text-center font-cond text-sm font-bold text-text-muted">{i + 1}</span>
           <div className="min-w-0 flex-1">

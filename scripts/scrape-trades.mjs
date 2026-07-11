@@ -42,7 +42,6 @@ function parseLegs(html) {
         /playerNameId-(\d+)[^>]*">([^<]+)<\/a>\s*<em>([^<]*)<\/em>/,
       );
       if (playerM) {
-        const [, , proLine] = [playerM[0]];
         const posTeam = playerM[3].trim(); // "QB - NYJ" or "QB"
         const [pos, proTeam] = posTeam.split(" - ").map((s) => s?.trim());
         items.push({

@@ -26,7 +26,7 @@ export interface Transaction {
   toTeam?: TeamMeta;
 }
 
-interface RawTransaction extends Omit<Transaction, "fromTeam" | "toTeam"> {}
+type RawTransaction = Omit<Transaction, "fromTeam" | "toTeam">;
 
 let cache: Transaction[] | null = null;
 

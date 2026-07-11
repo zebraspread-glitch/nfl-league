@@ -48,6 +48,8 @@ export interface MatchupSide {
   /** Projected total points. */
   projected?: number;
   record?: { wins: number; losses: number; ties: number };
+  /** Sleeper roster_id backing this side, when sourced from the live API. */
+  rosterId?: number;
 }
 
 export type MatchupStatus = "upcoming" | "live" | "final";
@@ -70,13 +72,39 @@ export interface RosterEntry {
   proTeam?: string;
   points: number;
   projected?: number;
+  /** Rank within position by projected points this week (for the rank badge). */
+  posRank?: number;
   started: boolean;
+  /** Raw Sleeper player id (numeric for players, team abbreviation for DEF), when sourced live. */
+  sleeperId?: string;
+  /** This week's NFL game from the player's perspective, e.g. "CLE @ NE" or "DEN vs DAL". */
+  gameLabel?: string;
+  /** Best-available kickoff display (game day/date — Sleeper's schedule has no exact time). */
+  gameWhen?: string;
+  /** True once the player's NFL game has kicked off (so we show actual points, not "—"). */
+  gameStarted?: boolean;
+  /** Sleeper's injury designation, e.g. "Questionable", "Out", "IR", when present. */
+  injuryStatus?: string;
+}
+
+/** One slot in a roster's lineup — empty when no player is assigned. */
+export interface RosterSlot {
+  /** Display label, e.g. "QB", "RB", "W/R", "K", "DEF", "BN", "IR". */
+  label: string;
+  entry?: RosterEntry;
 }
 
 export interface Roster {
   team: TeamMeta;
   week: number;
+  /** All rostered players (filled slots only), for any aggregate use. */
   entries: RosterEntry[];
+  /** The 9 starting slots in lineup order (empty slots included). */
+  starters: RosterSlot[];
+  /** Bench slots (empty slots included). */
+  bench: RosterSlot[];
+  /** Injured-reserve slots (empty slots included). */
+  ir: RosterSlot[];
 }
 
 /** One franchise's line in a past season's standings. */
@@ -132,6 +160,7 @@ export interface FranchiseSeason {
   name: string;
   teamCount: number;
   finalRank: number;
+  regularRank: number;
   wins: number;
   losses: number;
   ties: number;

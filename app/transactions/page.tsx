@@ -140,7 +140,7 @@ function TransactionRow({ t, alt }: { t: Transaction; alt: boolean }) {
   const source = t.type === "add" ? t.fromName : t.toName;
 
   return (
-    <div className={`flex items-center gap-2.5 px-3 py-2 ${alt ? "bg-card" : "bg-[#f7f8fa]"}`}>
+    <div className={`flex items-center gap-2.5 px-3 py-2 ${alt ? "bg-card" : "bg-row"}`}>
       <span
         className={`w-11 shrink-0 rounded px-1.5 py-0.5 text-center font-cond text-[11px] font-bold uppercase ${
           t.type === "add" ? "bg-teal/15 text-teal" : "bg-red-100 text-red-600"

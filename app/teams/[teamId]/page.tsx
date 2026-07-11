@@ -1,14 +1,23 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getStandings, getSnapshot } from "@/lib/espn";
+import { getStandings, getSnapshot } from "@/lib/sleeper";
 import { getTeam } from "@/lib/teams";
 import { getAllTimeRecords, getFranchiseSeasons } from "@/lib/league-data";
 import { getFranchiseGames, shortWeek, type FranchiseGame, type GamePlayer } from "@/lib/games";
 import { Card, SectionHeader, Hexagon, TeamAvatar, Pill, rankBadgeTone } from "@/components/ui";
 import { PlayerBadge } from "@/components/player-badge";
-import type { FranchiseSeason } from "@/lib/types";
+import type { FranchiseSeason, TeamMeta } from "@/lib/types";
 
 export const revalidate = 3600;
+
+interface OpponentTeamRecord {
+  key: string;
+  name: string;
+  team?: TeamMeta;
+  games: number;
+  pointsAgainst: number;
+  avgAgainst: number;
+}
 
 interface TeamPlayerRecord {
   playerId: number;
@@ -46,6 +55,10 @@ export default async function TeamPage({ params }: { params: Promise<{ teamId: s
   const gameStats = buildGameStats(franchiseGames);
   const teamPlayers = buildTeamPlayers(franchiseGames);
   const playerBoards = buildPlayerBoards(teamPlayers);
+  const opponentPlayers = buildOpponentPlayers(franchiseGames);
+  const nemesisBoards = buildNemesisBoards(opponentPlayers);
+  const opponentTeams = buildOpponentTeams(franchiseGames);
+  const opponentTeamBoards = buildOpponentTeamBoards(opponentTeams);
 
   return (
     <div className="space-y-3">
@@ -118,6 +131,23 @@ export default async function TeamPage({ params }: { params: Promise<{ teamId: s
         <PlayerBoard title="Most TDs" players={playerBoards.tds} value={(p) => String(p.totalTDs)} sub={(p) => `${p.pos} - ${p.games} GP`} />
         <PlayerBoard title="Yardage Kings" players={playerBoards.yards} value={(p) => formatNumber(p.passYds + p.rushYds + p.recYds)} sub={(p) => `${p.passYds} pass, ${p.rushYds} rush, ${p.recYds} rec`} />
       </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <PlayerBoard
+          title="Biggest Nemeses"
+          players={nemesisBoards.best}
+          value={(p) => p.avg.toFixed(1)}
+          sub={(p) => `${p.games} GP vs this team`}
+        />
+        <PlayerBoard
+          title="Easy Outs"
+          players={nemesisBoards.worst}
+          value={(p) => p.avg.toFixed(1)}
+          sub={(p) => `${p.games} GP vs this team`}
+        />
+      </div>
+
+      <TeamBoard title="Opponents (by avg points scored against you)" teams={opponentTeamBoards.all} />
 
       {recent.length > 0 && (
         <Card>
@@ -233,6 +263,79 @@ function addPlayerGame(rec: TeamPlayerRecord, player: GamePlayer, gameId: string
     (player.stats.defRetTD ?? 0);
 }
 
+function buildOpponentPlayers(franchiseGames: FranchiseGame[]): TeamPlayerRecord[] {
+  const map = new Map<number, TeamPlayerRecord>();
+
+  for (const fg of franchiseGames) {
+    for (const player of fg.opp.players) {
+      if (!player.started) continue;
+      const rec =
+        map.get(player.playerId) ??
+        ({
+          playerId: player.playerId,
+          name: player.name,
+          pos: player.pos,
+          proTeam: player.proTeam,
+          games: 0,
+          points: 0,
+          avg: 0,
+          best: 0,
+          totalTDs: 0,
+          passYds: 0,
+          rushYds: 0,
+          recYds: 0,
+        } satisfies TeamPlayerRecord);
+      addPlayerGame(rec, player, fg.game.id);
+      map.set(player.playerId, rec);
+    }
+  }
+
+  return [...map.values()]
+    .map((player) => ({ ...player, points: round(player.points), avg: player.games ? round(player.points / player.games) : 0 }))
+    .sort((a, b) => b.avg - a.avg);
+}
+
+function buildNemesisBoards(opponentPlayers: TeamPlayerRecord[]) {
+  const eligible = opponentPlayers.filter((p) => p.games >= 2);
+  const skillOnly = eligible.filter((p) => p.pos !== "K" && p.pos !== "DEF");
+  return {
+    best: eligible.slice(0, 5).sort((a, b) => b.avg - a.avg),
+    worst: [...skillOnly].sort((a, b) => a.avg - b.avg).slice(0, 5),
+  };
+}
+
+function buildOpponentTeams(franchiseGames: FranchiseGame[]): OpponentTeamRecord[] {
+  const map = new Map<string, OpponentTeamRecord>();
+
+  for (const fg of franchiseGames) {
+    const key = fg.opp.team ? String(fg.opp.team.id) : fg.opp.name;
+    const rec =
+      map.get(key) ??
+      ({
+        key,
+        name: fg.opp.name,
+        team: fg.opp.team,
+        games: 0,
+        pointsAgainst: 0,
+        avgAgainst: 0,
+      } satisfies OpponentTeamRecord);
+    rec.name = fg.opp.name;
+    rec.team = fg.opp.team;
+    rec.games += 1;
+    rec.pointsAgainst += fg.opp.total;
+    map.set(key, rec);
+  }
+
+  return [...map.values()].map((r) => ({ ...r, pointsAgainst: round(r.pointsAgainst), avgAgainst: r.games ? round(r.pointsAgainst / r.games) : 0 }));
+}
+
+function buildOpponentTeamBoards(teams: OpponentTeamRecord[]) {
+  const eligible = teams.filter((t) => t.games >= 2);
+  return {
+    all: [...eligible].sort((a, b) => b.avgAgainst - a.avgAgainst),
+  };
+}
+
 function buildPlayerBoards(players: TeamPlayerRecord[]) {
   const top = (list: TeamPlayerRecord[]) => list.slice(0, 5);
   return {
@@ -249,7 +352,7 @@ function GameRow({ fg, alt }: { fg: FranchiseGame; alt: boolean }) {
   return (
     <Link
       href={`/games/${fg.game.id}`}
-      className={`flex items-center gap-3 px-4 py-2.5 ${alt ? "bg-card" : "bg-[#f7f8fa]"} hover:bg-card-hover`}
+      className={`flex items-center gap-3 px-4 py-2.5 ${alt ? "bg-card" : "bg-row"} hover:bg-card-hover`}
     >
       <span className="w-16 shrink-0 font-cond text-xs text-text-muted">
         {fg.game.season} {shortWeek(fg.game.week)}
@@ -269,7 +372,7 @@ function GameRow({ fg, alt }: { fg: FranchiseGame; alt: boolean }) {
 
 function SeasonRow({ season, alt }: { season: FranchiseSeason; alt: boolean }) {
   return (
-    <div className={`flex items-center gap-3 px-4 py-2 ${alt ? "bg-card" : "bg-[#f7f8fa]"}`}>
+    <div className={`flex items-center gap-3 px-4 py-2 ${alt ? "bg-card" : "bg-row"}`}>
       <span className="w-12 font-cond text-sm font-semibold">{season.season}</span>
       <span className="flex w-8 justify-center">
         <Hexagon value={season.finalRank} tone={rankBadgeTone(season.finalRank)} size="sm" />
@@ -319,22 +422,54 @@ function PlayerBoard({
       <div className="border-b border-border bg-section px-3 py-2 font-cond text-base font-semibold">{title}</div>
       {players.length ? (
         players.map((player, index) => (
-          <Link
+          <div
             key={`${title}-${player.playerId}`}
-            href={`/players/${player.playerId}`}
-            className={`flex items-center gap-2 px-3 py-2 ${index % 2 ? "bg-card" : "bg-[#f7f8fa]"} hover:bg-card-hover`}
+            className={`flex items-center gap-2 px-3 py-2 ${index % 2 ? "bg-card" : "bg-row"} hover:bg-card-hover`}
           >
             <div className="w-5 shrink-0 text-center font-cond text-sm font-bold text-text-muted">{index + 1}</div>
             <PlayerBadge playerId={player.playerId} pos={player.pos} name={player.name} />
-            <div className="min-w-0 flex-1">
+            <Link href={`/players/${player.playerId}`} className="min-w-0 flex-1">
               <div className="truncate text-sm font-semibold">{player.name}</div>
               <div className="truncate text-[11px] text-text-muted">{sub(player)}</div>
-            </div>
+            </Link>
             <div className="shrink-0 text-right font-cond text-lg font-bold tabular-nums">{value(player)}</div>
-          </Link>
+          </div>
         ))
       ) : (
         <div className="px-3 py-4 text-sm text-text-muted">No players yet.</div>
+      )}
+    </Card>
+  );
+}
+
+function TeamBoard({ title, teams }: { title: string; teams: OpponentTeamRecord[] }) {
+  return (
+    <Card>
+      <div className="border-b border-border bg-section px-3 py-2 font-cond text-base font-semibold">{title}</div>
+      {teams.length ? (
+        teams.map((t, index) => (
+          <div
+            key={`${title}-${t.key}`}
+            className={`flex items-center gap-2 px-3 py-2 ${index % 2 ? "bg-card" : "bg-row"} hover:bg-card-hover`}
+          >
+            <div className="w-5 shrink-0 text-center font-cond text-sm font-bold text-text-muted">{index + 1}</div>
+            {t.team ? <TeamAvatar team={t.team} size="md" /> : <span className="h-11 w-11 shrink-0 rounded-full bg-section" />}
+            {t.team ? (
+              <Link href={`/teams/${t.team.id}`} className="min-w-0 flex-1">
+                <div className="truncate text-sm font-semibold">{t.name}</div>
+                <div className="truncate text-[11px] text-text-muted">{t.games} GP vs this team</div>
+              </Link>
+            ) : (
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-semibold">{t.name}</div>
+                <div className="truncate text-[11px] text-text-muted">{t.games} GP vs this team</div>
+              </div>
+            )}
+            <div className="shrink-0 text-right font-cond text-lg font-bold tabular-nums">{t.avgAgainst.toFixed(1)}</div>
+          </div>
+        ))
+      ) : (
+        <div className="px-3 py-4 text-sm text-text-muted">No data yet.</div>
       )}
     </Card>
   );

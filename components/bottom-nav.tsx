@@ -16,9 +16,9 @@ const I = (d: string) => (
 const TABS: Tab[] = [
   {
     href: "/",
-    label: "Scores",
+    label: "My Team",
     match: (p) => p === "/",
-    icon: I("M3 11l9-8 9 8|M5 10v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V10"),
+    icon: I("M12 17.3l-5.4 3.3 1.5-6.2L3 10.2l6.3-.5L12 4l2.7 5.7 6.3.5-5.1 4.2 1.5 6.2z"),
   },
   {
     href: "/matchups",
@@ -43,6 +43,8 @@ const TABS: Tab[] = [
     label: "More",
     match: (p) =>
       p === "/more" ||
+      p.startsWith("/settings") ||
+      p.startsWith("/mock-draft") ||
       p.startsWith("/games") ||
       p.startsWith("/drafts") ||
       p.startsWith("/trades") ||
@@ -60,7 +62,7 @@ const TABS: Tab[] = [
 export function BottomNav() {
   const pathname = usePathname();
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-xl border-t border-border bg-white">
+    <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-xl border-t border-border bg-card">
       <div className="grid grid-cols-5">
         {TABS.map((t) => {
           const active = t.match(pathname);

@@ -334,6 +334,37 @@ export async function getGame(id: string): Promise<Game | null> {
   return games.find((g) => g.id === id) ?? null;
 }
 
+// --- Live chart (margin over the course of a matchup) ------------------------
+// Per-game running totals rebuilt from NFL.com's 5-minute live stat slices (see
+// scripts/scrape-livechart.mjs). Stored in data/livecharts/<season>.json, keyed
+// by game id, and loaded per-season on demand.
+
+/** One game's time-series: minutes-from-start + home/away running totals. */
+export interface LiveChart {
+  /** ISO timestamp of the first slice. */
+  start: string;
+  /** [minutesFromStart, homePts, awayPts] — change-points only. */
+  points: [number, number, number][];
+}
+
+const liveChartCache = new Map<number, Record<string, LiveChart>>();
+
+export async function getGameLiveChart(id: string): Promise<LiveChart | null> {
+  const season = Number(id.split("-")[0]);
+  if (!season) return null;
+  let bySeason = liveChartCache.get(season);
+  if (!bySeason) {
+    try {
+      const mod = await import(`@/data/livecharts/${season}.json`);
+      bySeason = mod.default as Record<string, LiveChart>;
+    } catch {
+      bySeason = {};
+    }
+    liveChartCache.set(season, bySeason);
+  }
+  return bySeason[id] ?? null;
+}
+
 export interface FranchiseGame {
   game: Game;
   /** This franchise's side. */
@@ -469,6 +500,23 @@ export interface StreakRecord {
   to: string;
 }
 
+/** A matchup record derived from the live-chart margin time-series. `value` is
+ *  the headline metric for whichever leaderboard it belongs to (see chartGameRecords). */
+export interface ChartGameRecord {
+  gameId: string;
+  season: number;
+  week: number;
+  winnerName: string;
+  winnerTeam?: TeamMeta;
+  loserName: string;
+  loserTeam?: TeamMeta;
+  winnerScore: number;
+  loserScore: number;
+  value: number;
+  /** Optional small caption, e.g. "1 of 97 checkpoints". */
+  detail?: string;
+}
+
 export interface RivalryRecord {
   team?: TeamMeta;
   teamName: string;
@@ -481,6 +529,8 @@ export interface RivalryRecord {
   winPct: number;
   pointsFor: number;
   pointsAgainst: number;
+  avgFor: number;
+  avgAgainst: number;
 }
 
 export interface RivalryStreakRecord {
@@ -516,6 +566,12 @@ export interface RecordBook {
   blowouts: MatchupRecord[];
   nailbiters: MatchupRecord[];
   shootouts: MatchupRecord[];
+  comebacks: ChartGameRecord[];
+  tightest: ChartGameRecord[];
+  mostLeadChanges: ChartGameRecord[];
+  wonLeadingLeast: ChartGameRecord[];
+  mostComfortable: ChartGameRecord[];
+  biggestSwings: ChartGameRecord[];
   longestWinStreak: StreakRecord;
   longestLoseStreak: StreakRecord;
   longestH2HWinStreaks: RivalryStreakRecord[];
@@ -524,6 +580,8 @@ export interface RecordBook {
   mostPlayedRivalries: PairRivalryRecord[];
   closestRivalries: PairRivalryRecord[];
   highestScoringRivalries: PairRivalryRecord[];
+  bestAvgVsOpponent: RivalryRecord[];
+  worstAvgVsOpponent: RivalryRecord[];
   totalGames: number;
 }
 
@@ -708,6 +766,8 @@ function directionalRecord(acc: PairAccumulator, side: "a" | "b"): RivalryRecord
     winPct: round(wins / pair.games),
     pointsFor,
     pointsAgainst,
+    avgFor: round(pointsFor / pair.games),
+    avgAgainst: round(pointsAgainst / pair.games),
   };
 }
 
@@ -769,6 +829,121 @@ function rivalryRecords(games: Game[]) {
     mostPlayedRivalries: [...pairs].sort((a, b) => b.games - a.games || a.pointDiff - b.pointDiff).slice(0, 5),
     closestRivalries: [...minThree].sort((a, b) => a.pointDiff - b.pointDiff || b.games - a.games).slice(0, 5),
     highestScoringRivalries: [...minThree].sort((a, b) => b.avgCombined - a.avgCombined || b.games - a.games).slice(0, 5),
+    bestAvgVsOpponent: [...directional]
+      .filter((record) => record.games >= 2)
+      .sort((a, b) => b.avgFor - a.avgFor || b.games - a.games)
+      .slice(0, 5),
+    worstAvgVsOpponent: [...directional]
+      .filter((record) => record.games >= 2)
+      .sort((a, b) => a.avgFor - b.avgFor || b.games - a.games)
+      .slice(0, 5),
+  };
+}
+
+/** All matchup leaderboards derived from the live-chart margin time-series,
+ *  computed in a single pass over the games (charts are cached per season). */
+async function chartGameRecords(games: Game[], limit = 10): Promise<{
+  comebacks: ChartGameRecord[];
+  tightest: ChartGameRecord[];
+  mostLeadChanges: ChartGameRecord[];
+  wonLeadingLeast: ChartGameRecord[];
+  mostComfortable: ChartGameRecord[];
+  biggestSwings: ChartGameRecord[];
+}> {
+  interface Row {
+    base: Omit<ChartGameRecord, "value" | "detail">;
+    maxDeficit: number; // biggest deficit the winner overcame
+    maxLead: number; // biggest lead by either side at any point
+    leadChanges: number; // times the lead flipped
+    ahead: number; // in-game checkpoints the winner led
+    scored: number; // in-game checkpoints (after scoring began)
+    avgLead: number; // winner's mean margin across scored checkpoints
+    swing: number; // margin range (winner's highest lead minus lowest)
+  }
+  const rows: Row[] = [];
+
+  for (const g of games) {
+    if (g.home.total === g.away.total) continue; // ties excluded
+    const chart = await getGameLiveChart(g.id);
+    if (!chart) continue;
+    const homeWon = g.home.total > g.away.total;
+
+    let maxDeficit = 0;
+    let maxLead = 0;
+    let leadChanges = 0;
+    let prevSign = 0;
+    let ahead = 0;
+    let scored = 0;
+    let marginSum = 0;
+    let hiWm = -Infinity; // winner's highest margin
+    let loWm = Infinity; // winner's lowest margin (most negative = trailing)
+    for (const [, h, a] of chart.points) {
+      const m = h - a;
+      const wm = homeWon ? m : -m; // winner margin (>0 = winner ahead)
+      if (-wm > maxDeficit) maxDeficit = -wm;
+      if (Math.abs(m) > maxLead) maxLead = Math.abs(m);
+      if (wm > hiWm) hiWm = wm;
+      if (wm < loWm) loWm = wm;
+      const sg = Math.sign(m);
+      if (sg !== 0) {
+        if (prevSign !== 0 && sg !== prevSign) leadChanges++;
+        prevSign = sg;
+      }
+      if (h + a > 0) {
+        scored++;
+        marginSum += wm;
+        if (wm > 0) ahead++;
+      }
+    }
+
+    const winner = homeWon ? g.home : g.away;
+    const loser = homeWon ? g.away : g.home;
+    rows.push({
+      base: {
+        gameId: g.id,
+        season: g.season,
+        week: g.week,
+        winnerName: winner.name,
+        winnerTeam: winner.team,
+        loserName: loser.name,
+        loserTeam: loser.team,
+        winnerScore: winner.total,
+        loserScore: loser.total,
+      },
+      maxDeficit: round(maxDeficit),
+      maxLead: round(maxLead),
+      leadChanges,
+      ahead,
+      scored,
+      avgLead: scored > 0 ? round(marginSum / scored) : 0,
+      swing: Number.isFinite(hiWm) && Number.isFinite(loWm) ? round(hiWm - loWm) : 0,
+    });
+  }
+
+  const top = (
+    filter: (r: Row) => boolean,
+    value: (r: Row) => number,
+    sort: (a: number, b: number) => number,
+    detail?: (r: Row) => string,
+  ): ChartGameRecord[] =>
+    rows
+      .filter(filter)
+      .sort((a, b) => sort(value(a), value(b)))
+      .slice(0, limit)
+      .map((r) => ({ ...r.base, value: value(r), detail: detail?.(r) }));
+
+  return {
+    comebacks: top((r) => r.maxDeficit > 0, (r) => r.maxDeficit, (a, b) => b - a),
+    tightest: top((r) => r.maxLead > 0, (r) => r.maxLead, (a, b) => a - b),
+    mostLeadChanges: top((r) => r.leadChanges > 0, (r) => r.leadChanges, (a, b) => b - a),
+    wonLeadingLeast: top(
+      (r) => r.scored > 0,
+      (r) => Math.round((r.ahead / r.scored) * 1000) / 10,
+      (a, b) => a - b,
+      (r) => `${r.ahead} of ${r.scored} checkpoints`,
+    ),
+    mostComfortable: top((r) => r.scored > 0, (r) => r.avgLead, (a, b) => b - a),
+    biggestSwings: top((r) => r.swing > 0, (r) => r.swing, (a, b) => b - a),
   };
 }
 
@@ -787,6 +962,7 @@ export async function getRecordBook(): Promise<RecordBook> {
   const top = (arr: TeamGameRecord[], n = 5) => arr.slice(0, n);
   const streaks = computeStreaks(games);
   const rivalries = rivalryRecords(games);
+  const chartRecords = await chartGameRecords(games);
 
   return {
     totalGames: games.length,
@@ -797,6 +973,7 @@ export async function getRecordBook(): Promise<RecordBook> {
     blowouts: [...mr].sort((a, b) => b.margin - a.margin).slice(0, 5),
     nailbiters: [...mr].sort((a, b) => a.margin - b.margin).slice(0, 5),
     shootouts: [...mr].sort((a, b) => b.combined - a.combined).slice(0, 5),
+    ...chartRecords,
     longestWinStreak: streaks.win,
     longestLoseStreak: streaks.lose,
     ...rivalries,

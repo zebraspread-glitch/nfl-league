@@ -79,7 +79,7 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
           {profile.teamHistory.map((t, i) => (
             <div
               key={`${t.teamName}-${t.fromSeason}`}
-              className={`flex items-center gap-2.5 px-3 py-2 ${i % 2 === 1 ? "bg-card" : "bg-[#f7f8fa]"}`}
+              className={`flex items-center gap-2.5 px-3 py-2 ${i % 2 === 1 ? "bg-card" : "bg-row"}`}
             >
               {t.team ? <TeamAvatar team={t.team} size="sm" /> : <span className="h-8 w-8 shrink-0 rounded-full bg-section" />}
               <div className="min-w-0 flex-1">
@@ -134,7 +134,7 @@ function GameLogRow({ g, alt }: { g: PlayerGameLog; alt: boolean }) {
   return (
     <Link
       href={`/games/${g.gameId}`}
-      className={`flex items-center gap-2.5 px-3 py-2 ${alt ? "bg-card" : "bg-[#f7f8fa]"} ${g.started ? "" : "opacity-60"}`}
+      className={`flex items-center gap-2.5 px-3 py-2 ${alt ? "bg-card" : "bg-row"} ${g.started ? "" : "opacity-60"}`}
     >
       <div className="w-16 shrink-0">
         <div className="font-cond text-sm font-semibold leading-tight">{g.season}</div>

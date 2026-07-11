@@ -35,6 +35,28 @@ export default async function HeadToHeadPage({
   const h2h = await getHeadToHead(aId, bId);
   const aSeriesLead = h2h.aWins > h2h.bWins;
 
+  // Series extras (from data already computed in getHeadToHead).
+  const n = h2h.meetings.length;
+  const avgA = n ? h2h.aPoints / n : 0;
+  const avgB = n ? h2h.bPoints / n : 0;
+
+  // Current streak: walk meetings newest-first until the winner changes.
+  let streak: { winner: "a" | "b"; len: number } | null = null;
+  for (const m of h2h.meetings) {
+    if (m.winner === "tie") break;
+    if (!streak) streak = { winner: m.winner, len: 1 };
+    else if (streak.winner === m.winner) streak.len += 1;
+    else break;
+  }
+  const streakTeam = streak ? (streak.winner === "a" ? teamA : teamB) : null;
+
+  // Biggest single win in the series, either side.
+  const bigCandidates = [
+    h2h.biggestA && { team: teamA, margin: h2h.biggestA.aScore - h2h.biggestA.bScore, m: h2h.biggestA },
+    h2h.biggestB && { team: teamB, margin: h2h.biggestB.bScore - h2h.biggestB.aScore, m: h2h.biggestB },
+  ].filter(Boolean) as { team: TeamMeta; margin: number; m: H2HMeeting }[];
+  const biggest = bigCandidates.sort((x, y) => y.margin - x.margin)[0];
+
   return (
     <div className="space-y-3">
       <PageIntro title="Head to Head" subtitle="Compare two franchises across all seasons" />
@@ -54,14 +76,18 @@ export default async function HeadToHeadPage({
 
       <Card className="px-3 py-4">
         <div className="grid grid-cols-3 items-center">
-          <div className="flex flex-col items-center text-center">
+          <div className="flex min-w-0 flex-col items-center text-center">
             <TeamAvatar team={teamA} size="lg" />
-            <div className="mt-1 truncate font-cond text-base font-semibold">{teamA.name}</div>
+            <div className="mt-1 max-w-full truncate font-cond text-base font-semibold" style={{ color: teamA.primary }}>
+              {teamA.name}
+            </div>
           </div>
           <div className="text-center font-cond text-xs uppercase tracking-widest text-text-muted">vs</div>
-          <div className="flex flex-col items-center text-center">
+          <div className="flex min-w-0 flex-col items-center text-center">
             <TeamAvatar team={teamB} size="lg" />
-            <div className="mt-1 truncate font-cond text-base font-semibold">{teamB.name}</div>
+            <div className="mt-1 max-w-full truncate font-cond text-base font-semibold" style={{ color: teamB.primary }}>
+              {teamB.name}
+            </div>
           </div>
         </div>
 
@@ -80,7 +106,7 @@ export default async function HeadToHeadPage({
         <SectionHeader>Head-to-head series</SectionHeader>
         {h2h.meetings.length ? (
           <>
-            <div className="bg-gradient-to-b from-white to-section/70 px-4 py-4">
+            <div className="bg-gradient-to-b from-white to-section/70 px-4 pb-4 pt-4">
               <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
                 <SeriesTeam team={teamA} wins={h2h.aWins} active={aSeriesLead || h2h.aWins === h2h.bWins} align="right" />
                 <div className="text-center">
@@ -91,6 +117,23 @@ export default async function HeadToHeadPage({
                 </div>
                 <SeriesTeam team={teamB} wins={h2h.bWins} active={!aSeriesLead || h2h.aWins === h2h.bWins} align="left" />
               </div>
+
+              <WinShareBar a={h2h.aWins} b={h2h.bWins} ties={h2h.ties} colorA={teamA.primary} colorB={teamB.primary} />
+            </div>
+
+            <div className="grid grid-cols-3 divide-x divide-border border-y border-border bg-card">
+              <Fact label="Avg / game" value={`${avgA.toFixed(0)}–${avgB.toFixed(0)}`} />
+              <Fact
+                label="Streak"
+                value={streakTeam ? `${streakTeam.abbrev} W${streak!.len}` : "—"}
+                color={streakTeam?.primary}
+              />
+              <Fact
+                label="Biggest win"
+                value={biggest ? `${biggest.team.abbrev} +${biggest.margin.toFixed(1)}` : "—"}
+                sub={biggest ? `${biggest.m.season} ${shortWeek(biggest.m.week)}` : undefined}
+                color={biggest?.team.primary}
+              />
             </div>
 
             <div className="space-y-2 bg-section px-2 py-2.5">
@@ -117,7 +160,7 @@ export default async function HeadToHeadPage({
           const ra = seasonsA.find((s) => s.season === yr);
           const rb = seasonsB.find((s) => s.season === yr);
           return (
-            <div key={yr} className={`flex items-center gap-2 px-3 py-2 ${i % 2 ? "bg-card" : "bg-[#f7f8fa]"}`}>
+            <div key={yr} className={`flex items-center gap-2 px-3 py-2 ${i % 2 ? "bg-card" : "bg-row"}`}>
               <span className="w-12 font-cond text-sm font-semibold text-text-muted">{yr}</span>
               <FinishCell row={ra} />
               <FinishCell row={rb} />
@@ -175,12 +218,48 @@ function SeriesTeam({
     <div className={`flex min-w-0 items-center gap-2 ${align === "right" ? "justify-end text-right" : "justify-start text-left"} ${active ? "" : "opacity-55"}`}>
       {align === "left" && <TeamAvatar team={team} size="sm" />}
       <div className="min-w-0">
-        <div className="font-cond text-4xl font-bold leading-none tabular-nums">{wins}</div>
+        <div className="font-cond text-4xl font-bold leading-none tabular-nums" style={{ color: team.primary }}>
+          {wins}
+        </div>
         <div className="truncate font-cond text-xs font-semibold uppercase tracking-wide text-text-muted">{team.abbrev}</div>
       </div>
       {align === "right" && <TeamAvatar team={team} size="sm" />}
     </div>
   );
+}
+
+/** Slim two-tone bar showing each team's share of the series wins. */
+function WinShareBar({ a, b, ties, colorA, colorB }: { a: number; b: number; ties: number; colorA: string; colorB: string }) {
+  const total = a + b + ties || 1;
+  const pct = (v: number) => `${(v / total) * 100}%`;
+  return (
+    <div className="mt-3 flex h-2.5 w-full overflow-hidden rounded-full bg-section ring-1 ring-border/60">
+      <div style={{ width: pct(a), background: colorA }} />
+      {ties ? <div style={{ width: pct(ties) }} className="bg-text-dim/40" /> : null}
+      <div style={{ width: pct(b), background: colorB }} />
+    </div>
+  );
+}
+
+function Fact({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) {
+  return (
+    <div className="px-2 py-2.5 text-center">
+      <div className="font-cond text-[10px] uppercase tracking-wide text-text-dim">{label}</div>
+      <div className="font-cond text-base font-bold leading-tight tabular-nums" style={color ? { color } : undefined}>
+        {value}
+      </div>
+      {sub ? <div className="text-[10px] text-text-muted">{sub}</div> : null}
+    </div>
+  );
+}
+
+function contrastText(hex: string): string {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const bl = parseInt(h.slice(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * bl) / 255;
+  return luminance > 0.6 ? "#000000" : "#ffffff";
 }
 
 function SeriesMeeting({ meeting, teamA, teamB }: { meeting: H2HMeeting; teamA: TeamMeta; teamB: TeamMeta }) {
@@ -204,7 +283,16 @@ function SeriesMeeting({ meeting, teamA, teamB }: { meeting: H2HMeeting; teamA: 
         <SideScore team={teamA} score={meeting.aScore} win={aWin} align="right" />
 
         <div className="flex flex-col items-center gap-1 px-1">
-          <Pill tone={meeting.winner === "tie" ? "default" : "win"}>{winner ? winner.abbrev : "TIE"}</Pill>
+          {winner ? (
+            <span
+              className="inline-flex items-center rounded px-2 py-0.5 font-cond text-xs font-bold uppercase tracking-wide"
+              style={{ backgroundColor: winner.primary, color: contrastText(winner.primary) }}
+            >
+              {winner.abbrev}
+            </span>
+          ) : (
+            <Pill tone="default">TIE</Pill>
+          )}
           <span className="text-[9px] uppercase tracking-wide text-text-dim">won</span>
         </div>
 
@@ -248,11 +336,11 @@ function SideScore({
   );
 }
 
-function FinishCell({ row }: { row?: { finalRank: number; teamCount: number; wins: number; losses: number; champion: boolean } }) {
+function FinishCell({ row }: { row?: { regularRank: number; teamCount: number; wins: number; losses: number; champion: boolean } }) {
   if (!row) return <span className="flex-1 text-center text-sm text-text-dim">—</span>;
   return (
     <span className="flex flex-1 items-center justify-center gap-2">
-      <Hexagon value={row.finalRank} tone={rankBadgeTone(row.finalRank)} size="sm" />
+      <Hexagon value={row.regularRank} tone={rankBadgeTone(row.regularRank)} size="sm" />
       <span className="font-cond text-sm tabular-nums text-text-muted">
         {row.wins}-{row.losses}
       </span>
@@ -267,7 +355,7 @@ function TeamSelect({ name, defaultValue, label }: { name: string; defaultValue:
       <select
         name={name}
         defaultValue={defaultValue}
-        className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm font-medium outline-none focus:border-teal"
+        className="w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm font-medium outline-none focus:border-teal"
       >
         {TEAMS.map((t) => (
           <option key={t.id} value={t.id}>{t.name}</option>

@@ -31,6 +31,30 @@ function defenseLogoUrl(name: string): string | undefined {
   return ab ? `https://a.espncdn.com/i/teamlogos/nfl/500/${ab}.png` : undefined;
 }
 
+/** Pro-team abbreviations that don't match ESPN's logo CDN key directly. */
+const PRO_TEAM_ABBR_OVERRIDES: Record<string, string> = { WAS: "wsh", JAC: "jax", LA: "lar" };
+
+/** Small crest for a player's NFL team, keyed by the standard 2-3 letter abbreviation (e.g. "KC", "SF"). */
+export function proTeamLogoUrl(abbr?: string): string | undefined {
+  if (!abbr) return undefined;
+  const key = PRO_TEAM_ABBR_OVERRIDES[abbr] ?? abbr.toLowerCase();
+  return `https://a.espncdn.com/i/teamlogos/nfl/500/${key}.png`;
+}
+
+/**
+ * Headshot for a player sourced live from Sleeper. Sleeper's own player ids
+ * (not our scraped NFL.com ids) key this CDN directly, so it works for any
+ * player in Sleeper's catalog without needing our local images.json.
+ * Team defenses use a Sleeper player id equal to the team abbreviation
+ * (e.g. "SF"), which has no headshot — use the pro-team crest instead.
+ */
+export function sleeperPlayerImage(sleeperId: string): { url: string; isLogo: boolean } {
+  if (/^[A-Z]{2,3}$/.test(sleeperId)) {
+    return { url: `https://sleepercdn.com/images/team_logos/nfl/${sleeperId.toLowerCase()}.png`, isLogo: true };
+  }
+  return { url: `https://sleepercdn.com/content/nfl/players/${sleeperId}.jpg`, isLogo: false };
+}
+
 export const POS_COLOR: Record<string, string> = {
   QB: "#e26a9a", RB: "#56c1b6", WR: "#5aa9e6", TE: "#f0a868",
   DEF: "#b08fd6", "D/ST": "#b08fd6", K: "#c4b06a",

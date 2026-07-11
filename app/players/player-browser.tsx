@@ -170,7 +170,7 @@ export function PlayerBrowser({ players, mode = "all" }: { players: PlayerBrowse
                   setPage(1);
                 }}
                 placeholder="Search players, teams or positions"
-                className="h-10 rounded-lg border border-border bg-white px-3 text-sm outline-none transition-colors focus:border-teal focus:ring-2 focus:ring-teal/20"
+                className="h-10 rounded-lg border border-border bg-card px-3 text-sm outline-none transition-colors focus:border-teal focus:ring-2 focus:ring-teal/20"
               />
 
               <div className="flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -198,7 +198,7 @@ export function PlayerBrowser({ players, mode = "all" }: { players: PlayerBrowse
                   setPage(1);
                 }}
                 aria-label="Sort players"
-                className="h-10 rounded-lg border border-border bg-white px-3 font-cond text-sm font-semibold outline-none transition-colors focus:border-teal focus:ring-2 focus:ring-teal/20"
+                className="h-10 rounded-lg border border-border bg-card px-3 font-cond text-sm font-semibold outline-none transition-colors focus:border-teal focus:ring-2 focus:ring-teal/20"
               >
                 {SORTS.map((option) => (
                   <option key={option.key} value={option.key}>
@@ -335,7 +335,7 @@ function RecordBoard({
         <Link
           key={`${title}-${player.playerId}`}
           href={`/players/${player.playerId}`}
-          className={`flex items-center gap-2 px-3 py-2 ${index % 2 ? "bg-card" : "bg-[#f7f8fa]"} hover:bg-card-hover`}
+          className={`flex items-center gap-2 px-3 py-2 ${index % 2 ? "bg-card" : "bg-row"} hover:bg-card-hover`}
         >
           <div className="w-5 shrink-0 text-center font-cond text-sm font-bold text-text-muted">{index + 1}</div>
           <PlayerImage player={player} />
@@ -356,7 +356,7 @@ function PlayerRow({ player, rank, alt }: { player: PlayerBrowserItem; rank: num
   return (
     <Link
       href={`/players/${player.playerId}`}
-      className={`flex items-center gap-2.5 px-3 py-2.5 ${alt ? "bg-card" : "bg-[#f7f8fa]"} hover:bg-card-hover`}
+      className={`flex items-center gap-2.5 px-3 py-2.5 ${alt ? "bg-card" : "bg-row"} hover:bg-card-hover`}
     >
       <div className="w-6 shrink-0 text-center font-cond text-sm font-bold text-text-muted">{rank}</div>
       <PlayerImage player={player} />

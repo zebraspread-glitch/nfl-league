@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getMatchups, getStandings, getSnapshot } from "@/lib/espn";
+import { getMatchups, getStandings, getSnapshot } from "@/lib/sleeper";
 import { MatchupCard } from "@/components/matchup-card";
 import { EmptyState } from "@/components/ui";
 

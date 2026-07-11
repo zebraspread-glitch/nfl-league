@@ -47,7 +47,7 @@ export default function HistoryPage() {
               </div>
               <div>
                 {s.finalStandings.map((row, i) => (
-                  <div key={row.rank} className={`flex items-center gap-3 px-4 py-2 ${i % 2 ? "bg-card" : "bg-[#f7f8fa]"}`}>
+                  <div key={row.rank} className={`flex items-center gap-3 px-4 py-2 ${i % 2 ? "bg-card" : "bg-row"}`}>
                     <span className="flex w-6 justify-center">
                       <Hexagon value={row.rank} tone={rankBadgeTone(row.rank)} size="sm" />
                     </span>
