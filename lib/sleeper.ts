@@ -120,9 +120,7 @@ function teamNameFor(roster: SleeperRoster, user?: SleeperUser): string {
  * the 2026 league filled out. Some managers have renamed their Sleeper handle
  * since first joining (e.g. thomopatto→thomoo, lavarballs27→LavarBallsMGL,
  * lucasdalts98746→tyhillmgl), so old and new aliases both map to the same
- * franchise id. All 10 joined managers are mapped; the two remaining rosters
- * have no owner yet (De'Aaron Cronin id 3 and Tinkle Van Ginkel id 7 still to
- * join) and fall through to a grey placeholder until claimed.
+ * franchise id. Ownerless Sleeper rosters are mapped by live roster id below.
  */
 const SLEEPER_USERNAME_TO_TEAM_ID: Record<string, TeamId> = {
   pahomgl: 9,
@@ -140,12 +138,16 @@ const SLEEPER_USERNAME_TO_TEAM_ID: Record<string, TeamId> = {
   ginnivanjefferson: 4,
 };
 
+const SLEEPER_ROSTER_TO_TEAM_ID: Record<number, TeamId> = {
+  11: 7, // Tinkle Van Ginkel
+  12: 3, // De'Aaron Cronin
+};
+
 /**
  * Map a Sleeper roster to our curated metadata, matching by team/owner name.
  * Sleeper's roster_id is assigned by join order, not by our franchise id, so
- * it's never used as an identity hint — only the manager's chosen team name
- * (or display name) tells us which franchise a roster really is. Rosters
- * still unclaimed (no owner) fall through to a generic placeholder.
+ * named/owned rosters resolve by username or team name first. The explicit
+ * roster-id fallback covers the two ownerless slots in the live league.
  */
 function resolveTeam(roster: SleeperRoster, user?: SleeperUser): TeamMeta {
   const byUsername = user && SLEEPER_USERNAME_TO_TEAM_ID[user.display_name.toLowerCase()];
@@ -158,6 +160,11 @@ function resolveTeam(roster: SleeperRoster, user?: SleeperUser): TeamMeta {
   if (byName) return byName;
   const byManager = user && TEAMS.find((m) => m.manager.toLowerCase() === user.display_name.toLowerCase());
   if (byManager) return byManager;
+  const byRoster = SLEEPER_ROSTER_TO_TEAM_ID[roster.roster_id];
+  if (byRoster) {
+    const team = getTeam(byRoster);
+    if (team) return team;
+  }
   // Unmapped roster: unique negative id (from roster_id) so placeholders never
   // collide on a shared id, and so consumers can detect "no franchise page".
   return getTeamByName(name || `Team ${roster.roster_id}`, -roster.roster_id);

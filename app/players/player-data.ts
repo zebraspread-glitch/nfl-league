@@ -106,6 +106,11 @@ const SLEEPER_USERNAME_TO_TEAM_ID: Record<string, TeamId> = {
   ginnivanjefferson: 4,
 };
 
+const SLEEPER_ROSTER_TO_TEAM_ID: Record<number, TeamId> = {
+  11: 7, // Tinkle Van Ginkel
+  12: 3, // De'Aaron Cronin
+};
+
 function n(stats: Record<string, number> | undefined, key: string): number {
   return Number(stats?.[key] ?? 0);
 }
@@ -219,6 +224,12 @@ function ownerTeam(roster: SleeperRoster, user?: SleeperUser): TeamMeta {
 
   const byManager = TEAMS.find((team) => normalized(team.manager) === normalized(user?.display_name));
   if (byManager) return byManager;
+
+  const byRoster = SLEEPER_ROSTER_TO_TEAM_ID[roster.roster_id];
+  if (byRoster) {
+    const team = getTeam(byRoster);
+    if (team) return team;
+  }
 
   return getTeamByName(name || `Roster ${roster.roster_id}`, -roster.roster_id);
 }
