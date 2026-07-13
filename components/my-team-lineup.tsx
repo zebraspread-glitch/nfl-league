@@ -117,12 +117,18 @@ function opponentLabel(gameLabel: string | undefined): string | null {
   return sep === "@" ? `@ ${opp}` : `vs. ${opp}`;
 }
 
+function playerProfileHref(entry: RosterEntry): string | null {
+  const playerId = entry.sleeperId || (entry.position === "DEF" ? entry.proTeam : undefined);
+  return playerId ? `/players/${encodeURIComponent(playerId)}?season=2026` : null;
+}
+
 function PlayerRow({ slot, entry, muted }: { slot: string; entry: RosterEntry; muted: boolean }) {
   const showLogo = entry.position !== "DEF";
   const logo = showLogo ? proTeamLogoUrl(entry.proTeam) : undefined;
   const badge = entry.injuryStatus ? INJURY[entry.injuryStatus] : undefined;
   const opp = opponentLabel(entry.gameLabel);
   const onBye = !entry.gameLabel && !entry.gameWhen;
+  const profileHref = playerProfileHref(entry);
 
   const content = (
     <div className="overflow-hidden rounded-xl shadow-sm ring-1 ring-border/60">
@@ -208,12 +214,19 @@ function PlayerRow({ slot, entry, muted }: { slot: string; entry: RosterEntry; m
     </div>
   );
 
-  if (!entry.sleeperId) return content;
+  if (!profileHref) return content;
 
   return (
-    <Link href={`/players/${encodeURIComponent(entry.sleeperId)}?season=2026`} className="block">
+    <div className="relative rounded-xl">
       {content}
-    </Link>
+      <Link
+        href={profileHref}
+        aria-label={`View ${entry.name} profile`}
+        className="absolute inset-0 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2"
+      >
+        <span className="sr-only">View {entry.name} profile</span>
+      </Link>
+    </div>
   );
 }
 
