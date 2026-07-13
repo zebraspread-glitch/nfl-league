@@ -14,6 +14,7 @@ import { getTeam, getTeamByName, TEAMS } from "./teams";
 import {
   CURRENT_SEASON,
   CURRENT_WEEK,
+  getCurrentSeasonMatchups,
   getFallbackStandings,
   getFallbackMatchups,
   getFallbackRoster,
@@ -260,6 +261,9 @@ export async function getStandings(): Promise<Standing[]> {
 }
 
 export async function getMatchups(week: number): Promise<Matchup[]> {
+  const currentSeasonMatchups = getCurrentSeasonMatchups(week);
+  if (currentSeasonMatchups.length) return currentSeasonMatchups;
+
   const leagueId = readLeagueId();
   if (!leagueId) return getFallbackMatchups(week);
 

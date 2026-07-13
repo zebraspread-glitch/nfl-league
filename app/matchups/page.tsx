@@ -6,6 +6,8 @@ import { EmptyState } from "@/components/ui";
 export const revalidate = 120;
 
 const TOTAL_WEEKS = 14;
+const AVAILABLE_WEEKS = [1];
+const PRIMETIME_MATCHUP_ID = "1-primetime";
 
 export default async function MatchupsPage({
   searchParams,
@@ -14,7 +16,8 @@ export default async function MatchupsPage({
 }) {
   const snapshot = getSnapshot();
   const { week: weekParam } = await searchParams;
-  const week = Math.min(Math.max(Number(weekParam) || snapshot.currentWeek, 1), TOTAL_WEEKS);
+  const requestedWeek = Math.min(Math.max(Number(weekParam) || snapshot.currentWeek, 1), TOTAL_WEEKS);
+  const week = AVAILABLE_WEEKS.includes(requestedWeek) ? requestedWeek : AVAILABLE_WEEKS[0];
 
   const [matchups, standings] = await Promise.all([getMatchups(week), getStandings()]);
   const rankMap = new Map(standings.map((s) => [s.team.id, s.rank]));
@@ -23,7 +26,7 @@ export default async function MatchupsPage({
   return (
     <div>
       <div className="mb-3 flex gap-1.5 overflow-x-auto px-1 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {Array.from({ length: TOTAL_WEEKS }, (_, i) => i + 1).map((w) => (
+        {AVAILABLE_WEEKS.map((w) => (
           <Link
             key={w}
             href={`/matchups?week=${w}`}
@@ -39,7 +42,12 @@ export default async function MatchupsPage({
       <div className="space-y-3">
         {matchups.length ? (
           matchups.map((m, i) => (
-            <MatchupCard key={m.id} matchup={m} title={`Matchup ${i + 1}`} rankOf={rankOf} />
+            <MatchupCard
+              key={m.id}
+              matchup={m}
+              title={m.id === PRIMETIME_MATCHUP_ID ? "Primetime" : `Matchup ${i + 1}`}
+              rankOf={rankOf}
+            />
           ))
         ) : (
           <EmptyState>No 2026 matchup data is available for Week {week} yet.</EmptyState>

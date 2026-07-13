@@ -4,6 +4,7 @@ import historyData from "@/data/history.json";
 import type {
   Standing,
   Matchup,
+  MatchupSide,
   Roster,
   SeasonResult,
   SeasonStanding,
@@ -25,9 +26,63 @@ export function getFallbackStandings(): Standing[] {
   return [];
 }
 
+function matchupSide(teamId: number): MatchupSide {
+  const team = getTeam(teamId);
+  if (!team) throw new Error(`Unknown team id: ${teamId}`);
+  return { team, score: 0 };
+}
+
+const WEEK_ONE_MATCHUPS: Matchup[] = [
+  {
+    id: "1-primetime",
+    week: 1,
+    status: "upcoming",
+    away: matchupSide(4),
+    home: matchupSide(2),
+  },
+  {
+    id: "1-2",
+    week: 1,
+    status: "upcoming",
+    away: matchupSide(1),
+    home: matchupSide(8),
+  },
+  {
+    id: "1-3",
+    week: 1,
+    status: "upcoming",
+    away: matchupSide(3),
+    home: matchupSide(7),
+  },
+  {
+    id: "1-4",
+    week: 1,
+    status: "upcoming",
+    away: matchupSide(10),
+    home: matchupSide(9),
+  },
+  {
+    id: "1-5",
+    week: 1,
+    status: "upcoming",
+    away: matchupSide(12),
+    home: matchupSide(5),
+  },
+  {
+    id: "1-6",
+    week: 1,
+    status: "upcoming",
+    away: matchupSide(6),
+    home: matchupSide(11),
+  },
+];
+
+export function getCurrentSeasonMatchups(week: number): Matchup[] {
+  return week === 1 ? WEEK_ONE_MATCHUPS : [];
+}
+
 export function getFallbackMatchups(week: number): Matchup[] {
-  void week;
-  return [];
+  return getCurrentSeasonMatchups(week);
 }
 
 export function getFallbackRoster(teamId: number, week: number): Roster | null {

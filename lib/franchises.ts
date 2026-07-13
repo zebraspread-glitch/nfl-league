@@ -26,9 +26,10 @@ const NAME_TO_FRANCHISE: Record<string, number> = {
   "Lavar Ball": 5,
   "Lavar Balls": 5,
   "Sir Doug": 5,
-  // 6 Monke Vengence
+  // 6 Monke Vengeance
   "Monke Avengence": 6,
   "Monke Vengence": 6,
+  "Monke Vengeance": 6,
   // 7 Tinkle Van Ginkel
   Cleveland: 7,
   Oliver: 7,

@@ -15,7 +15,7 @@ export const TEAMS: TeamMeta[] = [
   { id: 3, name: "De'Aaron Cronin", manager: "Noah", abbrev: "DAC", primary: "#821919", secondary: "#b42323", logo: "/logo/deaaroncronin.png" },
   { id: 4, name: "GinniVan Jefferson", manager: "Brodie", abbrev: "GVJ", primary: "#38b6ff", secondary: "#087fbe", logo: "/logo/ginnivanjefferson.png" },
   { id: 5, name: "Lavar Balls", manager: "Noah", abbrev: "LAV", primary: "#ff914d", secondary: "#d95f19", logo: "/logo/lavarballs.png" },
-  { id: 6, name: "Monke Vengence", manager: "will", abbrev: "MON", primary: "#7c7973", secondary: "#bdbab2", logo: "/logo/monkevengeance.png" },
+  { id: 6, name: "Monke Vengeance", manager: "will", abbrev: "MON", primary: "#7c7973", secondary: "#bdbab2", logo: "/logo/monkevengeance.png" },
   { id: 7, name: "Tinkle Van Ginkel", manager: "Xavier & Joseph", abbrev: "TVG", primary: "#ff3131", secondary: "#c91520", logo: "/logo/tinklevanginkel.png" },
   { id: 8, name: "Dalts", manager: "Talds", abbrev: "DAL", primary: "#22aeb6", secondary: "#5ce1e6", logo: "/logo/dalts.png" },
   { id: 9, name: "Paho", manager: "James", abbrev: "PAH", primary: "#588727", secondary: "#82b84a", logo: "/logo/paho.png" },
