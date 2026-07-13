@@ -236,26 +236,26 @@ export function PlayerBrowser({ players, mode = "search" }: { players: PlayerBro
 
   return (
     <div className="-mx-3 -mt-3 min-h-screen bg-[#dfddd8] pb-28 text-[#353638]">
-      <section className="px-3 pt-4">
-        <div className="rounded-2xl bg-white px-3 py-4 shadow-[0_2px_0_rgba(0,0,0,0.22)]">
-          <label className="flex h-12 items-center gap-2 rounded-xl border-2 border-[#d8d8d8] bg-white px-3">
+      <section className="px-3 pt-3">
+        <div className="rounded-2xl bg-white px-3 py-3 shadow-[0_2px_0_rgba(0,0,0,0.22)]">
+          <label className="flex h-9 items-center gap-2 rounded-lg border-2 border-[#d8d8d8] bg-white px-2.5">
             <input
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search by name"
-              className="min-w-0 flex-1 bg-transparent text-[22px] font-medium text-[#333] outline-none placeholder:text-[#787878]"
+              className="min-w-0 flex-1 bg-transparent text-[15px] font-medium text-[#333] outline-none placeholder:text-[#787878]"
             />
             <SearchIcon />
           </label>
 
-          <div className="mt-4 grid grid-cols-3 gap-2">
+          <div className="mt-2.5 grid grid-cols-3 gap-1.5">
             {VIEWS.map((tab) => (
               <button
                 key={tab}
                 type="button"
                 onClick={() => changeView(tab)}
-                className={`h-10 rounded-md border-2 font-cond text-[21px] font-semibold uppercase ${
+                className={`h-7 rounded-md border-2 font-cond text-[13px] font-semibold uppercase ${
                   view === tab ? "border-[#b8dfe8] bg-[#d9f5fb] text-[#4a4d50]" : "border-[#eeeeee] bg-white text-[#666]"
                 }`}
               >
@@ -264,13 +264,13 @@ export function PlayerBrowser({ players, mode = "search" }: { players: PlayerBro
             ))}
           </div>
 
-          <div className="mt-4 grid grid-cols-4 gap-2">
+          <div className="mt-2 grid grid-cols-4 gap-1.5">
             {POSITIONS.map((pos) => (
               <button
                 key={pos}
                 type="button"
                 onClick={() => setPosition(pos)}
-                className={`h-9 rounded-md border-2 font-cond text-[18px] font-semibold uppercase ${
+                className={`h-7 rounded-md border-2 font-cond text-[12px] font-semibold uppercase ${
                   position === pos ? "border-[#b8dfe8] bg-[#d9f5fb] text-[#4a4d50]" : "border-[#eeeeee] bg-white text-[#5f6266]"
                 }`}
               >
@@ -279,12 +279,12 @@ export function PlayerBrowser({ players, mode = "search" }: { players: PlayerBro
             ))}
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-2">
+          <div className="mt-2 grid grid-cols-2 gap-1.5">
             <SelectShell>
               <select
                 value={status}
                 onChange={(event) => setStatus(event.target.value as StatusFilter)}
-                className="h-full w-full appearance-none bg-transparent px-3 pr-8 font-cond text-[18px] font-bold text-[#2f3338] outline-none"
+                className="h-full w-full appearance-none bg-transparent px-2.5 pr-7 font-cond text-[12px] font-bold text-[#2f3338] outline-none"
                 aria-label="Player status"
               >
                 {STATUS_OPTIONS.map((option) => (
@@ -298,7 +298,7 @@ export function PlayerBrowser({ players, mode = "search" }: { players: PlayerBro
               <select
                 value={period}
                 onChange={(event) => setPeriod(event.target.value)}
-                className="h-full w-full appearance-none bg-transparent px-3 pr-8 font-cond text-[18px] font-bold text-[#2f3338] outline-none"
+                className="h-full w-full appearance-none bg-transparent px-2.5 pr-7 font-cond text-[12px] font-bold text-[#2f3338] outline-none"
                 aria-label="Stats period"
               >
                 {PERIODS.map((option) => (
@@ -310,12 +310,12 @@ export function PlayerBrowser({ players, mode = "search" }: { players: PlayerBro
             </SelectShell>
           </div>
 
-          <div className="mt-2 grid grid-cols-[1fr_auto] gap-2">
+          <div className="mt-1.5 grid grid-cols-[1fr_auto] gap-1.5">
             <SelectShell>
               <select
                 value={team}
                 onChange={(event) => setTeam(event.target.value)}
-                className="h-full w-full appearance-none bg-transparent px-3 pr-8 font-cond text-[18px] font-bold text-[#2f3338] outline-none"
+                className="h-full w-full appearance-none bg-transparent px-2.5 pr-7 font-cond text-[12px] font-bold text-[#2f3338] outline-none"
                 aria-label="MGL team"
               >
                 {teamOptions.map((option) => (
@@ -325,14 +325,14 @@ export function PlayerBrowser({ players, mode = "search" }: { players: PlayerBro
                 ))}
               </select>
             </SelectShell>
-            <div className="flex h-10 min-w-20 items-center justify-center rounded-md bg-[#f4f4f4] px-3 font-cond text-[16px] font-bold text-[#6a6d72]">
+            <div className="flex h-8 min-w-14 items-center justify-center rounded-md bg-[#f4f4f4] px-2.5 font-cond text-[12px] font-bold text-[#6a6d72]">
               {filtered.length}
             </div>
           </div>
         </div>
       </section>
 
-      <div className="px-5 pb-4 pt-7 font-cond text-[26px] font-bold uppercase text-[#5b5d61]">
+      <div className="px-3 pb-3 pt-5 font-cond text-[17px] font-bold uppercase text-[#5b5d61]">
         Filter Results
       </div>
 
@@ -343,7 +343,7 @@ export function PlayerBrowser({ players, mode = "search" }: { players: PlayerBro
           <button
             type="button"
             onClick={() => setLimit((current) => current + PAGE_SIZE)}
-            className="h-11 rounded-md border-2 border-[#d8d8d8] bg-white px-6 font-cond text-[18px] font-semibold uppercase text-[#4a4d50]"
+            className="h-9 rounded-md border-2 border-[#d8d8d8] bg-white px-5 font-cond text-[13px] font-semibold uppercase text-[#4a4d50]"
           >
             Show more ({filtered.length - limit} remaining)
           </button>
@@ -355,9 +355,9 @@ export function PlayerBrowser({ players, mode = "search" }: { players: PlayerBro
 
 function SelectShell({ children }: { children: ReactNode }) {
   return (
-    <div className="relative h-10 overflow-hidden rounded-md bg-[#f4f4f4]">
+    <div className="relative h-8 overflow-hidden rounded-md bg-[#f4f4f4]">
       {children}
-      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
+      <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2">
         <ChevronIcon />
       </span>
     </div>
@@ -382,13 +382,13 @@ function PlayerStatsTable({
 
   return (
     <div className="relative overflow-x-auto bg-white [scrollbar-width:thin]">
-      <table className="min-w-[1240px] border-collapse text-[#3d3f43]">
+      <table className="min-w-[960px] border-collapse text-[#3d3f43]">
         <thead className="font-cond uppercase text-[#63666b]">
-          <tr className="h-11 bg-white text-[15px]">
-            <StickyHead rowSpan={2} left="left-0" width="w-12">
+          <tr className="h-8 bg-white text-[12px]">
+            <StickyHead rowSpan={2} left="left-0" width="w-10">
               Team
             </StickyHead>
-            <StickyHead rowSpan={2} left="left-12" width="w-56" align="left">
+            <StickyHead rowSpan={2} left="left-10" width="w-44" align="left">
               Player
             </StickyHead>
             {groups.map((group) => (
@@ -397,13 +397,13 @@ function PlayerStatsTable({
               </th>
             ))}
           </tr>
-          <tr className="h-12 border-t border-[#f0f0f0] bg-white text-[14px]">
+          <tr className="h-8 border-t border-[#f0f0f0] bg-white text-[11px]">
             {columns.map((column) => (
               <th
                 key={column.key}
                 className={`border-l border-[#eeeeee] px-2 text-center font-bold ${
                   column.blue ? "bg-[#d8f6fb]" : ""
-                } ${column.wide ? "min-w-24" : "min-w-16"}`}
+                } ${column.wide ? "min-w-20" : "min-w-12"}`}
               >
                 <button type="button" onClick={() => onSort(column.key)} className="inline-flex items-center gap-1">
                   {sort.key === column.key ? <span className="text-[#009cbb]">{sort.direction === "desc" ? "v" : "^"}</span> : null}
@@ -419,7 +419,7 @@ function PlayerStatsTable({
           ))}
           {players.length === 0 ? (
             <tr>
-              <td colSpan={columns.length + 2} className="px-4 py-10 text-center font-cond text-xl font-bold text-[#72757a]">
+              <td colSpan={columns.length + 2} className="px-4 py-10 text-center font-cond text-base font-bold text-[#72757a]">
                 No players match those filters.
               </td>
             </tr>
@@ -436,26 +436,26 @@ function PlayerRow({ player, columns, view, period }: { player: PlayerBrowserIte
   const active = view === "PROJECTIONS" ? projection : actual;
 
   return (
-    <tr className="h-[72px] border-t border-[#e8e8e8] bg-white text-[18px] even:bg-[#f6f6f6]">
-      <td className="sticky left-0 z-20 w-12 bg-inherit px-1 text-center shadow-[8px_0_14px_rgba(255,255,255,0.88)]">
+    <tr className="h-[52px] border-t border-[#e8e8e8] bg-white text-[13px] even:bg-[#f6f6f6]">
+      <td className="sticky left-0 z-20 w-10 bg-inherit px-1 text-center shadow-[8px_0_14px_rgba(255,255,255,0.88)]">
         <OwnerTeamLogo player={player} />
       </td>
-      <td className="sticky left-12 z-20 w-56 bg-inherit px-2 shadow-[12px_0_18px_rgba(255,255,255,0.9)]">
+      <td className="sticky left-10 z-20 w-44 bg-inherit px-2 shadow-[12px_0_18px_rgba(255,255,255,0.9)]">
         <div className="flex min-w-0 items-center gap-2">
           <PlayerImage player={player} />
           <div className="min-w-0">
             <div className="flex min-w-0 items-center gap-1">
               <RankBadge rank={view === "PROJECTIONS" ? player.projectionRank : player.posRank} />
-              <Link href={`/players/${player.playerId}?season=2026`} className="truncate font-cond text-[22px] font-bold text-[#303236]">
+              <Link href={`/players/${player.playerId}?season=2026`} className="truncate font-cond text-[15px] font-bold text-[#303236]">
                 {player.displayName}
               </Link>
               <AvailabilityBadge status={player.status} />
-              {player.injuryStatus ? <span className="font-cond text-[13px] font-bold text-[#e23313]">{player.injuryStatus[0]}</span> : null}
+              {player.injuryStatus ? <span className="font-cond text-[11px] font-bold text-[#e23313]">{player.injuryStatus[0]}</span> : null}
             </div>
-            <div className="font-cond text-[17px] font-bold text-[#666a70]">
+            <div className="font-cond text-[12px] font-bold text-[#666a70]">
               {player.proTeam || "FA"} - {player.pos}
             </div>
-            <div className="truncate font-cond text-[15px] font-bold text-[#333]">{player.matchup}</div>
+            <div className="truncate font-cond text-[11px] font-bold text-[#333]">{player.matchup}</div>
           </div>
         </div>
       </td>
@@ -463,8 +463,8 @@ function PlayerRow({ player, columns, view, period }: { player: PlayerBrowserIte
         <td
           key={column.key}
           className={`px-2 text-center font-cond ${column.blue ? "bg-[#d8f6fb]" : ""} ${
-            column.strong ? "text-[20px] font-bold text-[#222]" : "font-semibold text-[#686b70]"
-          } ${column.wide ? "min-w-24" : "min-w-16"}`}
+            column.strong ? "text-[15px] font-bold text-[#222]" : "font-semibold text-[#686b70]"
+          } ${column.wide ? "min-w-20" : "min-w-12"}`}
         >
           {column.get(player, active, actual, projection)}
         </td>
@@ -651,20 +651,20 @@ function OwnerTeamLogo({ player }: { player: PlayerBrowserItem }) {
       <img
         src={player.ownerTeamLogo}
         alt={player.ownerTeamName ?? "MGL team"}
-        className="mx-auto h-8 w-8 rounded-full object-cover"
+        className="mx-auto h-7 w-7 rounded-full object-cover"
         suppressHydrationWarning
       />
     );
   }
 
   if (player.status === "Waivers") {
-    return <span className="mx-auto grid h-8 w-8 place-items-center rounded-md bg-[#f07600] font-cond text-[15px] font-bold text-white">W</span>;
+    return <span className="mx-auto grid h-7 w-7 place-items-center rounded-md bg-[#f07600] font-cond text-[12px] font-bold text-white">W</span>;
   }
 
   if (player.status === "Taken") {
     return (
       <span
-        className="mx-auto grid h-8 w-8 place-items-center rounded-full font-cond text-[11px] font-bold text-white"
+        className="mx-auto grid h-7 w-7 place-items-center rounded-full font-cond text-[10px] font-bold text-white"
         style={{
           background: `linear-gradient(135deg, ${player.ownerTeamPrimary ?? "#667085"}, ${player.ownerTeamSecondary ?? "#98a2b3"})`,
         }}
@@ -675,7 +675,7 @@ function OwnerTeamLogo({ player }: { player: PlayerBrowserItem }) {
     );
   }
 
-  return <span className="mx-auto grid h-8 w-8 place-items-center rounded-md bg-[#ef2b00] font-cond text-[15px] font-bold text-white">FA</span>;
+  return <span className="mx-auto grid h-7 w-7 place-items-center rounded-md bg-[#ef2b00] font-cond text-[12px] font-bold text-white">FA</span>;
 }
 
 function PlayerImage({ player }: { player: PlayerBrowserItem }) {
@@ -685,13 +685,13 @@ function PlayerImage({ player }: { player: PlayerBrowserItem }) {
       <img
         src={player.imageUrl}
         alt={player.displayName}
-        className={`h-12 w-12 shrink-0 rounded-full ${player.isLogo ? "object-contain p-1" : "object-cover"}`}
+        className={`h-9 w-9 shrink-0 rounded-full ${player.isLogo ? "object-contain p-1" : "object-cover"}`}
         suppressHydrationWarning
       />
     );
   }
   return (
-    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white font-cond text-[13px] font-bold text-[#5d6065] ring-1 ring-[#d6d6d6]">
+    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white font-cond text-[11px] font-bold text-[#5d6065] ring-1 ring-[#d6d6d6]">
       {player.pos}
     </span>
   );
@@ -700,7 +700,7 @@ function PlayerImage({ player }: { player: PlayerBrowserItem }) {
 function RankBadge({ rank }: { rank: number }) {
   if (!Number.isFinite(rank) || rank > 999) return null;
   return (
-    <span className="grid h-5 min-w-5 place-items-center rounded-full border border-[#d8d8d8] bg-white px-1 font-cond text-[13px] font-bold text-[#222]">
+    <span className="grid h-4 min-w-4 place-items-center rounded-full border border-[#d8d8d8] bg-white px-1 font-cond text-[10px] font-bold text-[#222]">
       {rank}
     </span>
   );
@@ -709,7 +709,7 @@ function RankBadge({ rank }: { rank: number }) {
 function AvailabilityBadge({ status }: { status: PlayerAvailability }) {
   if (status === "Taken") return null;
   return (
-    <span className={`rounded-sm px-1 font-cond text-[12px] font-bold text-white ${status === "Waivers" ? "bg-[#f07600]" : "bg-[#67c777]"}`}>
+    <span className={`rounded-sm px-1 font-cond text-[10px] font-bold text-white ${status === "Waivers" ? "bg-[#f07600]" : "bg-[#67c777]"}`}>
       {status === "Waivers" ? "W" : "F"}
     </span>
   );
@@ -717,7 +717,7 @@ function AvailabilityBadge({ status }: { status: PlayerAvailability }) {
 
 function SearchIcon() {
   return (
-    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#777" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#777" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <circle cx="11" cy="11" r="7" />
       <path d="m16.5 16.5 4.5 4.5" />
     </svg>
@@ -726,7 +726,7 @@ function SearchIcon() {
 
 function ChevronIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4d5157" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4d5157" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="m6 9 6 6 6-6" />
     </svg>
   );
