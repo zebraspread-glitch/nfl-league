@@ -14,6 +14,8 @@ const LINKS = [
   { href: "/history", label: "History", desc: "Champions and final standings, 2021-2025", icon: "HY" },
   { href: "/managers", label: "Managers", desc: "All-time managers, stats and legacy scores", icon: "MG" },
   { href: "/records", label: "Records", desc: "All-time wins, points and titles", icon: "RC" },
+  { href: "/luck", label: "Luck & All-Play", desc: "All-play records vs actual — who the schedule blessed", icon: "🍀" },
+  { href: "/positions", label: "Positional Firepower", desc: "Where each franchise's points come from", icon: "📊" },
   { href: "/head-to-head", label: "Head to Head", desc: "Compare any two franchises", icon: "HH" },
   { href: "/settings", label: "Settings", desc: "Theme (light/dark) and your team", icon: "⚙" },
 ];
