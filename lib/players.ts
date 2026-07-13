@@ -330,6 +330,42 @@ export async function getPlayerSummaries(): Promise<PlayerSummary[]> {
     .sort((a, b) => b.totalPoints - a.totalPoints || b.gamesPlayed - a.gamesPlayed || a.name.localeCompare(b.name));
 }
 
+export interface FranchiseTopPlayer {
+  playerId: number;
+  name: string;
+  pos: string;
+  proTeam: string;
+  points: number;
+  games: number;
+}
+
+/** Top all-time scorers (started games) for a single MGL franchise. */
+export async function getFranchiseTopPlayers(teamId: number, limit = 5): Promise<FranchiseTopPlayer[]> {
+  const map = await allEntries();
+  const out: FranchiseTopPlayer[] = [];
+
+  for (const [playerId, rec] of map) {
+    let points = 0;
+    let games = 0;
+    let pos = "";
+    let proTeam = "";
+    for (const entry of rec.entries) {
+      if (!entry.started) continue;
+      const id = entry.team?.id ?? franchiseIdForName(entry.teamName);
+      if (id !== teamId) continue;
+      points += entry.points;
+      games += 1;
+      pos = entry.pos || pos;
+      proTeam = entry.proTeam || proTeam;
+    }
+    if (games > 0) {
+      out.push({ playerId, name: rec.name, pos, proTeam, points: Math.round(points * 100) / 100, games });
+    }
+  }
+
+  return out.sort((a, b) => b.points - a.points || b.games - a.games).slice(0, limit);
+}
+
 export async function getPlayerProfile(playerId: number): Promise<PlayerProfile | null> {
   const map = await allEntries();
   const rec = map.get(playerId);
