@@ -35,6 +35,11 @@ export interface PlayerStats {
   gp: number;
 }
 
+/** Wire format for a stat line: zero fields are omitted server-side so the
+ *  pre-rendered payload stays under Vercel's ISR size limit. Expand with
+ *  `statsFor` before reading individual fields. */
+export type SparseStats = Partial<PlayerStats>;
+
 interface FantasyAgainstValue {
   rank: number;
   avg: number;
@@ -72,10 +77,10 @@ export interface PlayerBrowserItem {
   rosterDrops: number;
   waiverAdds: number;
   fantasyAgainst?: FantasyAgainstValue;
-  stats: PlayerStats;
-  projection: PlayerStats;
-  statsByPeriod: Record<string, PlayerStats>;
-  projectionsByPeriod: Record<string, PlayerStats>;
+  stats: SparseStats;
+  projection: SparseStats;
+  statsByPeriod: Record<string, SparseStats>;
+  projectionsByPeriod: Record<string, SparseStats>;
 }
 
 type PlayerBrowserMode = "all" | "records" | "search";
@@ -141,6 +146,10 @@ const DEFAULT_SORT: Record<View, SortState> = {
   TRENDS: { key: "trendNet", direction: "desc" },
 };
 
+// Rows rendered per "page" — keeps the pre-rendered HTML small (the full list is
+// thousands of rows) and the initial paint fast; Show More reveals the rest.
+const PAGE_SIZE = 50;
+
 export function PlayerBrowser({ players, mode = "search" }: { players: PlayerBrowserItem[]; mode?: PlayerBrowserMode }) {
   void mode;
   const [query, setQuery] = useState("");
@@ -150,6 +159,7 @@ export function PlayerBrowser({ players, mode = "search" }: { players: PlayerBro
   const [period, setPeriod] = useState("2025 Season");
   const [team, setTeam] = useState("All MGL Teams");
   const [sort, setSort] = useState<SortState>(DEFAULT_SORT.STATS);
+  const [limit, setLimit] = useState(PAGE_SIZE);
 
   const teamOptions = useMemo(() => {
     const names = new Set(players.map((player) => player.ownerTeamName).filter((name): name is string => Boolean(name)));
@@ -308,7 +318,19 @@ export function PlayerBrowser({ players, mode = "search" }: { players: PlayerBro
         Filter Results
       </div>
 
-      <PlayerStatsTable players={filtered} view={view} period={period} sort={sort} onSort={requestSort} />
+      <PlayerStatsTable players={filtered.slice(0, limit)} view={view} period={period} sort={sort} onSort={requestSort} />
+
+      {filtered.length > limit ? (
+        <div className="bg-white px-4 pb-6 pt-3 text-center">
+          <button
+            type="button"
+            onClick={() => setLimit((current) => current + PAGE_SIZE)}
+            className="h-11 rounded-md border-2 border-[#d8d8d8] bg-white px-6 font-cond text-[18px] font-semibold uppercase text-[#4a4d50]"
+          >
+            Show more ({filtered.length - limit} remaining)
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -543,7 +565,11 @@ function comparePlayers(a: PlayerBrowserItem, b: PlayerBrowserItem, sort: SortSt
     if (diff) return diff * direction;
   }
 
-  return b.stats.points - a.stats.points || b.projection.projected - a.projection.projected || a.displayName.localeCompare(b.displayName);
+  return (
+    (b.stats.points ?? 0) - (a.stats.points ?? 0) ||
+    (b.projection.projected ?? 0) - (a.projection.projected ?? 0) ||
+    a.displayName.localeCompare(b.displayName)
+  );
 }
 
 function sortValue(player: PlayerBrowserItem, key: string, view: View, period: string): string | number {
@@ -596,7 +622,8 @@ function numericStat(stats: PlayerStats, key: string): number {
 
 function statsFor(player: PlayerBrowserItem, type: "stats" | "projection", period: string): PlayerStats {
   const source = type === "stats" ? player.statsByPeriod : player.projectionsByPeriod;
-  return source[period] ?? EMPTY_STATS;
+  const sparse = source[period];
+  return sparse ? { ...EMPTY_STATS, ...sparse } : EMPTY_STATS;
 }
 
 function OwnerTeamLogo({ player }: { player: PlayerBrowserItem }) {

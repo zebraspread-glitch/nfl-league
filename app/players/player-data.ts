@@ -1,6 +1,16 @@
-import type { PlayerAvailability, PlayerBrowserItem, PlayerStats } from "./player-browser";
+import type { PlayerAvailability, PlayerBrowserItem, PlayerStats, SparseStats } from "./player-browser";
 import { getTeam, getTeamByName, TEAMS } from "@/lib/teams";
 import type { TeamId, TeamMeta } from "@/lib/types";
+
+/** Internal build shape: full (dense) stat lines for easy accumulation. Converted to the
+ *  sparse wire format at the end of getPlayerBrowserItems — shipping dense maps blew the
+ *  pre-rendered page past Vercel's ~19 MB ISR response limit. */
+type FullStatsItem = Omit<PlayerBrowserItem, "stats" | "projection" | "statsByPeriod" | "projectionsByPeriod"> & {
+  stats: PlayerStats;
+  projection: PlayerStats;
+  statsByPeriod: Record<string, PlayerStats>;
+  projectionsByPeriod: Record<string, PlayerStats>;
+};
 
 const SLEEPER_API = "https://api.sleeper.app/v1";
 const SLEEPER_DATA_API = "https://api.sleeper.com";
@@ -367,13 +377,37 @@ function positionFor(playerId: string, meta?: SleeperPlayerMeta): string {
   return meta?.position || meta?.fantasy_positions?.[0] || "";
 }
 
-function shouldIncludeCatalogPlayer(playerId: string, meta: SleeperPlayerMeta, ownership: Map<string, OwnedBy>, addTrend: Map<string, number>, dropTrend: Map<string, number>): boolean {
-  const pos = positionFor(playerId, meta);
+/** Relevance gate, applied to every player (catalog- and stat-row-sourced alike) to keep
+ *  the payload small: anyone involved in the league always passes, DEFs always pass, and
+ *  everyone else needs an NFL team, a rosterable status, and a reasonable search rank. */
+function isRelevantPlayer(playerId: string, pos: string, meta: SleeperPlayerMeta | undefined, ownership: Map<string, OwnedBy>, addTrend: Map<string, number>, dropTrend: Map<string, number>): boolean {
   if (!POSITIONS.has(pos)) return false;
   if (ownership.has(playerId) || addTrend.has(playerId) || dropTrend.has(playerId)) return true;
-  if (!meta.team && pos !== "DEF") return false;
+  if (pos === "DEF") return true;
+  if (!meta?.team) return false;
   if (meta.status && !["Active", "Inactive", "Injured Reserve", "Physically Unable to Perform"].includes(meta.status)) return false;
   return (meta.search_rank ?? 9999) <= 1200;
+}
+
+/** Wire conversion: drop zero fields and round away float accumulation noise
+ *  (e.g. "263.79999999999995") — both bloat the serialized page enormously. */
+function sparse(stats: PlayerStats): SparseStats {
+  const out: SparseStats = {};
+  for (const key of Object.keys(stats) as (keyof PlayerStats)[]) {
+    const value = stats[key];
+    if (!value) continue;
+    out[key] = Math.round(value * 100) / 100;
+  }
+  return out;
+}
+
+function sparseMap(map: Record<string, PlayerStats>): Record<string, SparseStats> {
+  const out: Record<string, SparseStats> = {};
+  for (const [key, value] of Object.entries(map)) {
+    const slim = sparse(value);
+    if (Object.keys(slim).length) out[key] = slim;
+  }
+  return out;
 }
 
 export async function getPlayerBrowserItems(): Promise<PlayerBrowserItem[]> {
@@ -397,12 +431,12 @@ export async function getPlayerBrowserItems(): Promise<PlayerBrowserItem[]> {
 
   const allStatsRows = weeklyStats.flatMap((week) => week ?? []);
   const fantasyAgainst = buildFantasyAgainst(allStatsRows);
-  const byId = new Map<string, PlayerBrowserItem>();
+  const byId = new Map<string, FullStatsItem>();
 
-  const ensurePlayer = (playerId: string, rowMeta?: SleeperPlayerMeta, row?: Pick<SleeperStatRow, "team" | "opponent">): PlayerBrowserItem | null => {
+  const ensurePlayer = (playerId: string, rowMeta?: SleeperPlayerMeta, row?: Pick<SleeperStatRow, "team" | "opponent">): FullStatsItem | null => {
     const meta = rowMeta ?? playerCatalog?.[playerId];
     const pos = positionFor(playerId, meta);
-    if (!POSITIONS.has(pos)) return null;
+    if (!isRelevantPlayer(playerId, pos, playerCatalog?.[playerId] ?? rowMeta, ownership, addTrend, dropTrend)) return null;
 
     const owned = ownership.get(playerId);
     const status = availability(playerId, owned, transactions);
@@ -454,7 +488,7 @@ export async function getPlayerBrowserItems(): Promise<PlayerBrowserItem[]> {
       statsByPeriod,
       projectionsByPeriod,
       ...playerPhoto(playerId, pos),
-    } satisfies PlayerBrowserItem;
+    } satisfies FullStatsItem;
     byId.set(playerId, item);
     return item;
   };
@@ -476,9 +510,7 @@ export async function getPlayerBrowserItems(): Promise<PlayerBrowserItem[]> {
   }
 
   for (const [playerId, meta] of Object.entries(playerCatalog ?? {})) {
-    if (shouldIncludeCatalogPlayer(playerId, meta, ownership, addTrend, dropTrend)) {
-      ensurePlayer(playerId, meta);
-    }
+    ensurePlayer(playerId, meta);
   }
 
   const players = [...byId.values()];
@@ -487,8 +519,8 @@ export async function getPlayerBrowserItems(): Promise<PlayerBrowserItem[]> {
     player.projection = player.projectionsByPeriod[SEASON_KEY] ?? blankStats();
   }
 
-  const rankBy = (selector: (player: PlayerBrowserItem) => number, field: "posRank" | "projectionRank") => {
-    const byPos = new Map<string, PlayerBrowserItem[]>();
+  const rankBy = (selector: (player: FullStatsItem) => number, field: "posRank" | "projectionRank") => {
+    const byPos = new Map<string, FullStatsItem[]>();
     for (const player of players) {
       const bucket = byPos.get(player.pos) ?? [];
       bucket.push(player);
@@ -506,5 +538,18 @@ export async function getPlayerBrowserItems(): Promise<PlayerBrowserItem[]> {
   rankBy((player) => player.stats.points, "posRank");
   rankBy((player) => player.projection.projected, "projectionRank");
 
-  return players.sort((a, b) => b.stats.points - a.stats.points || b.projection.projected - a.projection.projected || a.displayName.localeCompare(b.displayName));
+  players.sort((a, b) => b.stats.points - a.stats.points || b.projection.projected - a.projection.projected || a.displayName.localeCompare(b.displayName));
+
+  // Convert to the sparse wire format last, once ranks and sort order are settled.
+  return players.map((player) => {
+    const statsByPeriod = sparseMap(player.statsByPeriod);
+    const projectionsByPeriod = sparseMap(player.projectionsByPeriod);
+    return {
+      ...player,
+      statsByPeriod,
+      projectionsByPeriod,
+      stats: statsByPeriod[SEASON_KEY] ?? {},
+      projection: projectionsByPeriod[SEASON_KEY] ?? {},
+    };
+  });
 }
