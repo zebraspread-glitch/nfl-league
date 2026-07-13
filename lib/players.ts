@@ -113,6 +113,14 @@ export interface PlayerSummary {
   teamCount: number;
   proTeamCount: number;
   teams: PlayerSummaryTeam[];
+  /** Most started games this player logged for a single MGL franchise. */
+  oneTeamGames: number;
+  oneTeamGamesTeamName: string;
+  oneTeamGamesTeamId?: number;
+  /** Most points this player scored for a single MGL franchise. */
+  oneTeamPoints: number;
+  oneTeamPointsTeamName: string;
+  oneTeamPointsTeamId?: number;
 }
 
 function sum(stats: Record<string, number>, key: string): number {
@@ -258,6 +266,20 @@ function buildSummary(playerId: number, rec: { name: string; entries: PlayerGame
   const defTD = started.reduce((s, e) => s + sum(e.stats, "defTD") + sum(e.stats, "defRetTD"), 0);
   const defSafety = started.reduce((s, e) => s + sum(e.stats, "defSafety"), 0);
 
+  // Per-franchise splits: which single team a player played most / scored most for.
+  const perTeam = new Map<string, { id?: number; name: string; games: number; points: number }>();
+  for (const e of started) {
+    const id = e.team?.id ?? franchiseIdForName(e.teamName);
+    const key = id ? `id:${id}` : `name:${e.teamName}`;
+    const teamRec = perTeam.get(key) ?? { id, name: e.team?.name ?? e.teamName, games: 0, points: 0 };
+    teamRec.games += 1;
+    teamRec.points += e.points;
+    perTeam.set(key, teamRec);
+  }
+  const teamSplits = [...perTeam.values()];
+  const topByGames = [...teamSplits].sort((a, b) => b.games - a.games || b.points - a.points)[0];
+  const topByPoints = [...teamSplits].sort((a, b) => b.points - a.points || b.games - a.games)[0];
+
   return {
     playerId,
     name: rec.name,
@@ -292,6 +314,12 @@ function buildSummary(playerId: number, rec: { name: string; entries: PlayerGame
     teamCount: teams.length,
     proTeamCount: proTeams.size,
     teams,
+    oneTeamGames: topByGames?.games ?? 0,
+    oneTeamGamesTeamName: topByGames?.name ?? "",
+    oneTeamGamesTeamId: topByGames?.id,
+    oneTeamPoints: Math.round((topByPoints?.points ?? 0) * 100) / 100,
+    oneTeamPointsTeamName: topByPoints?.name ?? "",
+    oneTeamPointsTeamId: topByPoints?.id,
   };
 }
 
