@@ -228,3 +228,65 @@ export async function getPositionalBreakdown(): Promise<PositionalBreakdown> {
 
   return { rows, leagueShare, leagueAvgPerPos, positions: INSIGHT_POSITIONS };
 }
+
+// --- Scoring Consistency (Boom or Bust) --------------------------------------
+// Two teams can average the same points very differently: one metronomic, one
+// swinging between 80 and 180. Coefficient of variation (std dev ÷ mean) ranks
+// franchises from steadiest to most volatile using weekly regular-season totals.
+
+export interface ConsistencyRow {
+  team: TeamMeta;
+  weeks: number;
+  avg: number;
+  stdDev: number;
+  /** Std dev as a % of the mean — the headline boom/bust metric. Lower = steadier. */
+  cv: number;
+  floor: number;
+  ceiling: number;
+  /** ceiling − floor. */
+  range: number;
+  /** Weeks scoring at least 1 std dev above the team's own mean. */
+  boomWeeks: number;
+  /** Weeks scoring at least 1 std dev below the team's own mean. */
+  bustWeeks: number;
+}
+
+/** Weekly-score volatility per franchise across the regular season (weeks 1–14). */
+export async function getScoringConsistency(): Promise<ConsistencyRow[]> {
+  const games = await getAllGames();
+  const scoresByTeam = new Map<number, { team: TeamMeta; scores: number[] }>();
+
+  for (const game of games) {
+    if (game.week > 14) continue;
+    for (const side of [game.home, game.away]) {
+      const team = side.team;
+      if (!team) continue;
+      const rec = scoresByTeam.get(team.id) ?? { team, scores: [] };
+      rec.scores.push(side.total);
+      scoresByTeam.set(team.id, rec);
+    }
+  }
+
+  return [...scoresByTeam.values()]
+    .map(({ team, scores }) => {
+      const weeks = scores.length;
+      const avg = scores.reduce((sum, score) => sum + score, 0) / weeks;
+      const variance = scores.reduce((sum, score) => sum + (score - avg) ** 2, 0) / weeks;
+      const stdDev = Math.sqrt(variance);
+      const boomWeeks = scores.filter((score) => score >= avg + stdDev).length;
+      const bustWeeks = scores.filter((score) => score <= avg - stdDev).length;
+      return {
+        team,
+        weeks,
+        avg: round(avg),
+        stdDev: round(stdDev),
+        cv: avg ? round((stdDev / avg) * 100) / 100 : 0,
+        floor: round(Math.min(...scores)),
+        ceiling: round(Math.max(...scores)),
+        range: round(Math.max(...scores) - Math.min(...scores)),
+        boomWeeks,
+        bustWeeks,
+      };
+    })
+    .sort((a, b) => a.cv - b.cv);
+}
