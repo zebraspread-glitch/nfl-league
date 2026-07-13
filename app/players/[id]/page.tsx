@@ -6,7 +6,7 @@ import { proTeamLogoUrl, resolvePlayerImage, POS_COLOR } from "@/lib/player-imag
 import { Card, EmptyState, SectionHeader, Score, TeamAvatar } from "@/components/ui";
 import { weekLabel } from "@/lib/games";
 import { getCurrentPlayerProfile, PLAYER_DATA_SEASON, PLAYER_PROFILE_WEEK } from "../player-data";
-import type { PlayerBrowserItem, PlayerStats, SparseStats } from "../player-browser";
+import type { PlayerBrowserItem, PlayerStats, SparseStats, PlayerWeekMatchup } from "../player-browser";
 
 export const revalidate = 86400;
 
@@ -410,13 +410,14 @@ function CurrentPlayerProfile({
           <ProfileMetric label="START %" value="-" />
         </div>
 
-        <nav className="grid grid-cols-2 bg-white font-cond text-[24px] font-normal text-[#606164] shadow-[0_3px_9px_rgba(0,0,0,0.2)]">
+        <nav className="grid grid-cols-3 bg-white font-cond text-[24px] font-normal text-[#606164] shadow-[0_3px_9px_rgba(0,0,0,0.2)]">
           <ProfileTabLink href={`/players/${encodeURIComponent(player.playerId)}?season=${PLAYER_DATA_SEASON}`} active={!isStatsTab}>
             Overview
           </ProfileTabLink>
           <ProfileTabLink href={`/players/${encodeURIComponent(player.playerId)}?season=${PLAYER_DATA_SEASON}&tab=stats`} active={isStatsTab}>
             Stats
           </ProfileTabLink>
+          <span className="border-b-4 border-transparent py-3.5 text-center text-[#606164]">Film Room</span>
         </nav>
       </section>
 
@@ -605,38 +606,38 @@ function CurrentStatsTab({ player, seasonGames }: { player: PlayerBrowserItem; s
   const columns = gameLogColumns(player, logs);
 
   return (
-    <main className="pt-24">
+    <main>
       <section className="px-0">
-        <div className="flex items-end justify-between px-4 pb-4">
-          <h2 className="font-cond text-[24px] font-bold uppercase tracking-wider text-[#64666a]">Game Logs</h2>
-          <div className="flex h-[52px] items-center gap-2 rounded-xl bg-[#d1cec7] px-6 font-cond text-[24px] font-bold tracking-widest text-[#46484b]">
+        <div className="flex min-h-[330px] items-end justify-between px-5 pb-5">
+          <h2 className="font-cond text-[26px] font-bold uppercase tracking-wider text-[#64666a]">Game Logs</h2>
+          <div className="flex h-[58px] items-center gap-3 rounded-xl bg-[#d1cec7] px-7 font-cond text-[25px] font-bold tracking-widest text-[#46484b]">
             {PLAYER_DATA_SEASON}
             <span className="block h-4 w-4 rotate-45 border-b-[3px] border-r-[3px] border-[#64666a]" aria-hidden="true" />
           </div>
         </div>
 
         <div className="overflow-x-auto bg-white shadow-[0_-1px_10px_rgba(0,0,0,0.05)] [scrollbar-width:thin]">
-          <table className="min-w-[820px] border-collapse font-cond text-[#3d3f42]">
+          <table className="min-w-[1040px] border-collapse font-cond text-[#3d3f42]">
             <thead>
-              <tr className="h-12 text-[20px] font-bold text-[#65676b]">
-                <th colSpan={2} className="sticky left-0 z-30 bg-white px-4 text-left shadow-[10px_0_18px_rgba(255,255,255,0.92)]">
+              <tr className="h-14 text-[24px] font-bold text-[#65676b]">
+                <th colSpan={2} className="sticky left-0 z-30 w-[212px] bg-white px-5 text-left shadow-[12px_0_18px_rgba(255,255,255,0.94)]">
                   {PLAYER_DATA_SEASON} Season
                 </th>
-                <th rowSpan={2} className="px-3 text-center align-bottom text-[19px]">
+                <th rowSpan={2} className="w-36 px-4 text-center align-bottom text-[22px]">
                   Fan Pts
                 </th>
                 {columns.map((group) => (
-                  <th key={group.title} colSpan={group.stats.length} className="px-3 text-center">
+                  <th key={group.title} colSpan={group.stats.length} className="px-4 text-center">
                     {group.title}
                   </th>
                 ))}
               </tr>
-              <tr className="h-12 text-[20px] font-bold text-[#65676b]">
-                <th className="sticky left-0 z-30 w-16 bg-white px-4 text-left shadow-[10px_0_18px_rgba(255,255,255,0.92)]">Wk</th>
-                <th className="sticky left-16 z-30 w-28 bg-white px-2 text-left shadow-[10px_0_18px_rgba(255,255,255,0.92)]">Opp</th>
+              <tr className="h-14 text-[24px] font-bold text-[#65676b]">
+                <th className="sticky left-0 z-30 w-20 bg-white px-5 text-left shadow-[12px_0_18px_rgba(255,255,255,0.94)]">Wk</th>
+                <th className="sticky left-20 z-30 w-32 bg-white px-3 text-left shadow-[12px_0_18px_rgba(255,255,255,0.94)]">Opp</th>
                 {columns.flatMap((group) =>
                   group.stats.map((column) => (
-                    <th key={`${group.title}-${column.key}`} className="min-w-[74px] px-1.5 text-center leading-[1.05]">
+                    <th key={`${group.title}-${column.key}`} className="min-w-[92px] px-2 text-center leading-[1.05]">
                       {column.label}
                     </th>
                   )),
@@ -645,19 +646,19 @@ function CurrentStatsTab({ player, seasonGames }: { player: PlayerBrowserItem; s
             </thead>
             <tbody>
               {logs.map((log) => (
-                <tr key={log.week} className="h-16 text-[21px] font-bold">
-                  <td className="sticky left-0 z-20 bg-white px-4 text-center shadow-[10px_0_18px_rgba(255,255,255,0.92)]">{log.week}</td>
-                  <td className="sticky left-16 z-20 bg-white px-2 shadow-[10px_0_18px_rgba(255,255,255,0.92)]">
+                <tr key={log.week} className="h-[74px] text-[25px] font-bold">
+                  <td className="sticky left-0 z-20 bg-white px-5 text-center shadow-[12px_0_18px_rgba(255,255,255,0.94)]">{log.week}</td>
+                  <td className="sticky left-20 z-20 bg-white px-3 shadow-[12px_0_18px_rgba(255,255,255,0.94)]">
                     <div className="flex items-center gap-2">
-                      <span className={`w-7 text-center text-[18px] ${log.homeAway === "@" ? "text-[#0aa869]" : "text-[#b5401d]"}`}>{log.homeAway}</span>
+                      <span className={`w-8 text-center text-[20px] ${log.homeAway === "@" ? "text-[#0aa869]" : "text-[#b5401d]"}`}>{log.homeAway}</span>
                       <TeamLogo abbr={log.opponent} size="sm" />
                     </div>
                   </td>
-                  <td className="px-3 text-center">{formatDecimal(log.fanPoints, 2)}</td>
+                  <td className="px-4 text-center">{formatDecimal(log.fanPoints, 2)}</td>
                   {columns.flatMap((group) =>
                     group.stats.map((column) => (
-                      <td key={`${log.week}-${column.key}`} className="px-1 text-center">
-                        <span className="mx-auto grid h-11 min-w-[62px] place-items-center rounded-md bg-[#f1f1f1] px-1.5">
+                      <td key={`${log.week}-${column.key}`} className="px-1.5 text-center">
+                        <span className="mx-auto grid h-[52px] min-w-[76px] place-items-center rounded-md bg-[#f1f1f1] px-2">
                           {column.get(log)}
                         </span>
                       </td>
@@ -698,27 +699,35 @@ interface GameLogColumnGroup {
 }
 
 function buildCurrentGameLogs(player: PlayerBrowserItem, seasonGames: CurrentSeasonGame[]): CurrentGameLog[] {
-  const games = seasonGames.length
-    ? seasonGames
-    : Array.from({ length: 18 }, (_, index) => ({
-        week: index + 1,
-        team: player.proTeam,
-        opponent: player.opponent,
-        homeAway: "@" as const,
-      }));
+  const scheduledByWeek = new Map(seasonGames.map((game) => [game.week, game]));
+  const weeksWithData = new Set<number>();
+  for (const key of [
+    ...Object.keys(player.statsByPeriod),
+    ...Object.keys(player.projectionsByPeriod),
+    ...Object.keys(player.matchupsByPeriod),
+  ]) {
+    const week = Number(key);
+    if (Number.isInteger(week) && week >= 1 && week <= 18) weeksWithData.add(week);
+  }
+  for (const game of seasonGames) {
+    weeksWithData.add(game.week);
+  }
 
-  return games
-    .map((game) => {
-      const actual = expandCurrentStats(player.statsByPeriod[String(game.week)] ?? {});
-      const projection = expandCurrentStats(player.projectionsByPeriod[String(game.week)] ?? {});
+  return [...weeksWithData]
+    .sort((a, b) => a - b)
+    .map((week) => {
+      const matchup = player.matchupsByPeriod[String(week)];
+      const scheduled = scheduledByWeek.get(week);
+      const actual = expandCurrentStats(player.statsByPeriod[String(week)] ?? {});
+      const projection = expandCurrentStats(player.projectionsByPeriod[String(week)] ?? {});
       const hasActual = actual.gp > 0 || actual.points !== 0;
       const hasProjection = projection.gp > 0 || projection.projected !== 0;
       const stats = hasActual ? actual : projection;
       const fanPoints = hasActual ? actual.points : projection.projected;
       return {
-        week: game.week,
-        opponent: game.opponent,
-        homeAway: game.homeAway,
+        week,
+        opponent: scheduled?.opponent || matchup?.opponent || player.opponent,
+        homeAway: scheduled?.homeAway || fallbackHomeAway(player.proTeam, matchup),
         stats,
         fanPoints,
         hasAnyData: hasActual || hasProjection,
@@ -732,6 +741,11 @@ function buildCurrentGameLogs(player: PlayerBrowserItem, seasonGames: CurrentSea
       stats: log.stats,
       fanPoints: log.fanPoints,
     }));
+}
+
+function fallbackHomeAway(team: string, matchup?: PlayerWeekMatchup): "@" | "vs" {
+  if (!team || !matchup?.team) return "@";
+  return matchup.team === team ? "@" : "vs";
 }
 
 function gameLogColumns(player: PlayerBrowserItem, logs: CurrentGameLog[]): GameLogColumnGroup[] {

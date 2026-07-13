@@ -45,6 +45,13 @@ interface FantasyAgainstValue {
   avg: number;
 }
 
+export interface PlayerWeekMatchup {
+  date?: string;
+  gameId?: string;
+  opponent?: string;
+  team?: string;
+}
+
 export interface PlayerBrowserItem {
   playerId: string;
   firstName: string;
@@ -91,6 +98,7 @@ export interface PlayerBrowserItem {
   projection: SparseStats;
   statsByPeriod: Record<string, SparseStats>;
   projectionsByPeriod: Record<string, SparseStats>;
+  matchupsByPeriod: Record<string, PlayerWeekMatchup>;
 }
 
 type PlayerBrowserMode = "all" | "records" | "search";

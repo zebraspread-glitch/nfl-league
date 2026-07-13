@@ -453,6 +453,14 @@ export async function getPlayerBrowserItems(): Promise<PlayerBrowserItem[]> {
     const profileWeekRow = row?.week === PLAYER_PROFILE_WEEK;
     const current = byId.get(playerId);
     if (current) {
+      if (row?.week) {
+        current.matchupsByPeriod[String(row.week)] = {
+          date: row.date,
+          gameId: row.game_id,
+          opponent: row.opponent,
+          team: row.team || meta?.team,
+        };
+      }
       current.proTeam = meta?.team || (profileWeekRow ? row?.team : undefined) || current.proTeam;
       if (profileWeekRow) {
         current.opponent = row?.opponent || current.opponent;
@@ -468,6 +476,15 @@ export async function getPlayerBrowserItems(): Promise<PlayerBrowserItem[]> {
 
     const statsByPeriod: Record<string, PlayerStats> = {};
     const projectionsByPeriod: Record<string, PlayerStats> = {};
+    const matchupsByPeriod: PlayerBrowserItem["matchupsByPeriod"] = {};
+    if (row?.week) {
+      matchupsByPeriod[String(row.week)] = {
+        date: row.date,
+        gameId: row.game_id,
+        opponent: row.opponent,
+        team: row.team || meta?.team,
+      };
+    }
     const opponent = row?.opponent || "";
     const item = {
       playerId,
@@ -512,6 +529,7 @@ export async function getPlayerBrowserItems(): Promise<PlayerBrowserItem[]> {
       projection: blankStats(),
       statsByPeriod,
       projectionsByPeriod,
+      matchupsByPeriod,
       ...playerPhoto(playerId, pos),
     } satisfies FullStatsItem;
     byId.set(playerId, item);
