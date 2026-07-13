@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { ReactNode } from "react";
 import { getPlayerProfile, type PlayerGameLog } from "@/lib/players";
 import { proTeamLogoUrl, resolvePlayerImage, POS_COLOR } from "@/lib/player-images";
 import { Card, EmptyState, SectionHeader, Score, TeamAvatar } from "@/components/ui";
@@ -14,22 +15,23 @@ export default async function PlayerProfilePage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ season?: string }>;
+  searchParams: Promise<{ season?: string; tab?: string }>;
 }) {
   const { id } = await params;
-  const { season } = await searchParams;
+  const { season, tab } = await searchParams;
   const wantsCurrentProfile = season === String(PLAYER_DATA_SEASON);
+  const currentTab: CurrentProfileTab = tab === "stats" ? "stats" : "overview";
 
   if (wantsCurrentProfile) {
     const currentProfile = await getCurrentPlayerProfile(id);
-    if (currentProfile) return <CurrentPlayerProfile player={currentProfile} game={await getCurrentGame(currentProfile)} />;
+    if (currentProfile) return <CurrentPlayerProfile player={currentProfile} game={await getCurrentGame(currentProfile)} tab={currentTab} seasonGames={await getPlayerSeasonGames(currentProfile, currentTab)} />;
   }
 
   const playerId = Number(id);
   const profile = playerId ? await getPlayerProfile(playerId) : null;
   if (!profile) {
     const currentProfile = await getCurrentPlayerProfile(id);
-    if (currentProfile) return <CurrentPlayerProfile player={currentProfile} game={await getCurrentGame(currentProfile)} />;
+    if (currentProfile) return <CurrentPlayerProfile player={currentProfile} game={await getCurrentGame(currentProfile)} tab={currentTab} seasonGames={await getPlayerSeasonGames(currentProfile, currentTab)} />;
     notFound();
   }
 
@@ -164,6 +166,9 @@ function expandCurrentStats(stats: SparseStats): PlayerStats {
 }
 
 const SLEEPER_SCORE_API = "https://api.sleeper.app/scores/nfl/regular";
+const SLEEPER_SCHEDULE_API = "https://api.sleeper.app/schedule/nfl/regular";
+
+type CurrentProfileTab = "overview" | "stats";
 
 interface SleeperScoreGame {
   status?: string;
@@ -192,6 +197,24 @@ interface CurrentGame {
   started: boolean;
   complete: boolean;
   date?: string;
+}
+
+interface SleeperScheduleGame {
+  status?: string;
+  date?: string;
+  home?: string;
+  away?: string;
+  week?: number;
+  game_id?: string;
+}
+
+interface CurrentSeasonGame {
+  week: number;
+  team: string;
+  opponent: string;
+  homeAway: "@" | "vs";
+  date?: string;
+  gameId?: string;
 }
 
 const NFL_TEAM_NAMES: Record<string, string> = {
@@ -267,7 +290,47 @@ async function getCurrentGame(player: PlayerBrowserItem): Promise<CurrentGame | 
   }
 }
 
-function CurrentPlayerProfile({ player, game }: { player: PlayerBrowserItem; game: CurrentGame | null }) {
+async function getPlayerSeasonGames(player: PlayerBrowserItem, tab: CurrentProfileTab): Promise<CurrentSeasonGame[]> {
+  if (tab !== "stats" || !player.proTeam) return [];
+
+  try {
+    const res = await fetch(`${SLEEPER_SCHEDULE_API}/${PLAYER_DATA_SEASON}`, {
+      next: { revalidate: 86400 },
+    });
+    if (!res.ok) return [];
+
+    const games = (await res.json()) as SleeperScheduleGame[];
+    return games
+      .filter((game) => game.week && (game.home === player.proTeam || game.away === player.proTeam))
+      .map((game) => {
+        const isAway = game.away === player.proTeam;
+        return {
+          week: game.week ?? 0,
+          team: player.proTeam,
+          opponent: isAway ? (game.home ?? "") : (game.away ?? ""),
+          homeAway: isAway ? ("@" as const) : ("vs" as const),
+          date: game.date,
+          gameId: game.game_id,
+        };
+      })
+      .sort((a, b) => a.week - b.week);
+  } catch (err) {
+    console.warn("[players] Sleeper schedule fetch failed", err);
+    return [];
+  }
+}
+
+function CurrentPlayerProfile({
+  player,
+  game,
+  tab,
+  seasonGames,
+}: {
+  player: PlayerBrowserItem;
+  game: CurrentGame | null;
+  tab: CurrentProfileTab;
+  seasonGames: CurrentSeasonGame[];
+}) {
   const projectionSeason = expandCurrentStats(player.projection);
   const weekKey = String(player.gameWeek ?? PLAYER_PROFILE_WEEK);
   const actualWeek = expandCurrentStats(player.statsByPeriod[weekKey] ?? {});
@@ -282,6 +345,7 @@ function CurrentPlayerProfile({ player, game }: { player: PlayerBrowserItem; gam
   const projectedPoints = projectionWeek.projected || projectionSeason.projected;
   const avgProjected = averagePoints(projectionSeason.projected, projectionSeason.gp);
   const rank = player.projectionRank > 999 ? "-" : player.projectionRank;
+  const isStatsTab = tab === "stats";
 
   return (
     <div className="-mx-3 -mt-3 min-h-[calc(100dvh-4rem)] bg-[#d9d6cf] pb-10 text-[#303236] sm:mx-auto sm:max-w-xl sm:overflow-hidden sm:rounded-2xl">
@@ -291,7 +355,7 @@ function CurrentPlayerProfile({ player, game }: { player: PlayerBrowserItem; gam
           <img
             src={teamLogo}
             alt=""
-            className="pointer-events-none absolute -left-10 top-0 h-[360px] w-[360px] object-contain opacity-[0.045] grayscale"
+            className="pointer-events-none absolute -left-8 top-0 h-[280px] w-[280px] object-contain opacity-[0.045] grayscale"
             aria-hidden="true"
           />
         ) : null}
@@ -299,14 +363,14 @@ function CurrentPlayerProfile({ player, game }: { player: PlayerBrowserItem; gam
         <Link
           href="/players"
           aria-label="Close player profile"
-          className="absolute right-3 top-3 z-20 grid h-[74px] w-[74px] place-items-center rounded-2xl bg-[#dfdfdf]/90 text-[54px] font-light leading-none text-[#5f6062] shadow-sm"
+          className="absolute right-3 top-3 z-20 grid h-[52px] w-[52px] place-items-center rounded-xl bg-[#dfdfdf]/90 text-[38px] font-light leading-none text-[#5f6062] shadow-sm"
         >
           &times;
         </Link>
 
-        <div className="relative min-h-[322px] px-6 pt-16">
+        <div className="relative min-h-[240px] px-5 pt-10">
           <div className="relative z-10 max-w-[54%]">
-            <h1 className="font-cond text-[54px] font-bold leading-[0.96] tracking-normal text-[#343537]">
+            <h1 className="font-cond text-[40px] font-bold leading-[0.96] tracking-normal text-[#343537]">
               {firstName}
               {lastName ? (
                 <>
@@ -316,75 +380,81 @@ function CurrentPlayerProfile({ player, game }: { player: PlayerBrowserItem; gam
               ) : null}
             </h1>
 
-            <div className="mt-7 flex items-center gap-4">
+            <div className="mt-5 flex items-center gap-3">
               <TeamLogo abbr={player.proTeam} size="lg" />
-              <div className="min-w-0 font-cond text-[25px] font-bold leading-tight text-[#3d3f42]">
+              <div className="min-w-0 font-cond text-[19px] font-bold leading-tight text-[#3d3f42]">
                 <div className="truncate">{teamName}</div>
                 <div>
                   {player.pos} - #{player.jerseyNumber ?? "-"}
                 </div>
               </div>
             </div>
-            <div className="mt-7 font-cond text-[25px] font-bold text-[#3d3f42]">{player.manager}</div>
+            <div className="mt-5 font-cond text-[19px] font-bold text-[#3d3f42]">{player.manager}</div>
           </div>
 
           <PlayerHeroImage player={player} />
         </div>
 
-        <div className="grid grid-cols-5 items-center bg-white px-3 py-6 text-center">
+        <div className="grid grid-cols-5 items-center bg-white px-2 py-4 text-center">
           <ProfileMetric label="BYE WK" value={player.byeWeek ?? "-"} />
           <ProfileMetric label="AVG PTS" value={formatDecimal(avgProjected, 2)} />
-          <div className="relative grid min-h-[96px] place-items-center">
-            <div className="absolute h-[104px] w-[98px] bg-[#f5f5f5] [clip-path:polygon(50%_0,94%_25%,94%_75%,50%_100%,6%_75%,6%_25%)]" />
-            <div className="absolute h-[92px] w-[86px] bg-white [clip-path:polygon(50%_0,94%_25%,94%_75%,50%_100%,6%_75%,6%_25%)]" />
+          <div className="relative grid min-h-[74px] place-items-center">
+            <div className="absolute h-[80px] w-[76px] bg-[#f5f5f5] [clip-path:polygon(50%_0,94%_25%,94%_75%,50%_100%,6%_75%,6%_25%)]" />
+            <div className="absolute h-[70px] w-[66px] bg-white [clip-path:polygon(50%_0,94%_25%,94%_75%,50%_100%,6%_75%,6%_25%)]" />
             <div className="relative z-10">
-              <div className="font-cond text-[23px] font-medium leading-none text-[#747579]">{player.pos} RNK</div>
-              <div className="font-cond text-[58px] font-bold italic leading-none text-[#333436]">{rank}</div>
+              <div className="font-cond text-[16px] font-medium leading-none text-[#747579]">{player.pos} RNK</div>
+              <div className="font-cond text-[40px] font-bold italic leading-none text-[#333436]">{rank}</div>
             </div>
           </div>
           <ProfileMetric label="ROST %" value="-" />
           <ProfileMetric label="START %" value="-" />
         </div>
 
-        <nav className="grid grid-cols-3 bg-white font-cond text-[31px] font-normal text-[#606164] shadow-[0_3px_9px_rgba(0,0,0,0.2)]">
-          <div className="border-b-[6px] border-[#0fb5cf] py-5 text-center">Overview</div>
-          <div className="py-5 text-center">Stats</div>
-          <div className="py-5 text-center">Film Room</div>
+        <nav className="grid grid-cols-2 bg-white font-cond text-[24px] font-normal text-[#606164] shadow-[0_3px_9px_rgba(0,0,0,0.2)]">
+          <ProfileTabLink href={`/players/${encodeURIComponent(player.playerId)}?season=${PLAYER_DATA_SEASON}`} active={!isStatsTab}>
+            Overview
+          </ProfileTabLink>
+          <ProfileTabLink href={`/players/${encodeURIComponent(player.playerId)}?season=${PLAYER_DATA_SEASON}&tab=stats`} active={isStatsTab}>
+            Stats
+          </ProfileTabLink>
         </nav>
       </section>
 
-      <main className="pt-72">
-        <section className="mx-5 overflow-hidden rounded-2xl bg-white shadow-[0_4px_0_rgba(0,0,0,0.18)]">
-          <div className="p-7">
-            <h2 className="font-cond text-[34px] font-bold uppercase tracking-normal text-[#303236]">
+      {isStatsTab ? (
+        <CurrentStatsTab player={player} seasonGames={seasonGames} />
+      ) : (
+        <main className="pt-24">
+        <section className="mx-4 overflow-hidden rounded-xl bg-white shadow-[0_3px_0_rgba(0,0,0,0.16)]">
+          <div className="p-5">
+            <h2 className="font-cond text-[26px] font-bold uppercase tracking-normal text-[#303236]">
               Week {player.gameWeek ?? PLAYER_PROFILE_WEEK} Matchup
             </h2>
 
-            <div className="mt-6 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+            <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
               <TeamScore team={game?.awayTeam || (player.proTeam === opponentTeam ? opponentTeam : player.proTeam)} score={game?.awayScore} />
-              <div className="grid min-w-[98px] justify-items-center text-center font-cond uppercase text-[#d1d1d1]">
-                <div className="h-7 border-l border-[#e2e2e2]" />
-                <div className="text-[24px] font-bold leading-none">{gameStatusLabel(game)}</div>
-                <div className="h-7 border-l border-[#e2e2e2]" />
+              <div className="grid min-w-[72px] justify-items-center text-center font-cond uppercase text-[#d1d1d1]">
+                <div className="h-5 border-l border-[#e2e2e2]" />
+                <div className="text-[18px] font-bold leading-none">{gameStatusLabel(game)}</div>
+                <div className="h-5 border-l border-[#e2e2e2]" />
               </div>
               <TeamScore team={game?.homeTeam || opponentTeam || player.opponent || player.proTeam} score={game?.homeScore} align="right" />
             </div>
 
-            <div className="mt-6 grid grid-cols-[1fr_auto] gap-3 font-cond">
+            <div className="mt-5 grid grid-cols-[1fr_auto] gap-3 font-cond">
               <div>
-                <div className="text-[27px] font-bold text-[#3d3f42]">Points Scored</div>
-                <div className="mt-5 text-[26px] font-normal text-[#707174]">Projected</div>
+                <div className="text-[21px] font-bold text-[#3d3f42]">Points Scored</div>
+                <div className="mt-4 text-[20px] font-normal text-[#707174]">Projected</div>
               </div>
               <div className="text-right">
-                <div className="text-[46px] font-bold italic leading-none text-[#303236]">
+                <div className="text-[36px] font-bold italic leading-none text-[#303236]">
                   {gameStarted ? formatDecimal(actualWeek.points, 2) : "-"}
                 </div>
-                <div className="mt-3 text-[27px] font-bold italic leading-none text-[#6a6b6e]">{formatDecimal(projectedPoints, 2)}</div>
+                <div className="mt-3 text-[22px] font-bold italic leading-none text-[#6a6b6e]">{formatDecimal(projectedPoints, 2)}</div>
               </div>
             </div>
           </div>
 
-          <div className="bg-[#f6f6f6] px-7 py-8">
+          <div className="bg-[#f6f6f6] px-5 py-6">
             <CurrentStatSection
               title="Rushing"
               rows={[
@@ -432,8 +502,17 @@ function CurrentPlayerProfile({ player, game }: { player: PlayerBrowserItem; gam
             />
           </div>
         </section>
-      </main>
+        </main>
+      )}
     </div>
+  );
+}
+
+function ProfileTabLink({ href, active, children }: { href: string; active: boolean; children: ReactNode }) {
+  return (
+    <Link href={href} className={`border-b-4 py-3.5 text-center ${active ? "border-[#0fb5cf] text-[#343537]" : "border-transparent"}`}>
+      {children}
+    </Link>
   );
 }
 
@@ -446,8 +525,8 @@ function PlayerHeroImage({ player }: { player: PlayerBrowserItem }) {
         alt={player.fullName}
         width={320}
         height={320}
-        className={`absolute bottom-0 right-0 z-0 h-[256px] max-w-[58%] object-contain object-bottom ${
-          player.isLogo ? "p-10 opacity-40" : ""
+        className={`absolute bottom-0 right-0 z-0 h-[205px] max-w-[56%] object-contain object-bottom ${
+          player.isLogo ? "p-8 opacity-40" : ""
         }`}
         suppressHydrationWarning
       />
@@ -456,7 +535,7 @@ function PlayerHeroImage({ player }: { player: PlayerBrowserItem }) {
 
   return (
     <span
-      className="absolute bottom-8 right-7 grid h-32 w-32 place-items-center rounded-full font-cond text-3xl font-bold text-white"
+      className="absolute bottom-7 right-6 grid h-24 w-24 place-items-center rounded-full font-cond text-2xl font-bold text-white"
       style={{ background: POS_COLOR[player.pos] ?? "#9aa1ad" }}
     >
       {player.pos || "-"}
@@ -464,9 +543,9 @@ function PlayerHeroImage({ player }: { player: PlayerBrowserItem }) {
   );
 }
 
-function TeamLogo({ abbr, size = "md" }: { abbr?: string; size?: "md" | "lg" }) {
+function TeamLogo({ abbr, size = "md" }: { abbr?: string; size?: "sm" | "md" | "lg" }) {
   const logo = proTeamLogoUrl(abbr);
-  const classes = size === "lg" ? "h-[62px] w-[62px] p-2" : "h-[76px] w-[76px] p-3";
+  const classes = size === "lg" ? "h-[48px] w-[48px] p-1.5" : size === "sm" ? "h-7 w-7 p-1" : "h-[56px] w-[56px] p-2.5";
   if (!logo) {
     return (
       <span className={`${classes} grid shrink-0 place-items-center rounded-full bg-[#f2f2f2] font-cond text-sm font-bold text-[#777]`}>
@@ -486,8 +565,8 @@ function TeamLogo({ abbr, size = "md" }: { abbr?: string; size?: "md" | "lg" }) 
 function ProfileMetric({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="font-cond">
-      <div className="text-[22px] font-medium leading-none text-[#747579]">{label}</div>
-      <div className="mt-3 text-[37px] font-bold leading-none text-[#333436]">{value}</div>
+      <div className="text-[16px] font-medium leading-none text-[#747579]">{label}</div>
+      <div className="mt-2 text-[26px] font-bold leading-none text-[#333436]">{value}</div>
     </div>
   );
 }
@@ -495,9 +574,9 @@ function ProfileMetric({ label, value }: { label: string; value: string | number
 function TeamScore({ team, score, align = "left" }: { team?: string; score?: number; align?: "left" | "right" }) {
   const right = align === "right";
   return (
-    <div className={`flex items-center gap-5 ${right ? "justify-end" : ""}`}>
+    <div className={`flex items-center gap-3 ${right ? "justify-end" : ""}`}>
       {!right ? <TeamLogo abbr={team} /> : null}
-      <div className="font-cond text-[47px] font-bold italic leading-none text-[#303236]">{typeof score === "number" ? score : "-"}</div>
+      <div className="font-cond text-[36px] font-bold italic leading-none text-[#303236]">{typeof score === "number" ? score : "-"}</div>
       {right ? <TeamLogo abbr={team} /> : null}
     </div>
   );
@@ -507,18 +586,218 @@ function CurrentStatSection({ title, rows }: { title: string; rows: [string, num
   if (!rows.some(([, value]) => value)) return null;
 
   return (
-    <div className="mb-10 last:mb-0">
-      <h3 className="font-cond text-[29px] font-bold uppercase tracking-wider text-[#303236]">{title}</h3>
-      <div className="mt-4 grid grid-cols-4 gap-x-6 gap-y-8 sm:grid-cols-5">
+    <div className="mb-8 last:mb-0">
+      <h3 className="font-cond text-[22px] font-bold uppercase tracking-wider text-[#303236]">{title}</h3>
+      <div className="mt-3 grid grid-cols-4 gap-x-5 gap-y-6 sm:grid-cols-5">
         {rows.map(([label, value]) => (
           <div key={label} className="font-cond">
-            <div className="text-[22px] font-medium uppercase leading-none text-[#747579]">{label}</div>
-            <div className="mt-2 text-[35px] font-bold leading-none text-[#303236]">{formatStat(value)}</div>
+            <div className="text-[16px] font-medium uppercase leading-none text-[#747579]">{label}</div>
+            <div className="mt-1.5 text-[25px] font-bold leading-none text-[#303236]">{formatStat(value)}</div>
           </div>
         ))}
       </div>
     </div>
   );
+}
+
+function CurrentStatsTab({ player, seasonGames }: { player: PlayerBrowserItem; seasonGames: CurrentSeasonGame[] }) {
+  const logs = buildCurrentGameLogs(player, seasonGames);
+  const columns = gameLogColumns(player, logs);
+
+  return (
+    <main className="pt-24">
+      <section className="px-0">
+        <div className="flex items-end justify-between px-4 pb-4">
+          <h2 className="font-cond text-[24px] font-bold uppercase tracking-wider text-[#64666a]">Game Logs</h2>
+          <div className="flex h-[52px] items-center gap-2 rounded-xl bg-[#d1cec7] px-6 font-cond text-[24px] font-bold tracking-widest text-[#46484b]">
+            {PLAYER_DATA_SEASON}
+            <span className="block h-4 w-4 rotate-45 border-b-[3px] border-r-[3px] border-[#64666a]" aria-hidden="true" />
+          </div>
+        </div>
+
+        <div className="overflow-x-auto bg-white shadow-[0_-1px_10px_rgba(0,0,0,0.05)] [scrollbar-width:thin]">
+          <table className="min-w-[820px] border-collapse font-cond text-[#3d3f42]">
+            <thead>
+              <tr className="h-12 text-[20px] font-bold text-[#65676b]">
+                <th colSpan={2} className="sticky left-0 z-30 bg-white px-4 text-left shadow-[10px_0_18px_rgba(255,255,255,0.92)]">
+                  {PLAYER_DATA_SEASON} Season
+                </th>
+                <th rowSpan={2} className="px-3 text-center align-bottom text-[19px]">
+                  Fan Pts
+                </th>
+                {columns.map((group) => (
+                  <th key={group.title} colSpan={group.stats.length} className="px-3 text-center">
+                    {group.title}
+                  </th>
+                ))}
+              </tr>
+              <tr className="h-12 text-[20px] font-bold text-[#65676b]">
+                <th className="sticky left-0 z-30 w-16 bg-white px-4 text-left shadow-[10px_0_18px_rgba(255,255,255,0.92)]">Wk</th>
+                <th className="sticky left-16 z-30 w-28 bg-white px-2 text-left shadow-[10px_0_18px_rgba(255,255,255,0.92)]">Opp</th>
+                {columns.flatMap((group) =>
+                  group.stats.map((column) => (
+                    <th key={`${group.title}-${column.key}`} className="min-w-[74px] px-1.5 text-center leading-[1.05]">
+                      {column.label}
+                    </th>
+                  )),
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {logs.map((log) => (
+                <tr key={log.week} className="h-16 text-[21px] font-bold">
+                  <td className="sticky left-0 z-20 bg-white px-4 text-center shadow-[10px_0_18px_rgba(255,255,255,0.92)]">{log.week}</td>
+                  <td className="sticky left-16 z-20 bg-white px-2 shadow-[10px_0_18px_rgba(255,255,255,0.92)]">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-7 text-center text-[18px] ${log.homeAway === "@" ? "text-[#0aa869]" : "text-[#b5401d]"}`}>{log.homeAway}</span>
+                      <TeamLogo abbr={log.opponent} size="sm" />
+                    </div>
+                  </td>
+                  <td className="px-3 text-center">{formatDecimal(log.fanPoints, 2)}</td>
+                  {columns.flatMap((group) =>
+                    group.stats.map((column) => (
+                      <td key={`${log.week}-${column.key}`} className="px-1 text-center">
+                        <span className="mx-auto grid h-11 min-w-[62px] place-items-center rounded-md bg-[#f1f1f1] px-1.5">
+                          {column.get(log)}
+                        </span>
+                      </td>
+                    )),
+                  )}
+                </tr>
+              ))}
+              {logs.length === 0 ? (
+                <tr>
+                  <td colSpan={columns.reduce((total, group) => total + group.stats.length, 3)} className="px-5 py-10 text-center text-[20px] font-bold text-[#777]">
+                    No game logs available.
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+interface CurrentGameLog {
+  week: number;
+  opponent: string;
+  homeAway: "@" | "vs";
+  stats: PlayerStats;
+  fanPoints: number;
+}
+
+interface GameLogColumnGroup {
+  title: string;
+  stats: {
+    key: string;
+    label: string;
+    get: (log: CurrentGameLog) => string;
+  }[];
+}
+
+function buildCurrentGameLogs(player: PlayerBrowserItem, seasonGames: CurrentSeasonGame[]): CurrentGameLog[] {
+  const games = seasonGames.length
+    ? seasonGames
+    : Array.from({ length: 18 }, (_, index) => ({
+        week: index + 1,
+        team: player.proTeam,
+        opponent: player.opponent,
+        homeAway: "@" as const,
+      }));
+
+  return games
+    .map((game) => {
+      const actual = expandCurrentStats(player.statsByPeriod[String(game.week)] ?? {});
+      const projection = expandCurrentStats(player.projectionsByPeriod[String(game.week)] ?? {});
+      const hasActual = actual.gp > 0 || actual.points !== 0;
+      const hasProjection = projection.gp > 0 || projection.projected !== 0;
+      const stats = hasActual ? actual : projection;
+      const fanPoints = hasActual ? actual.points : projection.projected;
+      return {
+        week: game.week,
+        opponent: game.opponent,
+        homeAway: game.homeAway,
+        stats,
+        fanPoints,
+        hasAnyData: hasActual || hasProjection,
+      };
+    })
+    .filter((log) => log.hasAnyData && log.opponent)
+    .map((log) => ({
+      week: log.week,
+      opponent: log.opponent,
+      homeAway: log.homeAway,
+      stats: log.stats,
+      fanPoints: log.fanPoints,
+    }));
+}
+
+function gameLogColumns(player: PlayerBrowserItem, logs: CurrentGameLog[]): GameLogColumnGroup[] {
+  const has = (selector: (stats: PlayerStats) => number) => logs.some((log) => selector(log.stats) !== 0);
+  const groups: GameLogColumnGroup[] = [];
+
+  if (player.pos === "QB" || has((stats) => stats.passAtt + stats.passCmp + stats.passYds + stats.passTD + stats.passInt)) {
+    groups.push({
+      title: "Passing",
+      stats: [
+        { key: "passAtt", label: "ATT", get: (log) => formatStat(log.stats.passAtt) },
+        { key: "passCmp", label: "CMP", get: (log) => formatStat(log.stats.passCmp) },
+        { key: "passYds", label: "PASS YDS", get: (log) => formatStat(log.stats.passYds) },
+        { key: "passTD", label: "PASS TD", get: (log) => formatStat(log.stats.passTD) },
+        { key: "passInt", label: "INT", get: (log) => formatStat(log.stats.passInt) },
+      ],
+    });
+  }
+
+  if (player.pos !== "K" && player.pos !== "DEF" && (["QB", "RB", "WR", "TE"].includes(player.pos) || has((stats) => stats.rushAtt + stats.rushYds + stats.rushTD))) {
+    groups.push({
+      title: "Rushing",
+      stats: [
+        { key: "rushAtt", label: "ATT", get: (log) => formatStat(log.stats.rushAtt) },
+        { key: "rushYds", label: "RUSH YDS", get: (log) => formatStat(log.stats.rushYds) },
+        { key: "rushTD", label: "RUSH TD", get: (log) => formatStat(log.stats.rushTD) },
+        { key: "rushAvg", label: "YDS/ATT", get: (log) => (log.stats.rushAtt ? (log.stats.rushYds / log.stats.rushAtt).toFixed(1) : "-") },
+      ],
+    });
+  }
+
+  if (player.pos !== "K" && player.pos !== "DEF" && (["RB", "WR", "TE"].includes(player.pos) || has((stats) => stats.targets + stats.rec + stats.recYds + stats.recTD))) {
+    groups.push({
+      title: "Receiving",
+      stats: [
+        { key: "targets", label: "TGT", get: (log) => formatStat(log.stats.targets) },
+        { key: "rec", label: "REC", get: (log) => formatStat(log.stats.rec) },
+        { key: "recYds", label: "REC YDS", get: (log) => formatStat(log.stats.recYds) },
+        { key: "recTD", label: "REC TD", get: (log) => formatStat(log.stats.recTD) },
+      ],
+    });
+  }
+
+  if (player.pos === "K" || has((stats) => stats.fgMade + stats.fgAtt + stats.xpMade)) {
+    groups.push({
+      title: "Kicking",
+      stats: [
+        { key: "fgMade", label: "FG", get: (log) => formatStat(log.stats.fgMade) },
+        { key: "fgAtt", label: "FGA", get: (log) => formatStat(log.stats.fgAtt) },
+        { key: "xpMade", label: "XP", get: (log) => formatStat(log.stats.xpMade) },
+      ],
+    });
+  }
+
+  if (player.pos === "DEF" || has((stats) => stats.defSack + stats.defInt + stats.defTD)) {
+    groups.push({
+      title: "Defense",
+      stats: [
+        { key: "defSack", label: "SACK", get: (log) => formatStat(log.stats.defSack) },
+        { key: "defInt", label: "INT", get: (log) => formatStat(log.stats.defInt) },
+        { key: "defTD", label: "TD", get: (log) => formatStat(log.stats.defTD) },
+      ],
+    });
+  }
+
+  return groups;
 }
 
 function nflTeamName(abbr?: string): string {
