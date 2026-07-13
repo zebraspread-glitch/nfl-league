@@ -108,11 +108,7 @@ const INJURY: Record<string, { label: string; color: string }> = {
   Sus: { label: "SUS", color: "#e0322b" },
 };
 
-/** Opponent label from the player's perspective: "@ KC" / "vs. DEN". The game
- *  label is always from the player's team's perspective and may be either the
- *  pre-game form ("NYG vs DAL") or the completed form with scores embedded
- *  ("NYG 6 vs DAL 21 ((L))"), so match the separator + opponent and ignore the
- *  rest. */
+/** Opponent label from the player's perspective: "@ KC" / "vs. DEN". */
 function opponentLabel(gameLabel: string | undefined): string | null {
   if (!gameLabel) return null;
   const m = gameLabel.match(/\s(@|vs)\s+([A-Z]{2,4})/);

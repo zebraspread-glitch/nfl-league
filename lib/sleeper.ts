@@ -374,15 +374,15 @@ export async function getRoster(teamId: number, week: number): Promise<Roster | 
 
   const season = Number(process.env.SLEEPER_SEASON) || CURRENT_SEASON;
 
-  const [rosters, users, matchupRows, players, projections, schedule, config, scores] = await Promise.all([
+  const [rosters, users, matchupRows, players, projections, schedule, scores, config] = await Promise.all([
     getRosters(),
     getUsers(),
     sleeperFetch<SleeperMatchup[]>(`/matchups/${week}`),
     fetchPlayerCatalog(),
     fetchProjections(season, week),
     fetchSchedule(season),
-    getLeagueConfig(),
     fetchScores(season, week),
+    getLeagueConfig(),
   ]);
 
   const roster = rosters.find((r) => r.roster_id === teamId);
@@ -553,6 +553,24 @@ interface SleeperScheduleGame {
   game_id: string;
 }
 
+interface SleeperScoreGame {
+  status: string;
+  date: string;
+  game_id: string;
+  week: number;
+  metadata?: {
+    away_score?: number;
+    away_team?: string;
+    closed?: boolean;
+    has_started?: boolean;
+    home_score?: number;
+    home_team?: string;
+    is_in_progress?: boolean;
+    is_over?: boolean;
+    status?: string;
+  };
+}
+
 const projectionCache = new Map<string, Map<string, number>>();
 
 /** Per-player projected points (PPR — the league scores 1.0 per reception), keyed by Sleeper player id. */
@@ -604,86 +622,63 @@ async function fetchSchedule(season: number): Promise<SleeperScheduleGame[]> {
 
 const NOT_STARTED_STATUSES = new Set(["", "pre_game", "scheduled"]);
 
+const scoresCache = new Map<string, SleeperScoreGame[]>();
+
+async function fetchScores(season: number, week: number): Promise<SleeperScoreGame[]> {
+  const key = `${season}-${week}`;
+  const cached = scoresCache.get(key);
+  if (cached) return cached;
+
+  try {
+    const res = await fetch(`${SLEEPER_HOST}/scores/nfl/regular/${season}/${week}`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) {
+      console.warn(`[sleeper] scores ${res.status} for ${key}`);
+      return [];
+    }
+    const data = (await res.json()) as SleeperScoreGame[];
+    scoresCache.set(key, data);
+    return data;
+  } catch (err) {
+    console.warn("[sleeper] scores fetch failed:", err);
+    return [];
+  }
+}
+
 interface TeamGameInfo {
   label: string;
   when: string;
   started: boolean;
 }
 
-/** Final/live score for one NFL game, keyed by team abbreviation, from ESPN's public scoreboard. */
-interface TeamScore {
-  teamScore: number;
-  oppScore: number;
-  completed: boolean;
-}
-
-// ESPN team abbreviations occasionally differ from Sleeper's.
-const ESPN_ABBR_TO_SLEEPER: Record<string, string> = { WSH: "WAS", JAX: "JAC" };
-
-const scoresCache = new Map<string, Map<string, TeamScore>>();
-
-/** Live/final NFL scores for the week, from ESPN's public (unauthenticated) scoreboard API. */
-async function fetchScores(season: number, week: number): Promise<Map<string, TeamScore>> {
-  const key = `${season}-${week}`;
-  const cached = scoresCache.get(key);
-  if (cached) return cached;
-  const map = new Map<string, TeamScore>();
-  try {
-    const res = await fetch(
-      `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?week=${week}&seasontype=2&year=${season}`,
-      { next: { revalidate: 60 } }
-    );
-    if (res.ok) {
-      const data = await res.json();
-      for (const event of data?.events ?? []) {
-        const competition = event?.competitions?.[0];
-        const state = competition?.status?.type?.state;
-        const completed = state === "post";
-        const competitors = competition?.competitors ?? [];
-        for (const c of competitors) {
-          const opp = competitors.find((o: { id: string }) => o.id !== c.id);
-          if (!opp) continue;
-          let abbr: string = c.team?.abbreviation ?? "";
-          abbr = ESPN_ABBR_TO_SLEEPER[abbr] ?? abbr;
-          map.set(abbr, {
-            teamScore: Number(c.score) || 0,
-            oppScore: Number(opp.score) || 0,
-            completed,
-          });
-        }
-      }
-    } else {
-      console.warn(`[sleeper] scoreboard ${res.status} for week ${week}`);
-    }
-  } catch (err) {
-    console.warn("[sleeper] scoreboard fetch failed:", err);
-  }
-  scoresCache.set(key, map);
-  return map;
-}
-
 /** Map each NFL team to its game this week, from that team's perspective ("CLE @ NE" vs "DEN vs DAL"). */
 function gameInfoForWeek(
   schedule: SleeperScheduleGame[],
   week: number,
-  scores: Map<string, TeamScore>
+  scores: SleeperScoreGame[]
 ): Map<string, TeamGameInfo> {
   const map = new Map<string, TeamGameInfo>();
+  const scoreByGameId = new Map(scores.map((s) => [s.game_id, s]));
+
   for (const g of schedule) {
     if (g.week !== week) continue;
-    const when = formatGameDate(g.date);
-    const started = !NOT_STARTED_STATUSES.has(g.status);
-
-    const awayScore = scores.get(g.away);
-    const homeScore = scores.get(g.home);
+    const score = scoreByGameId.get(g.game_id);
+    const scoreMeta = score?.metadata;
+    const when = formatGameDate(score?.date ?? g.date);
+    const started = Boolean(scoreMeta?.has_started) || !NOT_STARTED_STATUSES.has(score?.status ?? g.status);
+    const complete = Boolean(scoreMeta?.is_over || scoreMeta?.closed || score?.status === "complete");
+    const awayScore = scoreMeta?.away_score;
+    const homeScore = scoreMeta?.home_score;
+    const hasScore = started && typeof awayScore === "number" && typeof homeScore === "number";
 
     const awayLabel =
-      awayScore?.completed
-        ? `${g.away} ${awayScore.teamScore} @ ${g.home} ${awayScore.oppScore} ((${resultLetter(awayScore)}))`
+      hasScore && complete
+        ? `${g.away} ${awayScore} @ ${g.home} ${homeScore} ((${resultLetter(awayScore, homeScore)}))`
         : `${g.away} @ ${g.home}`;
     const homeLabel =
-      homeScore?.completed
-        ? `${g.home} ${homeScore.teamScore} vs ${g.away} ${homeScore.oppScore} ((${resultLetter(homeScore)}))`
+      hasScore && complete
+        ? `${g.home} ${homeScore} vs ${g.away} ${awayScore} ((${resultLetter(homeScore, awayScore)}))`
         : `${g.home} vs ${g.away}`;
 
     map.set(g.away, { label: awayLabel, when, started });
@@ -692,9 +687,9 @@ function gameInfoForWeek(
   return map;
 }
 
-function resultLetter(score: TeamScore): "W" | "L" | "T" {
-  if (score.teamScore > score.oppScore) return "W";
-  if (score.teamScore < score.oppScore) return "L";
+function resultLetter(teamScore: number, oppScore: number): "W" | "L" | "T" {
+  if (teamScore > oppScore) return "W";
+  if (teamScore < oppScore) return "L";
   return "T";
 }
 
