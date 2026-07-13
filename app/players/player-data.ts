@@ -15,7 +15,8 @@ type FullStatsItem = Omit<PlayerBrowserItem, "stats" | "projection" | "statsByPe
 const SLEEPER_API = "https://api.sleeper.app/v1";
 const SLEEPER_DATA_API = "https://api.sleeper.com";
 const LEAGUE_ID = process.env.SLEEPER_LEAGUE_ID || "1374614405412560896";
-const DEFAULT_SEASON = 2025;
+export const PLAYER_DATA_SEASON = Number(process.env.SLEEPER_SEASON) || 2026;
+const DEFAULT_SEASON = PLAYER_DATA_SEASON;
 const SEASON_KEY = `${DEFAULT_SEASON} Season`;
 const LAST_2_KEY = "Last 2 WKS";
 const LAST_4_KEY = "Last 4 WKS";
@@ -552,4 +553,9 @@ export async function getPlayerBrowserItems(): Promise<PlayerBrowserItem[]> {
       projection: projectionsByPeriod[SEASON_KEY] ?? {},
     };
   });
+}
+
+export async function getCurrentPlayerProfile(playerId: string): Promise<PlayerBrowserItem | null> {
+  const players = await getPlayerBrowserItems();
+  return players.find((player) => player.playerId === playerId) ?? null;
 }

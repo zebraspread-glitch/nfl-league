@@ -124,7 +124,7 @@ function PlayerRow({ slot, entry, muted }: { slot: string; entry: RosterEntry; m
   const opp = opponentLabel(entry.gameLabel);
   const onBye = !entry.gameLabel && !entry.gameWhen;
 
-  return (
+  const content = (
     <div className="overflow-hidden rounded-xl shadow-sm ring-1 ring-border/60">
       <div className={`flex items-center gap-2 px-2.5 py-2.5 ${muted ? "bg-section" : "bg-card"}`}>
         <span className="w-7 shrink-0 text-center font-cond text-xs font-bold uppercase text-text-muted">{slot}</span>
@@ -206,6 +206,14 @@ function PlayerRow({ slot, entry, muted }: { slot: string; entry: RosterEntry; m
         </div>
       )}
     </div>
+  );
+
+  if (!entry.sleeperId) return content;
+
+  return (
+    <Link href={`/players/${encodeURIComponent(entry.sleeperId)}?season=2026`} className="block">
+      {content}
+    </Link>
   );
 }
 

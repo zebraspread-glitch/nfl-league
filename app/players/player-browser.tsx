@@ -109,7 +109,7 @@ interface Column {
 const VIEWS: View[] = ["PROJECTIONS", "STATS", "TRENDS"];
 const POSITIONS: PositionFilter[] = ["All Offense", "QB", "RB", "WR", "TE", "W/R", "K", "DEF"];
 const STATUS_OPTIONS: StatusFilter[] = ["All Available Players", "All Players", "Taken", "Free Agents", "On Waivers"];
-const PERIODS = ["2025 Season", "Last 4 WKS", "Last 2 WKS", "18", "17", "16", "15", "14", "13", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "1"];
+const PERIODS = ["2026 Season", "Last 4 WKS", "Last 2 WKS", "18", "17", "16", "15", "14", "13", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "1"];
 
 const EMPTY_STATS: PlayerStats = {
   passAtt: 0,
@@ -428,7 +428,7 @@ function PlayerRow({ player, columns, view, period }: { player: PlayerBrowserIte
           <div className="min-w-0">
             <div className="flex min-w-0 items-center gap-1">
               <RankBadge rank={view === "PROJECTIONS" ? player.projectionRank : player.posRank} />
-              <Link href={`/players/${player.playerId}`} className="truncate font-cond text-[22px] font-bold text-[#303236]">
+              <Link href={`/players/${player.playerId}?season=2026`} className="truncate font-cond text-[22px] font-bold text-[#303236]">
                 {player.displayName}
               </Link>
               <AvailabilityBadge status={player.status} />

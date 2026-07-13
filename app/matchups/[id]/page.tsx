@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getMatchups, getRoster } from "@/lib/sleeper";
 import { Card, TeamAvatar, Score, SectionTitle, EmptyState } from "@/components/ui";
@@ -274,7 +275,7 @@ function StarterCell({
     </div>
   );
 
-  return (
+  const content = (
     <Card className={`px-3 py-2.5 ${muted ? "bg-section" : ""}`}>
       <div className={`flex items-center ${left ? "" : "flex-row-reverse"}`}>
         {head}
@@ -302,5 +303,13 @@ function StarterCell({
         {when && <span className="shrink-0 font-semibold text-text">{when}</span>}
       </div>
     </Card>
+  );
+
+  if (!entry.sleeperId) return content;
+
+  return (
+    <Link href={`/players/${encodeURIComponent(entry.sleeperId)}?season=2026`} className="block">
+      {content}
+    </Link>
   );
 }

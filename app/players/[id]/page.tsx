@@ -1,17 +1,37 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPlayerProfile, type PlayerGameLog } from "@/lib/players";
-import { resolvePlayerImage, POS_COLOR } from "@/lib/player-images";
+import { proTeamLogoUrl, resolvePlayerImage, POS_COLOR } from "@/lib/player-images";
 import { Card, EmptyState, SectionHeader, Score, TeamAvatar } from "@/components/ui";
 import { weekLabel } from "@/lib/games";
+import { getCurrentPlayerProfile, PLAYER_DATA_SEASON } from "../player-data";
+import type { PlayerBrowserItem, PlayerStats, SparseStats } from "../player-browser";
 
 export const revalidate = 86400;
 
-export default async function PlayerProfilePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PlayerProfilePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ season?: string }>;
+}) {
   const { id } = await params;
+  const { season } = await searchParams;
+  const wantsCurrentProfile = season === String(PLAYER_DATA_SEASON);
+
+  if (wantsCurrentProfile) {
+    const currentProfile = await getCurrentPlayerProfile(id);
+    if (currentProfile) return <CurrentPlayerProfile player={currentProfile} />;
+  }
+
   const playerId = Number(id);
   const profile = playerId ? await getPlayerProfile(playerId) : null;
-  if (!profile) notFound();
+  if (!profile) {
+    const currentProfile = await getCurrentPlayerProfile(id);
+    if (currentProfile) return <CurrentPlayerProfile player={currentProfile} />;
+    notFound();
+  }
 
   const { totals } = profile;
   const img = resolvePlayerImage(profile.playerId, profile.pos, profile.name);
@@ -107,6 +127,170 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
         )}
       </Card>
     </div>
+  );
+}
+
+const EMPTY_CURRENT_STATS: PlayerStats = {
+  passAtt: 0,
+  passCmp: 0,
+  passYds: 0,
+  passTD: 0,
+  passInt: 0,
+  passSack: 0,
+  rushAtt: 0,
+  rushYds: 0,
+  rushTD: 0,
+  targets: 0,
+  rec: 0,
+  recYds: 0,
+  recTD: 0,
+  retTD: 0,
+  fumTD: 0,
+  twoPt: 0,
+  fumLost: 0,
+  fgMade: 0,
+  fgAtt: 0,
+  xpMade: 0,
+  defSack: 0,
+  defInt: 0,
+  defTD: 0,
+  points: 0,
+  projected: 0,
+  gp: 0,
+};
+
+function expandCurrentStats(stats: SparseStats): PlayerStats {
+  return { ...EMPTY_CURRENT_STATS, ...stats };
+}
+
+function CurrentPlayerProfile({ player }: { player: PlayerBrowserItem }) {
+  const actual = expandCurrentStats(player.stats);
+  const projection = expandCurrentStats(player.projection);
+  const logo = proTeamLogoUrl(player.proTeam);
+
+  return (
+    <div className="space-y-3">
+      <div
+        className="overflow-hidden rounded-xl bg-card shadow-sm"
+        style={{ background: `linear-gradient(180deg, ${player.ownerTeamPrimary ?? "var(--teal)"} 0%, ${player.ownerTeamSecondary ?? "var(--teal-deep)"} 180%)` }}
+      >
+        <div className="flex items-center gap-3 px-4 py-5 text-white">
+          {player.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={player.imageUrl}
+              alt={player.fullName}
+              width={72}
+              height={72}
+              className={`h-18 w-18 shrink-0 rounded-full ${player.isLogo ? "bg-white object-contain p-1" : "bg-white/10 object-cover"}`}
+              suppressHydrationWarning
+            />
+          ) : (
+            <span
+              className="grid h-18 w-18 shrink-0 place-items-center rounded-full font-cond text-lg font-bold text-white"
+              style={{ background: POS_COLOR[player.pos] ?? "#9aa1ad" }}
+            >
+              {player.pos || "-"}
+            </span>
+          )}
+
+          <div className="min-w-0 flex-1">
+            <div className="truncate font-cond text-3xl font-bold leading-none">{player.fullName}</div>
+            <div className="mt-1 flex items-center gap-2 text-sm text-white/85">
+              {logo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={logo} alt={player.proTeam} className="h-6 w-6 rounded-full bg-white/90 object-contain p-0.5" />
+              ) : null}
+              <span>
+                {player.proTeam || "FA"} - {player.pos}
+              </span>
+            </div>
+            <div className="mt-2 text-sm font-semibold text-white/85">{player.manager}</div>
+          </div>
+        </div>
+      </div>
+
+      <Card>
+        <SectionHeader>{PLAYER_DATA_SEASON} Profile</SectionHeader>
+        <div className="grid grid-cols-3 gap-px bg-section/60 sm:grid-cols-4">
+          <Stat label="Points" value={actual.points.toFixed(2)} />
+          <Stat label="Projected" value={projection.projected.toFixed(2)} />
+          <Stat label={`${player.pos} Rank`} value={player.projectionRank > 999 ? "-" : player.projectionRank} />
+          <Stat label="Status" value={statusLabel(player)} />
+          {player.age ? <Stat label="Age" value={player.age} /> : null}
+          {player.yearsExp != null ? <Stat label="Exp" value={player.yearsExp} /> : null}
+          <Stat label="Adds" value={player.rosterAdds} />
+          <Stat label="Drops" value={player.rosterDrops} />
+        </div>
+      </Card>
+
+      <Card>
+        <SectionHeader>Week 1 Matchup</SectionHeader>
+        <div className="grid grid-cols-3 gap-px bg-section/60">
+          <Stat label="Opp" value={player.matchup} />
+          <Stat label="FPA Rank" value={player.fantasyAgainst?.rank ?? "-"} />
+          <Stat label="FPA Avg" value={player.fantasyAgainst?.avg?.toFixed(2) ?? "-"} />
+        </div>
+      </Card>
+
+      <CurrentStatSection title="Passing" rows={[
+        ["Att", actual.passAtt, projection.passAtt],
+        ["Cmp", actual.passCmp, projection.passCmp],
+        ["Yds", actual.passYds, projection.passYds],
+        ["TD", actual.passTD, projection.passTD],
+        ["Int", actual.passInt, projection.passInt],
+      ]} />
+      <CurrentStatSection title="Rushing" rows={[
+        ["Att", actual.rushAtt, projection.rushAtt],
+        ["Yds", actual.rushYds, projection.rushYds],
+        ["TD", actual.rushTD, projection.rushTD],
+      ]} />
+      <CurrentStatSection title="Receiving" rows={[
+        ["Tgt", actual.targets, projection.targets],
+        ["Rec", actual.rec, projection.rec],
+        ["Yds", actual.recYds, projection.recYds],
+        ["TD", actual.recTD, projection.recTD],
+      ]} />
+      <CurrentStatSection title="Kicking / Defense" rows={[
+        ["FG", actual.fgMade, projection.fgMade],
+        ["XP", actual.xpMade, projection.xpMade],
+        ["Sack", actual.defSack, projection.defSack],
+        ["Int", actual.defInt, projection.defInt],
+        ["TD", actual.defTD, projection.defTD],
+      ]} />
+    </div>
+  );
+}
+
+function statusLabel(player: PlayerBrowserItem): string {
+  if (player.injuryStatus) return player.injuryStatus;
+  if (player.sleeperStatus) return player.sleeperStatus;
+  return player.status;
+}
+
+function CurrentStatSection({
+  title,
+  rows,
+}: {
+  title: string;
+  rows: [string, number, number][];
+}) {
+  const visible = rows.filter(([, actual, projection]) => actual || projection);
+  if (!visible.length) return null;
+
+  return (
+    <Card>
+      <SectionHeader>{title}</SectionHeader>
+      <div className="grid grid-cols-3 gap-px bg-section/60">
+        {visible.map(([label, actual, projection]) => (
+          <div key={label} className="bg-card px-2 py-2.5 text-center">
+            <div className="font-cond text-lg font-bold tabular-nums">{actual ? actual.toFixed(actual % 1 ? 2 : 0) : "-"}</div>
+            <div className="text-[10px] uppercase tracking-wide text-text-muted">{label}</div>
+            {projection ? <div className="mt-0.5 font-cond text-xs italic text-text-muted">{projection.toFixed(2)}</div> : null}
+          </div>
+        ))}
+      </div>
+    </Card>
   );
 }
 
