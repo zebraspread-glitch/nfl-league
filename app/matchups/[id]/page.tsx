@@ -1,7 +1,7 @@
 import { Fragment } from "react";
 import { notFound } from "next/navigation";
-import { getMatchups, getRoster, getStandings } from "@/lib/sleeper";
-import { Card, TeamAvatar, Hexagon, Score, SectionTitle, EmptyState, rankBadgeTone } from "@/components/ui";
+import { getMatchups, getRoster } from "@/lib/sleeper";
+import { Card, TeamAvatar, Score, SectionTitle, EmptyState } from "@/components/ui";
 import { SleeperPlayerAvatar } from "@/components/sleeper-player-avatar";
 import { proTeamLogoUrl } from "@/lib/player-images";
 import type { MatchupSide, Roster, RosterEntry, RosterSlot } from "@/lib/types";
@@ -17,13 +17,11 @@ export default async function MatchupPage({ params }: { params: Promise<{ id: st
   const matchup = matchups.find((m) => m.id === id);
   if (!matchup) notFound();
 
-  const [awayRoster, homeRoster, standings] = await Promise.all([
+  const [awayRoster, homeRoster] = await Promise.all([
     matchup.away.rosterId != null ? getRoster(matchup.away.rosterId, week) : null,
     matchup.home.rosterId != null ? getRoster(matchup.home.rosterId, week) : null,
-    getStandings(),
   ]);
 
-  const rankOf = (teamId: number) => standings.find((s) => s.team.id === teamId)?.rank;
   const statusLabel = matchup.status === "final" ? "Final" : matchup.status === "live" ? "Live" : "";
   const awayProj = projectedTotal(awayRoster);
   const homeProj = projectedTotal(homeRoster);
@@ -40,7 +38,7 @@ export default async function MatchupPage({ params }: { params: Promise<{ id: st
         style={{ background: "linear-gradient(180deg, var(--teal) 0%, var(--teal-deep) 100%)" }}
       >
         <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2">
-          <HeaderAvatar side={matchup.away} rank={rankOf(matchup.away.team.id)} align="left" />
+          <HeaderAvatar side={matchup.away} />
 
           <div className="flex items-stretch justify-center gap-3">
             <HeaderScore actual={matchup.away.score} projected={awayProj} leading={awayProj >= homeProj} align="right" />
@@ -52,7 +50,7 @@ export default async function MatchupPage({ params }: { params: Promise<{ id: st
             <HeaderScore actual={matchup.home.score} projected={homeProj} leading={homeProj > awayProj} align="left" />
           </div>
 
-          <HeaderAvatar side={matchup.home} rank={rankOf(matchup.home.team.id)} align="right" />
+          <HeaderAvatar side={matchup.home} />
         </div>
 
         <div className="mt-2 grid grid-cols-2 gap-2">
@@ -165,15 +163,10 @@ function projectedTotal(roster: Roster | null): number {
   return Math.round(sum * 100) / 100;
 }
 
-function HeaderAvatar({ side, rank, align }: { side: MatchupSide; rank?: number; align: "left" | "right" }) {
+function HeaderAvatar({ side }: { side: MatchupSide }) {
   return (
     <div className="relative shrink-0">
       <TeamAvatar team={side.team} size="lg" />
-      {rank ? (
-        <span className={`absolute -top-1 ${align === "left" ? "-left-2" : "-right-2"}`}>
-          <Hexagon value={rank} tone={rankBadgeTone(rank)} size="sm" />
-        </span>
-      ) : null}
     </div>
   );
 }

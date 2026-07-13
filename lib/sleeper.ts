@@ -3,6 +3,7 @@ import "server-only";
 import type {
   Standing,
   Matchup,
+  MatchupSide,
   Roster,
   RosterEntry,
   RosterSlot,
@@ -260,9 +261,57 @@ export async function getStandings(): Promise<Standing[]> {
   return standings;
 }
 
+function rosterRecord(roster: SleeperRoster): MatchupSide["record"] {
+  return {
+    wins: roster.settings?.wins ?? 0,
+    losses: roster.settings?.losses ?? 0,
+    ties: roster.settings?.ties ?? 0,
+  };
+}
+
+async function enrichManualMatchups(matchups: Matchup[], week: number): Promise<Matchup[]> {
+  const [matchupRows, rosters, users] = await Promise.all([
+    sleeperFetch<SleeperMatchup[]>(`/matchups/${week}`),
+    getRosters(),
+    getUsers(),
+  ]);
+  if (!rosters.length) return matchups;
+
+  const userById = new Map(users.map((u) => [u.user_id, u]));
+  const rosterByTeamId = new Map<TeamId, SleeperRoster>();
+  for (const roster of rosters) {
+    const team = resolveTeam(roster, roster.owner_id ? userById.get(roster.owner_id) : undefined);
+    rosterByTeamId.set(team.id, roster);
+  }
+
+  const liveByRosterId = new Map((matchupRows ?? []).map((row) => [row.roster_id, row]));
+  const side = (manualSide: MatchupSide): MatchupSide => {
+    const roster = rosterByTeamId.get(manualSide.team.id);
+    if (!roster) return manualSide;
+    const live = liveByRosterId.get(roster.roster_id);
+    return {
+      ...manualSide,
+      score: Math.round((live?.points ?? manualSide.score) * 100) / 100,
+      record: rosterRecord(roster),
+      rosterId: roster.roster_id,
+    };
+  };
+
+  return matchups.map((matchup) => {
+    const away = side(matchup.away);
+    const home = side(matchup.home);
+    return {
+      ...matchup,
+      status: away.score || home.score ? "live" : matchup.status,
+      away,
+      home,
+    };
+  });
+}
+
 export async function getMatchups(week: number): Promise<Matchup[]> {
   const currentSeasonMatchups = getCurrentSeasonMatchups(week);
-  if (currentSeasonMatchups.length) return currentSeasonMatchups;
+  if (currentSeasonMatchups.length) return enrichManualMatchups(currentSeasonMatchups, week);
 
   const leagueId = readLeagueId();
   if (!leagueId) return getFallbackMatchups(week);

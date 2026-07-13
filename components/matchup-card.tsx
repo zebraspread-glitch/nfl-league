@@ -1,24 +1,11 @@
 import Link from "next/link";
 import type { Matchup, MatchupSide } from "@/lib/types";
-import { Card, Hexagon, TeamAvatar, Score, Pill, rankBadgeTone } from "./ui";
+import { Card, TeamAvatar, Score, Pill } from "./ui";
 
-function AvatarWithRank({
-  side,
-  rank,
-  align,
-}: {
-  side: MatchupSide;
-  rank?: number;
-  align: "left" | "right";
-}) {
+function MatchupAvatar({ side }: { side: MatchupSide }) {
   return (
     <div className="relative block shrink-0" suppressHydrationWarning>
       <TeamAvatar team={side.team} size="lg" />
-      {rank ? (
-        <span className={`absolute -top-1 ${align === "left" ? "-left-2" : "-right-2"}`}>
-          <Hexagon value={rank} tone={rankBadgeTone(rank)} size="sm" />
-        </span>
-      ) : null}
     </div>
   );
 }
@@ -41,11 +28,9 @@ function ScoreBlock({ side, win, upcoming }: { side: MatchupSide; win: boolean; 
 export function MatchupCard({
   matchup,
   title,
-  rankOf,
 }: {
   matchup: Matchup;
   title?: string;
-  rankOf?: (teamId: number) => number | undefined;
 }) {
   const { home, away, status } = matchup;
   const homeWin = status !== "upcoming" && home.score >= away.score;
@@ -71,7 +56,7 @@ export function MatchupCard({
 
         <div className="px-4 py-4">
           <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2">
-            <AvatarWithRank side={away} rank={rankOf?.(away.team.id)} align="left" />
+            <MatchupAvatar side={away} />
 
             <div className="flex items-center justify-center gap-4">
               <div className="text-right">
@@ -87,7 +72,7 @@ export function MatchupCard({
               </div>
             </div>
 
-            <AvatarWithRank side={home} rank={rankOf?.(home.team.id)} align="right" />
+            <MatchupAvatar side={home} />
           </div>
 
           <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
