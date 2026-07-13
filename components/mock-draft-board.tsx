@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { SleeperPlayerAvatar } from "@/components/sleeper-player-avatar";
-import { TEAM_NEEDS, teamById, type DraftSlot, type MockPlayer } from "@/lib/mock-draft";
+import { TEAM_NEEDS, computeAutopick, teamById, type DraftSlot, type MockPlayer } from "@/lib/mock-draft";
 import type { TeamMeta } from "@/lib/types";
 
 const STORAGE_KEY = "mgl-mock-draft-2026-v1";
 const TEAM_STORAGE_KEY = "mgl-mock-draft-team-v1";
 const AUTOPICK_DELAY_MS = 450;
+/** Sentinel "team" for the drafting-as select: autopick is off, the user makes every pick. */
+const MANUAL_TEAM_ID = 0;
 
 type Picks = Record<string, MockPlayer>;
 type LineupSlot = "QB" | "RB" | "WR" | "TE" | "RB/WR" | "K" | "DEF" | "BN";
@@ -24,20 +26,19 @@ function key(round: number, slot: number) {
 
 const STARTING_LINEUP: LineupSlot[] = ["QB", "RB", "RB", "WR", "WR", "TE", "RB/WR", "K", "DEF"];
 
-// Weighted toward the top of the pool (real rankings order) but not deterministic —
-// mirrors how real drafters occasionally reach a few spots early/late.
-const VARIANCE_WEIGHTS = [0.55, 0.22, 0.13, 0.06, 0.04];
-
-function pickWithVariance(pool: MockPlayer[]): MockPlayer | undefined {
-  if (!pool.length) return undefined;
-  const window = Math.min(VARIANCE_WEIGHTS.length, pool.length);
-  const r = Math.random();
-  let acc = 0;
-  for (let i = 0; i < window; i++) {
-    acc += VARIANCE_WEIGHTS[i];
-    if (r <= acc) return pool[i];
+/** Splits a team's current players into keepers (locked slots) and mock-drafted picks. */
+function rosterEntriesFor(board: DraftSlot[], picks: Picks, teamId: number) {
+  const keepers: MockPlayer[] = [];
+  const drafted: MockPlayer[] = [];
+  for (const s of board) {
+    if (s.teamId !== teamId) continue;
+    if (s.locked) keepers.push(s.locked);
+    else {
+      const p = picks[key(s.round, s.slot)];
+      if (p) drafted.push(p);
+    }
   }
-  return pool[0];
+  return { keepers, drafted };
 }
 
 const POS_COLOR: Record<string, string> = {
@@ -53,6 +54,23 @@ function canFillLineupSlot(label: LineupSlot, player: MockPlayer) {
   if (label === "BN") return true;
   if (label === "RB/WR") return player.pos === "RB" || player.pos === "WR";
   return player.pos === label;
+}
+
+function PickedPlayer({ player }: { player: MockPlayer }) {
+  return (
+    <>
+      <div className="grid w-full place-items-center px-1 py-2">
+        <SleeperPlayerAvatar sleeperId={player.sleeperId ?? ""} pos={player.pos} name={player.name} size="md" />
+      </div>
+      <div className="w-full truncate px-1 text-[11px] font-semibold leading-tight">{player.name}</div>
+      <div
+        className="mt-1.5 w-full px-1 py-1 font-cond text-[10px] font-bold uppercase text-white"
+        style={{ background: POS_COLOR[player.pos] ?? "#9aa1ad" }}
+      >
+        {player.proTeam} - {player.pos}
+      </div>
+    </>
+  );
 }
 
 export function MockDraftBoard({
@@ -122,10 +140,31 @@ export function MockDraftBoard({
     return [...map.entries()].sort(([a], [b]) => a - b);
   }, [board]);
 
-  function makePick(round: number, slot: number, player: MockPlayer) {
-    setPicks((prev) => ({ ...prev, [key(round, slot)]: player }));
-    setSearchKey(null);
-    setQuery("");
+  const makePick = useCallback(
+    (round: number, slot: number, player: MockPlayer) => {
+      const k = key(round, slot);
+      setPicks((prev) => ({ ...prev, [k]: player }));
+      // Only close the search panel if it was open for this slot — an autopick
+      // landing elsewhere shouldn't cancel a search the user is browsing.
+      if (searchKey === k) {
+        setSearchKey(null);
+        setQuery("");
+      }
+    },
+    [searchKey]
+  );
+
+  function clearPick(round: number, slot: number) {
+    const k = key(round, slot);
+    setPicks((prev) => {
+      const next = { ...prev };
+      delete next[k];
+      return next;
+    });
+    if (searchKey === k) {
+      setSearchKey(null);
+      setQuery("");
+    }
   }
 
   function resetAll() {
@@ -138,15 +177,21 @@ export function MockDraftBoard({
     resetAll();
   }
 
-  /** Fills every remaining draftable slot with a (slightly randomized) best-available pick. */
+  /** Fills every remaining draftable slot with a realistic autopick for that team. */
   function autodraftRest() {
     const usedNames = new Set(taken);
     const next: Picks = { ...picks };
     for (const slot of draftable) {
       const k = key(slot.round, slot.slot);
       if (next[k]) continue;
-      const pool = players.filter((p) => !usedNames.has(p.name));
-      const pick = pickWithVariance(pool);
+      const { keepers, drafted } = rosterEntriesFor(board, next, slot.teamId);
+      const pick = computeAutopick({
+        teamId: slot.teamId,
+        available: players.filter((p) => !usedNames.has(p.name)),
+        roster: [...keepers, ...drafted],
+        drafted,
+        remainingPicks: draftable.filter((s) => s.teamId === slot.teamId && !next[key(s.round, s.slot)]).length,
+      });
       if (!pick) break;
       usedNames.add(pick.name);
       next[k] = pick;
@@ -162,19 +207,30 @@ export function MockDraftBoard({
     [players, taken, query]
   );
 
-  // Autopick for every team except the one the user is controlling — stays close to
-  // real rankings order, with a little randomness so it's not perfectly deterministic.
+  // Autopick for every team except the one the user is controlling (nobody in
+  // manual mode) — need- and roster-aware, with a little randomness so runs differ.
   useEffect(() => {
-    if (!loaded || userTeamId == null || !onTheClock || onTheClock.teamId === userTeamId) return;
-    const pool = players.filter((p) => !taken.has(p.name));
-    const pick = pickWithVariance(pool);
+    if (!loaded || userTeamId == null || userTeamId === MANUAL_TEAM_ID || !onTheClock || onTheClock.teamId === userTeamId)
+      return;
+    // Pause the clock while the user is browsing players for the on-clock slot.
+    if (searchKey && searchKey === key(onTheClock.round, onTheClock.slot)) return;
+    const { keepers, drafted } = rosterEntriesFor(board, picks, onTheClock.teamId);
+    const pick = computeAutopick({
+      teamId: onTheClock.teamId,
+      available: players.filter((p) => !taken.has(p.name)),
+      roster: [...keepers, ...drafted],
+      drafted,
+      remainingPicks: draftable.filter((s) => s.teamId === onTheClock.teamId && !picks[key(s.round, s.slot)]).length,
+    });
     if (!pick) return;
     const timeout = setTimeout(() => makePick(onTheClock.round, onTheClock.slot, pick), AUTOPICK_DELAY_MS);
     return () => clearTimeout(timeout);
-  }, [loaded, userTeamId, onTheClock, players, taken]);
+  }, [loaded, userTeamId, onTheClock, players, taken, board, picks, draftable, searchKey, makePick]);
 
   const searchSlot = searchKey ? board.find((s) => key(s.round, s.slot) === searchKey) : null;
-  const isUsersClock = !!onTheClock && onTheClock.teamId === userTeamId;
+  const searchCurrent = searchSlot ? picks[key(searchSlot.round, searchSlot.slot)] : undefined;
+  const isManual = userTeamId === MANUAL_TEAM_ID;
+  const isUsersClock = !!onTheClock && (isManual || onTheClock.teamId === userTeamId);
   const isComplete = !onTheClock;
 
   const lineupFor = useMemo(() => {
@@ -211,7 +267,8 @@ export function MockDraftBoard({
     };
   }, [board, picks, rankByName]);
 
-  const lineupTeamId = viewTeamId ?? userTeamId;
+  // In manual mode there's no "your team", so the lineup viewer starts on the first team.
+  const lineupTeamId = viewTeamId ?? (isManual ? teams[0]?.id ?? null : userTeamId);
 
   return (
     <div>
@@ -227,8 +284,11 @@ export function MockDraftBoard({
               {t.name}
             </option>
           ))}
+          <option value={MANUAL_TEAM_ID}>Manual (all teams)</option>
         </select>
-        <span className="text-xs text-text-muted">- every other team autopicks</span>
+        <span className="text-xs text-text-muted">
+          {isManual ? "- you make every pick" : "- every other team autopicks"}
+        </span>
         <button
           onClick={autodraftRest}
           className="ml-auto shrink-0 rounded-lg bg-text px-2.5 py-1 font-cond text-xs font-semibold text-white hover:opacity-90"
@@ -304,13 +364,24 @@ export function MockDraftBoard({
 
       {searchSlot && (
         <div className="mb-3 rounded-xl border border-border bg-card p-3 shadow-sm">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="font-cond text-sm font-semibold">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <span className="min-w-0 truncate font-cond text-sm font-semibold">
               Pick {searchSlot.round}.{searchSlot.slot} - {teamById(searchSlot.teamId)?.name}
+              {searchCurrent ? ` (now: ${searchCurrent.name})` : ""}
             </span>
-            <button onClick={() => setSearchKey(null)} className="font-cond text-xs font-semibold text-text-dim">
-              Cancel
-            </button>
+            <div className="flex shrink-0 items-center gap-3">
+              {searchCurrent && (
+                <button
+                  onClick={() => clearPick(searchSlot.round, searchSlot.slot)}
+                  className="font-cond text-xs font-semibold text-text-dim hover:text-text"
+                >
+                  Clear pick
+                </button>
+              )}
+              <button onClick={() => setSearchKey(null)} className="font-cond text-xs font-semibold text-text-dim">
+                Cancel
+              </button>
+            </div>
           </div>
           <input
             autoFocus
@@ -350,7 +421,12 @@ export function MockDraftBoard({
                 const team = teamById(slot.teamId);
                 const picked = slot.locked ?? picks[k];
                 const isOnClock = k === onTheClockKey;
-                const isUserSlot = slot.teamId === userTeamId;
+                const isUserSlot = isManual || slot.teamId === userTeamId;
+                const canEdit = slot.round <= 11 && !slot.locked;
+                const openSearch = () => {
+                  setSearchKey(k);
+                  setQuery("");
+                };
 
                 return (
                   <div
@@ -364,18 +440,17 @@ export function MockDraftBoard({
                     </div>
 
                     {picked ? (
-                      <>
-                        <div className="grid place-items-center px-1 py-2">
-                          <SleeperPlayerAvatar sleeperId={picked.sleeperId ?? ""} pos={picked.pos} name={picked.name} size="md" />
-                        </div>
-                        <div className="truncate px-1 text-[11px] font-semibold leading-tight">{picked.name}</div>
-                        <div
-                          className="mt-1.5 px-1 py-1 font-cond text-[10px] font-bold uppercase text-white"
-                          style={{ background: POS_COLOR[picked.pos] ?? "#9aa1ad" }}
+                      canEdit ? (
+                        <button
+                          onClick={openSearch}
+                          title="Change this pick"
+                          className="flex min-w-0 flex-1 flex-col hover:bg-card-hover"
                         >
-                          {picked.proTeam} - {picked.pos}
-                        </div>
-                      </>
+                          <PickedPlayer player={picked} />
+                        </button>
+                      ) : (
+                        <PickedPlayer player={picked} />
+                      )
                     ) : (
                       <div className="flex flex-1 flex-col items-center justify-between gap-1 px-1.5 py-2">
                         <div className="flex flex-wrap justify-center gap-0.5">
@@ -390,16 +465,14 @@ export function MockDraftBoard({
                         </div>
                         {round <= 11 ? (
                           <button
-                            disabled={!isOnClock || !isUserSlot}
-                            onClick={() => {
-                              setSearchKey(k);
-                              setQuery("");
-                            }}
+                            onClick={openSearch}
                             className={`w-full rounded-md px-1 py-1 font-cond text-[10px] font-bold ${
-                              isOnClock && isUserSlot ? "bg-teal text-white" : "bg-section text-text-dim"
+                              isOnClock && isUserSlot
+                                ? "bg-teal text-white"
+                                : "bg-section text-text-dim hover:bg-card-hover"
                             }`}
                           >
-                            {isOnClock ? (isUserSlot ? "Make Pick" : "Auto...") : "Upcoming"}
+                            {isOnClock ? (isUserSlot ? "Make Pick" : "Auto...") : "Pick"}
                           </button>
                         ) : null}
                       </div>

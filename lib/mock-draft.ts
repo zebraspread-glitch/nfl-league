@@ -15,8 +15,12 @@ export interface MockPlayer {
   bye?: number;
   /** Sleeper player id, attached at request time by matching name → Sleeper's catalog, used for the real headshot CDN. */
   sleeperId?: string;
-  /** Approximate overall 2026 PPR redraft rank — lower is better. Drives autopick (best-need, then best-overall) and search ordering. */
+  /** Approximate overall 2026 PPR redraft rank — lower is better. Drives autopick and search ordering. */
   rank?: number;
+  /** League ADP override — where this league would actually draft the player when that
+   *  differs sharply from FantasyPros (e.g. Jeremiyah Love is the consensus 1.01 here).
+   *  Takes precedence over `rank` everywhere draft order matters. */
+  adp?: number;
 }
 
 export interface DraftSlot {
@@ -235,7 +239,9 @@ const RAW_PLAYERS: MockPlayer[] = [
   { name: "Tee Higgins", pos: "WR", proTeam: "CIN", bye: 6, rank: 33 },
   { name: "Ladd McConkey", pos: "WR", proTeam: "LAC", bye: 7, rank: 34 },
   { name: "Zay Flowers", pos: "WR", proTeam: "BAL", bye: 13, rank: 35 },
-  { name: "Jeremiyah Love", pos: "RB", proTeam: "ARI", bye: 14, rank: 36 },
+  // adp 1: consensus 1.01 in this league — the top rookie RB, and every veteran
+  // ranked above him is already kept (rounds 12-15).
+  { name: "Jeremiyah Love", pos: "RB", proTeam: "ARI", bye: 14, rank: 36, adp: 1 },
   { name: "Colston Loveland", pos: "TE", proTeam: "CHI", bye: 10, rank: 37 },
   { name: "Jaylen Waddle", pos: "WR", proTeam: "DEN", bye: 10, rank: 38 },
   { name: "Derrick Henry", pos: "RB", proTeam: "BAL", bye: 13, rank: 39 },
@@ -391,5 +397,115 @@ const RAW_PLAYERS: MockPlayer[] = [
 ];
 
 export const AVAILABLE_PLAYERS: MockPlayer[] = RAW_PLAYERS.slice().sort(
-  (a, b) => (a.rank ?? 999) - (b.rank ?? 999)
+  (a, b) => draftValue(a) - draftValue(b)
 );
+
+// ---------------------------------------------------------------------------
+// Autopick — need- and roster-aware so mock results resemble a real draft.
+
+/** Draft-order value: the league ADP override wins, then FantasyPros rank. Lower = earlier. */
+export function draftValue(p: MockPlayer): number {
+  return p.adp ?? p.rank ?? 999;
+}
+
+// Randomness mirrors real drafters occasionally reaching a few spots early —
+// weights apply to the top of the candidate list after need adjustments.
+const VARIANCE_WEIGHTS = [0.55, 0.22, 0.13, 0.06, 0.04];
+// Candidates more than this many value spots behind the best option are never
+// picked. Big tier gaps therefore make a pick deterministic (e.g. the 1.01).
+const TIER_WIDTH = 12;
+// Value-spot boosts for matching a listed team need / plugging an empty starting slot.
+const NEED_BONUS = 10;
+const LINEUP_BONUS = 6;
+
+interface LineupHole {
+  label: string;
+  fits(pos: string): boolean;
+}
+
+/** Starting-lineup holes (QB, RB×2, WR×2, TE, RB/WR flex, K, DEF) the roster can't fill yet. */
+function lineupHoles(roster: MockPlayer[]): LineupHole[] {
+  const count = (pos: string) => roster.filter((p) => p.pos === pos).length;
+  const rb = count("RB");
+  const wr = count("WR");
+  const holes: LineupHole[] = [];
+  if (count("QB") < 1) holes.push({ label: "QB", fits: (pos) => pos === "QB" });
+  for (let i = rb; i < 2; i++) holes.push({ label: "RB", fits: (pos) => pos === "RB" });
+  for (let i = wr; i < 2; i++) holes.push({ label: "WR", fits: (pos) => pos === "WR" });
+  if (count("TE") < 1) holes.push({ label: "TE", fits: (pos) => pos === "TE" });
+  if (Math.max(0, rb - 2) + Math.max(0, wr - 2) < 1)
+    holes.push({ label: "RB/WR", fits: (pos) => pos === "RB" || pos === "WR" });
+  if (count("K") < 1) holes.push({ label: "K", fits: (pos) => pos === "K" });
+  if (count("DEF") < 1) holes.push({ label: "DEF", fits: (pos) => pos === "DEF" });
+  return holes;
+}
+
+/**
+ * Realistic autopick for one slot: best available by league draft value, nudged
+ * toward the team's listed needs and lineup holes, never doubling up on QB/TE
+ * in a 1-QB league, and saving K/DEF for the team's final picks.
+ */
+export function computeAutopick({
+  teamId,
+  available,
+  roster,
+  drafted,
+  remainingPicks,
+  random = Math.random,
+}: {
+  teamId: TeamId;
+  /** Undrafted players (any order). */
+  available: MockPlayer[];
+  /** Everything the team currently has: keepers plus mock picks. */
+  roster: MockPlayer[];
+  /** Just the mock picks — these consume entries from TEAM_NEEDS. */
+  drafted: MockPlayer[];
+  /** How many picks the team still has, counting this one. */
+  remainingPicks: number;
+  random?: () => number;
+}): MockPlayer | undefined {
+  if (!available.length) return undefined;
+  const pool = available.slice().sort((a, b) => draftValue(a) - draftValue(b));
+  const holes = lineupHoles(roster);
+
+  // Endgame: no picks to spare, so plug the empty starting slots — this is what
+  // pushes K/DEF (and a forgotten QB or TE) into a team's final picks.
+  if (remainingPicks <= holes.length) {
+    const mustFill = pool.find((p) => holes.some((h) => h.fits(p.pos)));
+    if (mustFill) return mustFill;
+  }
+
+  // Preseason needs minus what this mock has already addressed.
+  const needs = [...(TEAM_NEEDS[teamId] ?? [])];
+  for (const p of drafted) {
+    const exact = needs.indexOf(p.pos);
+    if (exact !== -1) {
+      needs.splice(exact, 1);
+    } else if (p.pos === "RB" || p.pos === "WR") {
+      const flex = needs.indexOf("FLX");
+      if (flex !== -1) needs.splice(flex, 1);
+    }
+  }
+
+  const hasQB = roster.some((p) => p.pos === "QB");
+  const hasTE = roster.some((p) => p.pos === "TE");
+  const scored = pool.slice(0, 30).map((p) => {
+    let score = draftValue(p);
+    if (p.pos === "K" || p.pos === "DEF") score += 500; // only drafted via the endgame branch above
+    if (p.pos === "QB" && hasQB) score += 150; // 1-QB league — nobody drafts two
+    if (p.pos === "TE" && hasTE) score += 80;
+    if (needs.includes(p.pos) || (needs.includes("FLX") && (p.pos === "RB" || p.pos === "WR"))) score -= NEED_BONUS;
+    if (holes.some((h) => h.fits(p.pos))) score -= LINEUP_BONUS;
+    return { player: p, score };
+  });
+  scored.sort((a, b) => a.score - b.score);
+
+  const candidates = scored.filter((c, i) => i < VARIANCE_WEIGHTS.length && c.score - scored[0].score <= TIER_WIDTH);
+  const r = random();
+  let acc = 0;
+  for (let i = 0; i < candidates.length; i++) {
+    acc += VARIANCE_WEIGHTS[i];
+    if (r <= acc) return candidates[i].player;
+  }
+  return candidates[0].player;
+}
