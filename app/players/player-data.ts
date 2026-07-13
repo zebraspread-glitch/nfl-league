@@ -1,5 +1,6 @@
 import type { PlayerAvailability, PlayerBrowserItem, PlayerStats, SparseStats } from "./player-browser";
 import { getTeam, getTeamByName, TEAMS } from "@/lib/teams";
+import { CURRENT_WEEK } from "@/lib/league-data";
 import type { TeamId, TeamMeta } from "@/lib/types";
 
 /** Internal build shape: full (dense) stat lines for easy accumulation. Converted to the
@@ -17,6 +18,7 @@ const SLEEPER_DATA_API = "https://api.sleeper.com";
 const LEAGUE_ID = process.env.SLEEPER_LEAGUE_ID || "1374614405412560896";
 export const PLAYER_DATA_SEASON = Number(process.env.SLEEPER_SEASON) || 2026;
 const DEFAULT_SEASON = PLAYER_DATA_SEASON;
+export const PLAYER_PROFILE_WEEK = CURRENT_WEEK;
 const SEASON_KEY = `${DEFAULT_SEASON} Season`;
 const LAST_2_KEY = "Last 2 WKS";
 const LAST_4_KEY = "Last 4 WKS";
@@ -28,6 +30,8 @@ const POSITIONS = new Set(["QB", "RB", "WR", "TE", "K", "DEF"]);
 interface SleeperStatRow {
   player_id: string;
   week: number;
+  date?: string;
+  game_id?: string;
   team?: string;
   opponent?: string;
   stats?: Record<string, number>;
@@ -46,7 +50,11 @@ interface SleeperPlayerMeta {
   status?: string;
   years_exp?: number;
   age?: number;
+  college?: string;
   depth_chart_order?: number;
+  height?: string;
+  number?: number;
+  weight?: string;
 }
 
 interface SleeperRoster {
@@ -185,6 +193,7 @@ function addStats(total: PlayerStats, row: Record<string, number> | undefined, s
   const points = n(row, "pts_ppr");
   if (source === "projection") {
     total.projected += points;
+    total.gp += n(row, "gp") || (points !== 0 ? 1 : 0);
   } else {
     total.points += points;
     total.gp += n(row, "gp") || (points !== 0 ? 1 : 0);
@@ -434,18 +443,24 @@ export async function getPlayerBrowserItems(): Promise<PlayerBrowserItem[]> {
   const fantasyAgainst = buildFantasyAgainst(allStatsRows);
   const byId = new Map<string, FullStatsItem>();
 
-  const ensurePlayer = (playerId: string, rowMeta?: SleeperPlayerMeta, row?: Pick<SleeperStatRow, "team" | "opponent">): FullStatsItem | null => {
+  const ensurePlayer = (playerId: string, rowMeta?: SleeperPlayerMeta, row?: Pick<SleeperStatRow, "date" | "game_id" | "opponent" | "team" | "week">): FullStatsItem | null => {
     const meta = rowMeta ?? playerCatalog?.[playerId];
     const pos = positionFor(playerId, meta);
     if (!isRelevantPlayer(playerId, pos, playerCatalog?.[playerId] ?? rowMeta, ownership, addTrend, dropTrend)) return null;
 
     const owned = ownership.get(playerId);
     const status = availability(playerId, owned, transactions);
+    const profileWeekRow = row?.week === PLAYER_PROFILE_WEEK;
     const current = byId.get(playerId);
     if (current) {
-      current.proTeam = meta?.team || row?.team || current.proTeam;
-      current.opponent = row?.opponent || current.opponent;
-      current.matchup = current.opponent ? `@${current.opponent}` : current.matchup;
+      current.proTeam = meta?.team || (profileWeekRow ? row?.team : undefined) || current.proTeam;
+      if (profileWeekRow) {
+        current.opponent = row?.opponent || current.opponent;
+        current.matchup = current.opponent ? `@${current.opponent}` : current.matchup;
+        current.gameId = row?.game_id || current.gameId;
+        current.gameWeek = row?.week || current.gameWeek;
+        current.gameDate = row?.date || current.gameDate;
+      }
       current.injuryStatus = meta?.injury_status || current.injuryStatus;
       current.fantasyAgainst = current.opponent ? fantasyAgainst.get(`${current.pos}:${current.opponent}`) : current.fantasyAgainst;
       return current;
@@ -456,11 +471,20 @@ export async function getPlayerBrowserItems(): Promise<PlayerBrowserItem[]> {
     const opponent = row?.opponent || "";
     const item = {
       playerId,
+      firstName: meta?.first_name ?? "",
+      lastName: meta?.last_name ?? "",
       displayName: displayName(playerId, meta),
       fullName: fullName(playerId, meta),
       pos,
       proTeam: meta?.team || row?.team || "",
+      jerseyNumber: meta?.number,
+      height: meta?.height,
+      weight: meta?.weight,
+      college: meta?.college,
       opponent,
+      gameId: profileWeekRow ? row?.game_id : undefined,
+      gameWeek: profileWeekRow ? row?.week : undefined,
+      gameDate: profileWeekRow ? row?.date : undefined,
       manager: owned?.manager ?? (status === "Waivers" ? "Waivers" : "FA"),
       status,
       rosterId: owned?.rosterId,
@@ -518,6 +542,10 @@ export async function getPlayerBrowserItems(): Promise<PlayerBrowserItem[]> {
   for (const player of players) {
     player.stats = player.statsByPeriod[SEASON_KEY] ?? blankStats();
     player.projection = player.projectionsByPeriod[SEASON_KEY] ?? blankStats();
+    if (player.proTeam) {
+      const byeWeek = WEEKS.find((week) => !player.projectionsByPeriod[String(week)]?.gp);
+      player.byeWeek = byeWeek;
+    }
   }
 
   const rankBy = (selector: (player: FullStatsItem) => number, field: "posRank" | "projectionRank") => {

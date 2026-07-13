@@ -47,13 +47,23 @@ interface FantasyAgainstValue {
 
 export interface PlayerBrowserItem {
   playerId: string;
+  firstName: string;
+  lastName: string;
   displayName: string;
   fullName: string;
   imageUrl?: string;
   isLogo: boolean;
   pos: string;
   proTeam: string;
+  jerseyNumber?: number;
+  height?: string;
+  weight?: string;
+  college?: string;
   opponent: string;
+  gameId?: string;
+  gameWeek?: number;
+  gameDate?: string;
+  byeWeek?: number;
   manager: string;
   status: PlayerAvailability;
   rosterId?: number;
