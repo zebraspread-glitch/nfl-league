@@ -487,6 +487,64 @@ export async function getRosterByFranchise(franchiseId: number, week: number): P
   return getRoster(match.roster_id, week);
 }
 
+export interface KeeperPlayer {
+  sleeperId: string;
+  name: string;
+  position: string;
+  proTeam?: string;
+  injuryStatus?: string;
+}
+
+export interface TeamKeepers {
+  team: TeamMeta;
+  players: KeeperPlayer[];
+}
+
+// Order positions the way a fantasy roster reads (QB, RB, WR, TE, then K/DEF).
+const KEEPER_POS_ORDER = ["QB", "RB", "WR", "TE", "K", "DEF"];
+
+/**
+ * Every franchise's currently-kept players heading into the 2026 draft. While
+ * the league is pre-draft, `roster.players` holds only the handful of keepers
+ * each manager has locked in — exactly the forward-looking roster snapshot the
+ * Keepers Board wants. Sorted by franchise id, players grouped by position.
+ */
+export async function getKeepers(): Promise<TeamKeepers[]> {
+  const leagueId = readLeagueId();
+  if (!leagueId) return [];
+
+  const [rosters, users, catalog] = await Promise.all([
+    getRosters(),
+    getUsers(),
+    fetchPlayerCatalog(),
+  ]);
+  const userById = new Map(users.map((u) => [u.user_id, u]));
+
+  const rows: TeamKeepers[] = rosters.map((roster) => {
+    const team = resolveTeam(roster, roster.owner_id ? userById.get(roster.owner_id) : undefined);
+    const players: KeeperPlayer[] = (roster.players ?? [])
+      .filter((id) => id && id !== "0")
+      .map((id) => {
+        const meta = catalog?.[id];
+        return {
+          sleeperId: id,
+          name: meta?.full_name || [meta?.first_name, meta?.last_name].filter(Boolean).join(" ") || id,
+          position: meta?.position ?? "—",
+          proTeam: meta?.team ?? undefined,
+          injuryStatus: meta?.injury_status || undefined,
+        };
+      })
+      .sort((a, b) => {
+        const pa = KEEPER_POS_ORDER.indexOf(a.position);
+        const pb = KEEPER_POS_ORDER.indexOf(b.position);
+        return (pa === -1 ? 99 : pa) - (pb === -1 ? 99 : pb) || a.name.localeCompare(b.name);
+      });
+    return { team, players };
+  });
+
+  return rows.sort((a, b) => a.team.id - b.team.id);
+}
+
 function normalizePlayerName(name: string): string {
   return name
     .toLowerCase()

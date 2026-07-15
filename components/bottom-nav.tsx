@@ -55,7 +55,8 @@ const TABS: Tab[] = [
       p.startsWith("/history") ||
       p.startsWith("/records") ||
       p.startsWith("/head-to-head") ||
-      p.startsWith("/power-rankings"),
+      p.startsWith("/power-rankings") ||
+      p.startsWith("/keepers"),
     icon: I("M4 6h16|M4 12h16|M4 18h16"),
   },
 ];
