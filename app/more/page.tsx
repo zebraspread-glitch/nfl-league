@@ -4,6 +4,7 @@ import { Card, PageIntro } from "@/components/ui";
 export const metadata = { title: "More - MGL Fantasy" };
 
 const LINKS = [
+  { href: "/power-rankings", label: "Power Rankings", desc: "TP's personal ranking of every team", icon: "🏆" },
   { href: "/mock-draft", label: "Mock Draft", desc: "Simulate the 2026 draft board pick by pick", icon: "MD" },
   { href: "/games", label: "Every Game", desc: "445 games with full player boxscores", icon: "GM" },
   { href: "/players", label: "Players", desc: "Search NFL players, profiles and MGL records", icon: "PL" },

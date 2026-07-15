@@ -1,0 +1,18 @@
+{
+  "updated": "2026-07-15",
+  "intro": "My gut-feel ranking of the league, best to worst.",
+  "ranking": [
+    { "teamId": 6, "tier": "Tier 1", "note": "" },
+    { "teamId": 2, "tier": "Tier 1", "note": "" },
+    { "teamId": 1, "tier": "Tier 2", "note": "" },
+    { "teamId": 7, "tier": "Tier 2", "note": "" },
+    { "teamId": 4, "tier": "Tier 2", "note": "" },
+    { "teamId": 8, "tier": "Tier 3", "note": "" },
+    { "teamId": 10, "tier": "Tier 3", "note": "" },
+    { "teamId": 3, "tier": "Tier 4", "note": "" },
+    { "teamId": 11, "tier": "Tier 4", "note": "" },
+    { "teamId": 5, "tier": "Tier 4", "note": "" },
+    { "teamId": 9, "tier": "Tier 5", "note": "" },
+    { "teamId": 12, "tier": "Tier 5", "note": "" }
+  ]
+}
