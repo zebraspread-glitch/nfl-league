@@ -99,24 +99,29 @@ function IconPaths({ icon }: { icon: TabIcon }) {
     case "matchup":
       return (
         <>
-          <path d="M7.5 4.5 4 6v5.3c0 2.2 1.3 4.1 3.5 5.1 2.2-1 3.5-2.9 3.5-5.1V6L7.5 4.5Z" fill="currentColor" fillOpacity="0.12" />
-          <path d="m16.5 4.5 3.5 1.5v5.3c0 2.2-1.3 4.1-3.5 5.1-2.2-1-3.5-2.9-3.5-5.1V6l3.5-1.5Z" fill="currentColor" fillOpacity="0.12" />
-          <path d="M7.5 4.5 4 6v5.3c0 2.2 1.3 4.1 3.5 5.1 2.2-1 3.5-2.9 3.5-5.1V6L7.5 4.5Z" />
-          <path d="m16.5 4.5 3.5 1.5v5.3c0 2.2-1.3 4.1-3.5 5.1-2.2-1-3.5-2.9-3.5-5.1V6l3.5-1.5Z" />
-          <path d="m11 19 2-3h-2l2-3" />
+          <path
+            d="M4.5 16.7C3.3 13.1 5.2 8 8.8 5.4c3.5-2.6 8.5-2.6 10.7 1.9 1.2 3.6-.7 8.7-4.3 11.3-3.5 2.6-8.5 2.6-10.7-1.9Z"
+            fill="currentColor"
+            fillOpacity="0.12"
+          />
+          <path d="M4.5 16.7C3.3 13.1 5.2 8 8.8 5.4c3.5-2.6 8.5-2.6 10.7 1.9 1.2 3.6-.7 8.7-4.3 11.3-3.5 2.6-8.5 2.6-10.7-1.9Z" />
+          <path d="M6.2 17.3 18 6.7" />
+          <path d="m9.8 12.7 2 2.3" />
+          <path d="m11.5 11.2 2 2.3" />
+          <path d="m13.2 9.7 2 2.3" />
+          <path d="M7.4 7.2c1 .4 2.1.4 3.2-.1" />
+          <path d="M13.4 16.9c1.1-.5 2.2-.5 3.2-.1" />
         </>
       );
     case "ladder":
       return (
         <>
-          <path d="M4.5 19.5h15" />
-          <path d="M6.5 15.5h3v4h-3z" fill="currentColor" fillOpacity="0.12" />
-          <path d="M10.5 10.5h3v9h-3z" fill="currentColor" fillOpacity="0.12" />
-          <path d="M14.5 6.5h3v13h-3z" fill="currentColor" fillOpacity="0.12" />
-          <path d="M6.5 15.5h3v4h-3z" />
-          <path d="M10.5 10.5h3v9h-3z" />
-          <path d="M14.5 6.5h3v13h-3z" />
-          <path d="M7 10.5 11 7l3 2 3.5-5" />
+          <path d="M7.5 3.5 5.7 20.5" />
+          <path d="m16.5 3.5 1.8 17" />
+          <path d="M7 7h10" />
+          <path d="M6.5 11h11" />
+          <path d="M6.1 15h11.8" />
+          <path d="M5.7 19h12.6" />
         </>
       );
     case "players":
