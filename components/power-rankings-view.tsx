@@ -86,7 +86,7 @@ export default function PowerRankingsView({
       <p className="px-1 pt-3 text-xs text-text-dim">
         {mode === "tp"
           ? "These are TP's personal rankings. Only TP can change the order."
-          : "AI ranking generated from 2021-2025 league data. TP has no hand in this one."}
+          : "AI ranking for the 2026 season, based on kept players and recent form. TP has no hand in this one."}
       </p>
     </div>
   );
