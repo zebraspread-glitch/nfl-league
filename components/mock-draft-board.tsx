@@ -56,23 +56,10 @@ function canFillLineupSlot(label: LineupSlot, player: MockPlayer) {
   return player.pos === label;
 }
 
-function hexLuminance(hex: string) {
-  const clean = hex.replace("#", "");
-  if (!/^[0-9a-fA-F]{6}$/.test(clean)) return 0;
-  const value = Number.parseInt(clean, 16);
-  const r = (value >> 16) & 255;
-  const g = (value >> 8) & 255;
-  const b = value & 255;
-  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
-}
-
 function teamHeaderStyle(team?: TeamMeta) {
   if (!team) return undefined;
-  const lightBg = (hexLuminance(team.primary) + hexLuminance(team.secondary)) / 2 > 0.62;
   return {
-    background: `linear-gradient(135deg, ${team.primary}, ${team.secondary})`,
-    color: lightBg ? "#17202a" : "#ffffff",
-    textShadow: lightBg ? "none" : "0 1px 1px rgba(0,0,0,0.35)",
+    background: `linear-gradient(90deg, ${team.primary}, ${team.secondary}) top / 100% 3px no-repeat, var(--section)`,
   };
 }
 
@@ -458,7 +445,7 @@ export function MockDraftBoard({
                     }`}
                   >
                     <div
-                      className={`truncate px-1 py-1 text-[10px] font-bold ${team ? "" : "bg-section text-text-muted"}`}
+                      className="truncate bg-section px-1 py-1 pt-1.5 text-[10px] font-semibold text-text-muted"
                       style={teamHeaderStyle(team)}
                     >
                       {slot.round}.{slot.slot} ({team?.abbrev ?? "FA"})
