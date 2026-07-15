@@ -418,6 +418,16 @@ const TIER_WIDTH = 12;
 const NEED_BONUS = 10;
 const LINEUP_BONUS = 6;
 
+const FIXED_AUTOPICK_PLAN = [
+  ["Jeremiyah Love"],
+  ["Carnell Tate"],
+  ["Garrett Wilson"],
+  ["Jordyn Tyson"],
+  ["Jadarian Price", "Luther Burden III"],
+  ["Drake Maye", "Javonte Williams"],
+  ["Javonte Williams", "Tee Higgins"],
+];
+
 interface LineupHole {
   label: string;
   fits(pos: string): boolean;
@@ -446,6 +456,7 @@ function lineupHoles(roster: MockPlayer[]): LineupHole[] {
  * in a 1-QB league, and saving K/DEF for the team's final picks.
  */
 export function computeAutopick({
+  overallPick,
   teamId,
   available,
   roster,
@@ -453,6 +464,8 @@ export function computeAutopick({
   remainingPicks,
   random = Math.random,
 }: {
+  /** 1-indexed overall draft position within the mockable rounds. */
+  overallPick?: number;
   teamId: TeamId;
   /** Undrafted players (any order). */
   available: MockPlayer[];
@@ -465,6 +478,14 @@ export function computeAutopick({
   random?: () => number;
 }): MockPlayer | undefined {
   if (!available.length) return undefined;
+  const fixedPick = overallPick ? FIXED_AUTOPICK_PLAN[overallPick - 1] : undefined;
+  if (fixedPick) {
+    const lockedIn = fixedPick
+      .map((name) => available.find((p) => p.name === name))
+      .find((player): player is MockPlayer => Boolean(player));
+    if (lockedIn) return lockedIn;
+  }
+
   const pool = available.slice().sort((a, b) => draftValue(a) - draftValue(b));
   const holes = lineupHoles(roster);
 

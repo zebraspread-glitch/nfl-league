@@ -5,7 +5,7 @@ import { SleeperPlayerAvatar } from "@/components/sleeper-player-avatar";
 import { TEAM_NEEDS, computeAutopick, teamById, type DraftSlot, type MockPlayer } from "@/lib/mock-draft";
 import type { TeamMeta } from "@/lib/types";
 
-const STORAGE_KEY = "mgl-mock-draft-2026-v1";
+const STORAGE_KEY = "mgl-mock-draft-2026-v2";
 const TEAM_STORAGE_KEY = "mgl-mock-draft-team-v1";
 const AUTOPICK_DELAY_MS = 450;
 /** Sentinel "team" for the drafting-as select: autopick is off, the user makes every pick. */
@@ -181,11 +181,12 @@ export function MockDraftBoard({
   function autodraftRest() {
     const usedNames = new Set(taken);
     const next: Picks = { ...picks };
-    for (const slot of draftable) {
+    for (const [i, slot] of draftable.entries()) {
       const k = key(slot.round, slot.slot);
       if (next[k]) continue;
       const { keepers, drafted } = rosterEntriesFor(board, next, slot.teamId);
       const pick = computeAutopick({
+        overallPick: i + 1,
         teamId: slot.teamId,
         available: players.filter((p) => !usedNames.has(p.name)),
         roster: [...keepers, ...drafted],
@@ -216,6 +217,7 @@ export function MockDraftBoard({
     if (searchKey && searchKey === key(onTheClock.round, onTheClock.slot)) return;
     const { keepers, drafted } = rosterEntriesFor(board, picks, onTheClock.teamId);
     const pick = computeAutopick({
+      overallPick: onTheClockIndex + 1,
       teamId: onTheClock.teamId,
       available: players.filter((p) => !taken.has(p.name)),
       roster: [...keepers, ...drafted],
@@ -225,7 +227,7 @@ export function MockDraftBoard({
     if (!pick) return;
     const timeout = setTimeout(() => makePick(onTheClock.round, onTheClock.slot, pick), AUTOPICK_DELAY_MS);
     return () => clearTimeout(timeout);
-  }, [loaded, userTeamId, onTheClock, players, taken, board, picks, draftable, searchKey, makePick]);
+  }, [loaded, userTeamId, onTheClock, onTheClockIndex, players, taken, board, picks, draftable, searchKey, makePick]);
 
   const searchSlot = searchKey ? board.find((s) => key(s.round, s.slot) === searchKey) : null;
   const searchCurrent = searchSlot ? picks[key(searchSlot.round, searchSlot.slot)] : undefined;
