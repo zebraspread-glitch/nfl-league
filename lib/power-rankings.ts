@@ -1,12 +1,15 @@
 import "server-only";
-import raw from "@/data/power-rankings.json";
+import tpRaw from "@/data/power-rankings.json";
+import aiRaw from "@/data/power-rankings-ai.json";
 import { getTeam } from "./teams";
 import type { TeamMeta } from "./types";
 
-// TP's Power Rankings — the only source of truth is `data/power-rankings.json`.
-// That file lives in the repo, so only someone with repo access (TP) can change
-// the order; edit it and redeploy to publish a new ranking. Everyone viewing the
-// site sees whatever order is committed.
+// Two rankings, same shape:
+//  - TP's — the only source of truth is `data/power-rankings.json`. It lives in
+//    the repo, so only someone with repo access (TP) can change the order.
+//  - AI's — `data/power-rankings-ai.json`, a model-generated ranking derived
+//    from the league's 2021-2025 records, titles, scoring and recent trend.
+//    Regenerated on request (ask Claude to re-run it), not on every page load.
 
 export type PowerRankEntry = {
   rank: number;
@@ -21,7 +24,13 @@ export type PowerRankings = {
   entries: PowerRankEntry[];
 };
 
-export function getPowerRankings(): PowerRankings {
+type RawRankings = {
+  updated: string;
+  intro: string;
+  ranking: { teamId: number; note?: string; tier?: string }[];
+};
+
+function build(raw: RawRankings): PowerRankings {
   const entries: PowerRankEntry[] = raw.ranking
     .map((r, i) => {
       const team = getTeam(r.teamId);
@@ -31,4 +40,12 @@ export function getPowerRankings(): PowerRankings {
     .filter((e): e is PowerRankEntry => e !== null);
 
   return { updated: raw.updated, intro: raw.intro, entries };
+}
+
+export function getPowerRankings(): PowerRankings {
+  return build(tpRaw);
+}
+
+export function getAiPowerRankings(): PowerRankings {
+  return build(aiRaw);
 }

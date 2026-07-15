@@ -1,0 +1,18 @@
+{
+  "updated": "2026-07-15",
+  "intro": "Model-generated from 2021-2025 records, championships, scoring (PPG) and recent trend. Regenerated on request.",
+  "ranking": [
+    { "teamId": 2, "tier": "Elite", "note": "Best all-time win% (.643) and the league's top scorer at 129 PPG. Three runner-ups but no title — an elite regular-season machine that keeps falling at the last hurdle. Bounced back to #2 (10-4) in 2025." },
+    { "teamId": 6, "tier": "Elite", "note": "Three championships (2021, 2022, 2024) — the league's true dynasty and highest ceiling. Docked slightly for a down 2025 (#3, 6-8), but the pedigree is unmatched." },
+    { "teamId": 4, "tier": "Elite", "note": "Reigning 2025 champion on a four-year climb (#7 → #5 → #4 → #1). Clear upward momentum and a proven winning roster." },
+    { "teamId": 1, "tier": "Contender", "note": "Posted the league's best regular-season record in 2025 (11-3) and a 2024 runner-up. Only three seasons of data, but every arrow points up." },
+    { "teamId": 8, "tier": "Contender", "note": "A title already in the bank (2023) and consistently around .500. Cooled to #5 (6-8) in 2025, so a notch below the top group." },
+    { "teamId": 3, "tier": "Middle", "note": "Quietly improving — 8-6 in 2024 and a solid 9-5 in 2025 (unlucky to finish #8). The league's lowest PPG (106) caps the upside." },
+    { "teamId": 5, "tier": "Middle", "note": "The definition of average: no season better than #6, none worse than #11. High floor, low ceiling — perennially mid." },
+    { "teamId": 9, "tier": "Fading", "note": "Strong early (#3, #4) but fading fast — #6, #10, #11 in the last three years. Trajectory is the problem." },
+    { "teamId": 11, "tier": "Fading", "note": "Went from contender (#2, #3) to the cellar, crashing to #12 (5-9) in 2025. Steep decline drags the rank down." },
+    { "teamId": 12, "tier": "Bottom", "note": "Lowest PPG in the league (104) and a .411 all-time win%. One #3 finish aside, mostly bottom-third." },
+    { "teamId": 10, "tier": "Bottom", "note": "Three straight losing seasons (#7, #9, #9). Little in the data to suggest a jump." },
+    { "teamId": 7, "tier": "Bottom", "note": "Worst all-time win% in the league (.329). A 2025 uptick to #6 is a green shoot, but it has a long way to climb." }
+  ]
+}
