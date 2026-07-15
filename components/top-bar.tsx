@@ -21,6 +21,8 @@ const TITLES: Record<string, string> = {
   "/trades": "Trades",
   "/transactions": "Transactions",
   "/mock-draft": "Mock Draft",
+  "/playoff-simulator": "Playoff Simulator",
+  "/newspaper": "League Newspaper",
   "/more": "More",
   "/power-rankings": "Power Rankings",
   "/keepers": "Keepers Board",

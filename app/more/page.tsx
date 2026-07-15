@@ -4,6 +4,8 @@ import { Card, PageIntro } from "@/components/ui";
 export const metadata = { title: "More - MGL Fantasy" };
 
 const LINKS = [
+  { href: "/playoff-simulator", label: "Playoff Simulator", desc: "Project the 2026 ladder by picking every remaining game", icon: "SIM" },
+  { href: "/newspaper", label: "League Newspaper", desc: "MGL Gazette headlines, matchup wire and league gossip", icon: "NEWS" },
   { href: "/power-rankings", label: "Power Rankings", desc: "TP's personal ranking of every team", icon: "🏆" },
   { href: "/keepers", label: "Keepers Board", desc: "Every team's kept players for 2026", icon: "🔒" },
   { href: "/mock-draft", label: "Mock Draft", desc: "Simulate the 2026 draft board pick by pick", icon: "MD" },

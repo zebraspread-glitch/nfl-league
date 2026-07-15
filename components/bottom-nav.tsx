@@ -43,6 +43,8 @@ const TABS: Tab[] = [
       p.startsWith("/trades") ||
       p.startsWith("/transactions") ||
       p.startsWith("/playoffs") ||
+      p.startsWith("/playoff-simulator") ||
+      p.startsWith("/newspaper") ||
       p.startsWith("/standings") ||
       p.startsWith("/managers") ||
       p.startsWith("/history") ||
