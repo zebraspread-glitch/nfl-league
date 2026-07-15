@@ -3,43 +3,33 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-type Tab = { href: string; label: string; match: (p: string) => boolean; icon: React.ReactNode };
-
-const I = (d: string) => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    {d.split("|").map((p, i) => (
-      <path key={i} d={p} />
-    ))}
-  </svg>
-);
+type TabIcon = "team" | "matchup" | "ladder" | "players" | "more";
+type Tab = { href: string; label: string; match: (p: string) => boolean; icon: TabIcon };
 
 const TABS: Tab[] = [
   {
     href: "/",
     label: "My Team",
     match: (p) => p === "/",
-    // Jersey / team shirt
-    icon: I("M9 3 4 6l2 4 3-2v11h6V8l3 2 2-4-5-3|M9 3a3 2.5 0 0 0 6 0"),
+    icon: "team",
   },
   {
     href: "/matchups",
     label: "Matchup",
     match: (p) => p.startsWith("/matchups"),
-    // Head-to-head / versus arrows
-    icon: I("M7 4 3 8l4 4|M3 8h13|M17 20l4-4-4-4|M21 16H8"),
+    icon: "matchup",
   },
   {
     href: "/teams",
     label: "Ladder",
     match: (p) => p.startsWith("/teams"),
-    // Ladder: two rails + rungs
-    icon: I("M7 2v20|M17 2v20|M7 7h10|M7 12h10|M7 17h10"),
+    icon: "ladder",
   },
   {
     href: "/players",
     label: "Players",
     match: (p) => p.startsWith("/players"),
-    icon: I("M12 4a3 3 0 1 1 0 6 3 3 0 0 1 0-6Z|M8.5 20 10 12h4l1.5 8|m8 13-2 3.2|m16 13 2 3.2"),
+    icon: "players",
   },
   {
     href: "/more",
@@ -60,14 +50,104 @@ const TABS: Tab[] = [
       p.startsWith("/head-to-head") ||
       p.startsWith("/power-rankings") ||
       p.startsWith("/keepers"),
-    icon: I("M4 6h16|M4 12h16|M4 18h16"),
+    icon: "more",
   },
 ];
+
+function NavIcon({ icon, active }: { icon: TabIcon; active: boolean }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`grid h-7 w-9 place-items-center rounded-full transition-all ${
+        active
+          ? "bg-teal/10 text-teal shadow-[inset_0_0_0_1px_rgba(22,167,198,0.18)]"
+          : "text-text-dim group-hover:bg-section group-hover:text-text-muted"
+      }`}
+    >
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="overflow-visible"
+      >
+        <IconPaths icon={icon} />
+      </svg>
+    </span>
+  );
+}
+
+function IconPaths({ icon }: { icon: TabIcon }) {
+  switch (icon) {
+    case "team":
+      return (
+        <>
+          <path
+            d="M8.8 3.4 4.9 5.1 3.4 8.8l3.2 1.5L8.2 8v12.5h7.6V8l1.6 2.3 3.2-1.5-1.5-3.7-3.9-1.7a3.3 3.3 0 0 1-6.4 0Z"
+            fill="currentColor"
+            fillOpacity="0.12"
+          />
+          <path d="M8.8 3.4 4.9 5.1 3.4 8.8l3.2 1.5L8.2 8v12.5h7.6V8l1.6 2.3 3.2-1.5-1.5-3.7-3.9-1.7" />
+          <path d="M8.8 3.4a3.3 3.3 0 0 0 6.4 0" />
+          <path d="M10 13h4" />
+        </>
+      );
+    case "matchup":
+      return (
+        <>
+          <path d="M7.5 4.5 4 6v5.3c0 2.2 1.3 4.1 3.5 5.1 2.2-1 3.5-2.9 3.5-5.1V6L7.5 4.5Z" fill="currentColor" fillOpacity="0.12" />
+          <path d="m16.5 4.5 3.5 1.5v5.3c0 2.2-1.3 4.1-3.5 5.1-2.2-1-3.5-2.9-3.5-5.1V6l3.5-1.5Z" fill="currentColor" fillOpacity="0.12" />
+          <path d="M7.5 4.5 4 6v5.3c0 2.2 1.3 4.1 3.5 5.1 2.2-1 3.5-2.9 3.5-5.1V6L7.5 4.5Z" />
+          <path d="m16.5 4.5 3.5 1.5v5.3c0 2.2-1.3 4.1-3.5 5.1-2.2-1-3.5-2.9-3.5-5.1V6l3.5-1.5Z" />
+          <path d="m11 19 2-3h-2l2-3" />
+        </>
+      );
+    case "ladder":
+      return (
+        <>
+          <path d="M4.5 19.5h15" />
+          <path d="M6.5 15.5h3v4h-3z" fill="currentColor" fillOpacity="0.12" />
+          <path d="M10.5 10.5h3v9h-3z" fill="currentColor" fillOpacity="0.12" />
+          <path d="M14.5 6.5h3v13h-3z" fill="currentColor" fillOpacity="0.12" />
+          <path d="M6.5 15.5h3v4h-3z" />
+          <path d="M10.5 10.5h3v9h-3z" />
+          <path d="M14.5 6.5h3v13h-3z" />
+          <path d="M7 10.5 11 7l3 2 3.5-5" />
+        </>
+      );
+    case "players":
+      return (
+        <>
+          <path d="M12 5.1a3.1 3.1 0 1 1 0 6.2 3.1 3.1 0 0 1 0-6.2Z" fill="currentColor" fillOpacity="0.12" />
+          <path d="M12 5.1a3.1 3.1 0 1 1 0 6.2 3.1 3.1 0 0 1 0-6.2Z" />
+          <path d="M5.6 19.5c.8-3.2 3-5 6.4-5s5.6 1.8 6.4 5" />
+          <path d="M5.8 8.4a2.2 2.2 0 1 0 0 4.4" />
+          <path d="M18.2 8.4a2.2 2.2 0 1 1 0 4.4" />
+          <path d="M3.4 18.2c.4-1.8 1.5-3 3.2-3.5" />
+          <path d="M20.6 18.2c-.4-1.8-1.5-3-3.2-3.5" />
+        </>
+      );
+    case "more":
+      return (
+        <>
+          <circle cx="6" cy="12" r="1.7" fill="currentColor" stroke="none" />
+          <circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none" />
+          <circle cx="18" cy="12" r="1.7" fill="currentColor" stroke="none" />
+          <path d="M4.5 6.5h15" opacity="0.35" />
+          <path d="M4.5 17.5h15" opacity="0.35" />
+        </>
+      );
+  }
+}
 
 export function BottomNav() {
   const pathname = usePathname();
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-xl border-t border-border bg-card">
+    <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-xl border-t border-border bg-card shadow-[0_-10px_30px_rgba(21,24,29,0.08)]">
       <div className="grid grid-cols-5">
         {TABS.map((t) => {
           const active = t.match(pathname);
@@ -75,11 +155,11 @@ export function BottomNav() {
             <Link
               key={t.href}
               href={t.href}
-              className={`flex flex-col items-center gap-1 py-2.5 text-[11px] font-semibold tracking-wide transition-colors ${
+              className={`group flex min-h-[64px] flex-col items-center justify-center gap-0.5 py-1.5 text-[11px] font-semibold tracking-[0.08em] transition-colors ${
                 active ? "text-teal" : "text-text-dim hover:text-text-muted"
               }`}
             >
-              {t.icon}
+              <NavIcon icon={t.icon} active={active} />
               <span className="font-cond uppercase">{t.label}</span>
             </Link>
           );
