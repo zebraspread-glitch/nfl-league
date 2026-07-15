@@ -18,19 +18,22 @@ const TABS: Tab[] = [
     href: "/",
     label: "My Team",
     match: (p) => p === "/",
-    icon: I("M12 17.3l-5.4 3.3 1.5-6.2L3 10.2l6.3-.5L12 4l2.7 5.7 6.3.5-5.1 4.2 1.5 6.2z"),
+    // Jersey / team shirt
+    icon: I("M9 3 4 6l2 4 3-2v11h6V8l3 2 2-4-5-3|M9 3a3 2.5 0 0 0 6 0"),
   },
   {
     href: "/matchups",
     label: "Matchup",
     match: (p) => p.startsWith("/matchups"),
-    icon: I("M2 12h20|M6 8v8|M18 8v8|M12 6v12"),
+    // Head-to-head / versus arrows
+    icon: I("M7 4 3 8l4 4|M3 8h13|M17 20l4-4-4-4|M21 16H8"),
   },
   {
     href: "/teams",
     label: "Ladder",
     match: (p) => p.startsWith("/teams"),
-    icon: I("M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2|M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8|M23 21v-2a4 4 0 0 0-3-3.87|M16 3.13a4 4 0 0 1 0 7.75"),
+    // Ladder: two rails + rungs
+    icon: I("M7 2v20|M17 2v20|M7 7h10|M7 12h10|M7 17h10"),
   },
   {
     href: "/players",
