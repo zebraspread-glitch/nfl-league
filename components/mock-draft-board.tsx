@@ -318,6 +318,7 @@ function UnderdogPickCard({
   isOnClock,
   isUserSlot,
   isDimmed,
+  compact,
   canEdit,
   onOpen,
 }: {
@@ -327,6 +328,7 @@ function UnderdogPickCard({
   isOnClock: boolean;
   isUserSlot: boolean;
   isDimmed: boolean;
+  compact: boolean;
   canEdit: boolean;
   onOpen: () => void;
 }) {
@@ -335,9 +337,11 @@ function UnderdogPickCard({
   const pickNumber = overallPick(slot.round, slot.slot, columnCount);
   const direction = ">";
   const baseClass =
-    "relative h-20 w-full overflow-hidden rounded-md border text-left shadow-sm transition focus:outline-none focus:ring-2 focus:ring-white/70";
+    "relative h-20 min-w-0 overflow-hidden rounded-md border text-left shadow-sm transition focus:outline-none focus:ring-2 focus:ring-white/70";
   const clockClass = isOnClock ? "ring-2 ring-[#f5d15f] ring-offset-1 ring-offset-[#101010]" : "";
   const focusClass = isDimmed ? "opacity-25" : "opacity-100";
+  const pickedTextPad = compact ? "p-1.5 pr-10 pt-5" : "p-2 pr-12 pt-5";
+  const playerNameClass = compact ? "text-[13px]" : "text-sm";
 
   if (picked) {
     const bg = UNDERDOG_POS_COLOR[picked.pos] ?? "#aeb6c0";
@@ -350,9 +354,11 @@ function UnderdogPickCard({
             Keep
           </div>
         )}
-        <div className="relative z-10 flex h-full flex-col justify-between p-2 pr-12 pt-5 text-[#111418]">
+        <div className={`relative z-10 flex h-full flex-col justify-between ${pickedTextPad} text-[#111418]`}>
           <div className="min-w-0">
-            <div className="truncate font-cond text-sm font-extrabold uppercase leading-none">{compactPlayerName(picked.name)}</div>
+            <div className={`truncate font-cond font-extrabold uppercase leading-none ${playerNameClass}`}>
+              {compactPlayerName(picked.name)}
+            </div>
             <div className="mt-1 truncate text-[10px] font-bold uppercase text-black/55">
               {picked.pos} - {picked.proTeam}
               {picked.bye ? ` (${picked.bye})` : ""}
@@ -436,6 +442,7 @@ function UnderdogDraftBoard({
   userTeamId,
   focusedTeamId,
   isManual,
+  compact,
   onTheClockKey,
   openSearch,
 }: {
@@ -446,11 +453,13 @@ function UnderdogDraftBoard({
   userTeamId: number | null;
   focusedTeamId: number | null;
   isManual: boolean;
+  compact: boolean;
   onTheClockKey: string | null;
   openSearch: (slot: DraftSlot) => void;
 }) {
   const columnCount = Math.max(...board.map((slot) => slot.slot));
-  const gridStyle = { gridTemplateColumns: `repeat(${columnCount}, minmax(8.75rem, 8.75rem))` };
+  const gridStyle = { gridTemplateColumns: compact ? `repeat(${columnCount}, minmax(0, 1fr))` : `repeat(${columnCount}, 8.75rem)` };
+  const gridClass = compact ? "grid w-full min-w-0 gap-1" : "grid min-w-max gap-1.5";
   const headerTeams = teams.slice(0, columnCount).reverse();
   const rows = rounds.map(([round, slots]) => {
     const cells: (DraftSlot | undefined)[] = Array(columnCount);
@@ -460,7 +469,7 @@ function UnderdogDraftBoard({
 
   return (
     <div className="overflow-x-auto rounded-xl bg-[#101010] p-1.5 shadow-sm">
-      <div className="grid min-w-max gap-1.5" style={gridStyle}>
+      <div className={gridClass} style={gridStyle}>
         {headerTeams.map((team) => {
           const counts = positionCountsFor(board, picks, team.id);
           const isFocusedHeader = focusedTeamId == null || team.id === focusedTeamId;
@@ -510,6 +519,7 @@ function UnderdogDraftBoard({
                 isOnClock={isOnClock}
                 isUserSlot={isUserSlot}
                 isDimmed={isDimmed}
+                compact={compact}
                 canEdit={canEdit}
                 onOpen={() => openSearch(slot)}
               />
@@ -925,6 +935,7 @@ export function MockDraftBoard({
                 userTeamId={userTeamId}
                 focusedTeamId={focusTeamId}
                 isManual={isManual}
+                compact={showUnderdogRoster}
                 onTheClockKey={onTheClockKey}
                 openSearch={openSearch}
               />
@@ -938,7 +949,7 @@ export function MockDraftBoard({
                 team={lineupTeam}
                 selectedTeamId={lineupTeamId}
                 isComplete={isComplete}
-                className="w-full xl:sticky xl:top-24 xl:max-h-[calc(100dvh-7.5rem)] xl:w-72 xl:shrink-0"
+                className="w-full xl:sticky xl:top-24 xl:max-h-[calc(100dvh-7.5rem)] xl:w-64 xl:shrink-0 2xl:w-72"
                 onTeamChange={setViewTeamId}
               />
             )}
