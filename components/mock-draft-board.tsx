@@ -17,12 +17,39 @@ const MANUAL_TEAM_ID = 0;
 type Picks = Record<string, MockPlayer>;
 type DraftViewMode = "classic" | "underdog";
 type UnderdogPickerPlacement = "left" | "above" | "below" | "hidden";
+type UnderdogHeaderPosition = "QB" | "RB" | "WR" | "TE";
 type LineupSlot = "QB" | "RB" | "WR" | "TE" | "RB/WR" | "K" | "DEF" | "BN";
 
 interface LineupRow {
   label: LineupSlot;
   player?: MockPlayer;
   draftSlot?: DraftSlot;
+}
+
+type FilledLineupRow = LineupRow & Required<Pick<LineupRow, "player" | "draftSlot">>;
+
+type DraftAnalysisPick = FilledLineupRow & {
+  value: number;
+};
+
+interface DraftAnalysisTeam {
+  team: TeamMeta;
+  projected: number;
+  startersProjected: number;
+  rostered: number;
+  avgAdp: number | null;
+  valueScore: number;
+  balanceScore: number;
+  totalScore: number;
+  positionCounts: Record<UnderdogHeaderPosition, number>;
+  topPlayer?: DraftAnalysisPick;
+  bestValue?: DraftAnalysisPick;
+}
+
+interface DraftAnalysisHighlight {
+  title: string;
+  value: string;
+  detail: string;
 }
 
 function key(round: number, slot: number) {
@@ -64,8 +91,8 @@ const UNDERDOG_POS_COLOR: Record<string, string> = {
   DEF: "#8792a2",
 };
 
-const UNDERDOG_HEADER_POSITIONS = ["QB", "RB", "WR", "TE"] as const;
-type UnderdogPickerPosition = "" | (typeof UNDERDOG_HEADER_POSITIONS)[number];
+const UNDERDOG_HEADER_POSITIONS = ["QB", "RB", "WR", "TE"] as const satisfies readonly UnderdogHeaderPosition[];
+type UnderdogPickerPosition = "" | UnderdogHeaderPosition;
 
 function canFillLineupSlot(label: LineupSlot, player: MockPlayer) {
   if (label === "BN") return true;
@@ -117,11 +144,15 @@ function positionCountsFor(board: DraftSlot[], picks: Picks, teamId: number) {
   const roster = [...keepers, ...drafted];
   return Object.fromEntries(
     UNDERDOG_HEADER_POSITIONS.map((pos) => [pos, roster.filter((player) => player.pos === pos).length])
-  ) as Record<(typeof UNDERDOG_HEADER_POSITIONS)[number], number>;
+  ) as Record<UnderdogHeaderPosition, number>;
 }
 
 function displayLineupLabel(label: LineupSlot) {
   return label === "RB/WR" ? "FLEX" : label;
+}
+
+function positionSummary(counts: Record<UnderdogHeaderPosition, number>) {
+  return UNDERDOG_HEADER_POSITIONS.map((pos) => `${pos} ${counts[pos]}`).join(" / ");
 }
 
 function firstPickPosition(board: DraftSlot[], teamId: number, columnCount: number) {
@@ -156,10 +187,11 @@ function UnderdogRosterPanel({
   const counts = team
     ? positionCountsFor(board, picks, team.id)
     : (Object.fromEntries(UNDERDOG_HEADER_POSITIONS.map((pos) => [pos, 0])) as Record<
-        (typeof UNDERDOG_HEADER_POSITIONS)[number],
+        UnderdogHeaderPosition,
         number
       >);
   const rostered = rows.filter((row) => row.player).length;
+  const projectedTotal = rows.reduce((sum, row) => sum + (row.player?.projected ?? 0), 0);
   const sections = rows.reduce<{ label: string; rows: LineupRow[] }[]>((acc, row) => {
     const label = displayLineupLabel(row.label);
     const current = acc[acc.length - 1];
@@ -196,8 +228,8 @@ function UnderdogRosterPanel({
             <div className="text-[11px] font-semibold text-white/70">Pick position</div>
           </div>
           <div>
-            <div className="font-cond text-lg font-extrabold">{rostered}</div>
-            <div className="text-[11px] font-semibold text-white/70">{isComplete ? "Rostered" : "Players"}</div>
+            <div className="font-cond text-lg font-extrabold">{projectedTotal ? projectedTotal.toFixed(1) : rostered}</div>
+            <div className="text-[11px] font-semibold text-white/70">{projectedTotal ? "Projected" : isComplete ? "Rostered" : "Players"}</div>
           </div>
         </div>
         <div className="mx-auto mt-2 grid h-1.5 max-w-44 grid-cols-4 overflow-hidden rounded-full bg-[#242424]">
@@ -357,14 +389,14 @@ function UnderdogPlayerPickerPanel({
       <div className="grid grid-cols-[1fr_4.3rem_4.3rem_1.4rem] gap-2 border-b border-[#303030] px-3 py-2 text-right font-cond text-[13px] font-extrabold text-white/80">
         <span />
         <span>ADP</span>
-        <span>Rank</span>
+        <span>Proj</span>
         <span />
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         {players.slice(0, 80).map((player) => {
           const color = UNDERDOG_POS_COLOR[player.pos] ?? "#8f98a3";
-          const positionRank = positionRanks.get(player.name);
+          const positionRank = player.underdogPositionRank ?? `${player.pos}${positionRanks.get(player.name) ?? ""}`;
 
           return (
             <button
@@ -384,8 +416,7 @@ function UnderdogPlayerPickerPanel({
                       className="shrink-0 rounded px-1 py-0.5 font-cond text-[10px] font-extrabold uppercase leading-none text-white"
                       style={{ background: color }}
                     >
-                      {player.pos}
-                      {positionRank ?? ""}
+                      {positionRank}
                     </span>
                     <span className="truncate">
                       {player.proTeam}
@@ -395,7 +426,7 @@ function UnderdogPlayerPickerPanel({
                 </div>
               </div>
               <div className="text-right font-cond text-sm font-extrabold text-white/85">{formatDraftNumber(player.adp ?? player.rank)}</div>
-              <div className="text-right font-cond text-sm font-extrabold text-white/85">{formatDraftNumber(player.rank ?? draftValue(player))}</div>
+              <div className="text-right font-cond text-sm font-extrabold text-white/85">{formatDraftNumber(player.projected)}</div>
               <div className="text-center font-cond text-lg font-extrabold text-white/65">v</div>
             </button>
           );
@@ -673,6 +704,124 @@ function UnderdogDraftBoard({
   );
 }
 
+function DraftCompletePrompt({ onViewAnalysis, onDismiss }: { onViewAnalysis: () => void; onDismiss: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/55 px-4">
+      <div className="w-full max-w-md rounded-xl border border-white/10 bg-[#111] p-5 text-white shadow-2xl">
+        <div className="font-cond text-xl font-extrabold uppercase">Draft complete</div>
+        <p className="mt-2 text-sm font-medium text-white/70">
+          Your board is filled. Open the draft analysis for team rankings, best picks, projected totals, and roster balance.
+        </p>
+        <div className="mt-4 flex flex-wrap justify-end gap-2">
+          <button
+            type="button"
+            onClick={onDismiss}
+            className="rounded-md border border-white/15 px-3 py-2 font-cond text-xs font-bold uppercase text-white/65 hover:bg-white/10 hover:text-white"
+          >
+            Not now
+          </button>
+          <button
+            type="button"
+            onClick={onViewAnalysis}
+            className="rounded-md bg-teal px-3 py-2 font-cond text-xs font-bold uppercase text-white hover:brightness-110"
+          >
+            View draft analysis
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DraftAnalysisModal({
+  rankings,
+  highlights,
+  onClose,
+}: {
+  rankings: DraftAnalysisTeam[];
+  highlights: DraftAnalysisHighlight[];
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/65 px-3 py-5">
+      <div className="flex max-h-[92dvh] w-full max-w-6xl flex-col overflow-hidden rounded-xl border border-white/10 bg-[#111] text-white shadow-2xl">
+        <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+          <div className="min-w-0">
+            <div className="font-cond text-xl font-extrabold uppercase leading-none">Draft analysis</div>
+            <div className="mt-1 text-xs font-semibold text-white/55">12 team rankings, projected totals, value picks, and roster builds</div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="shrink-0 rounded-md border border-white/15 px-3 py-1.5 font-cond text-xs font-bold uppercase text-white/65 hover:bg-white/10 hover:text-white"
+          >
+            Close
+          </button>
+        </div>
+
+        <div className="min-h-0 overflow-y-auto p-4">
+          <div className="grid gap-2 md:grid-cols-4">
+            {highlights.map((item) => (
+              <div key={item.title} className="rounded-lg border border-white/10 bg-white/[0.04] p-3">
+                <div className="font-cond text-[11px] font-extrabold uppercase text-white/45">{item.title}</div>
+                <div className="mt-1 truncate font-cond text-lg font-extrabold text-white">{item.value}</div>
+                <div className="mt-1 text-xs font-semibold leading-snug text-white/60">{item.detail}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-4 overflow-x-auto rounded-lg border border-white/10">
+            <div className="min-w-[56rem]">
+              <div className="grid grid-cols-[3rem_minmax(12rem,1fr)_5rem_5.5rem_5.5rem_7.5rem_minmax(10rem,1fr)] gap-3 border-b border-white/10 bg-white/[0.05] px-3 py-2 font-cond text-[11px] font-extrabold uppercase text-white/55">
+                <span>Rank</span>
+                <span>Team</span>
+                <span className="text-right">Score</span>
+                <span className="text-right">Proj</span>
+                <span className="text-right">Starters</span>
+                <span>Build</span>
+                <span>Best Pick</span>
+              </div>
+              {rankings.map((entry, index) => (
+                <div
+                  key={entry.team.id}
+                  className="grid grid-cols-[3rem_minmax(12rem,1fr)_5rem_5.5rem_5.5rem_7.5rem_minmax(10rem,1fr)] items-center gap-3 border-b border-white/10 px-3 py-2 last:border-b-0"
+                >
+                  <div className="font-cond text-lg font-extrabold text-white/80">#{index + 1}</div>
+                  <div className="flex min-w-0 items-center gap-2">
+                    <TeamAvatar team={entry.team} size="sm" />
+                    <div className="min-w-0">
+                      <div className="truncate font-cond text-sm font-extrabold uppercase text-white">{entry.team.name}</div>
+                      <div className="truncate text-[11px] font-semibold text-white/45">
+                        Avg ADP {entry.avgAdp == null ? "-" : formatDraftNumber(entry.avgAdp)}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right font-cond text-base font-extrabold">{formatDraftNumber(entry.totalScore)}</div>
+                  <div className="text-right font-cond text-sm font-extrabold text-white/80">{formatDraftNumber(entry.projected)}</div>
+                  <div className="text-right font-cond text-sm font-extrabold text-white/80">{formatDraftNumber(entry.startersProjected)}</div>
+                  <div className="truncate text-xs font-semibold text-white/65">{positionSummary(entry.positionCounts)}</div>
+                  <div className="min-w-0">
+                    {entry.bestValue ? (
+                      <>
+                        <div className="truncate text-sm font-semibold text-white">{entry.bestValue.player.name}</div>
+                        <div className="text-[11px] font-semibold text-white/50">
+                          {entry.bestValue.draftSlot.round}.{entry.bestValue.draftSlot.slot}, {formatDraftNumber(entry.bestValue.value)} past ADP
+                        </div>
+                      </>
+                    ) : (
+                      <span className="text-xs font-semibold text-white/45">No ADP value</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function MockDraftBoard({
   board,
   players,
@@ -690,6 +839,8 @@ export function MockDraftBoard({
   const [showUnderdogRoster, setShowUnderdogRoster] = useState(true);
   const [underdogPickerPlacement, setUnderdogPickerPlacement] = useState<UnderdogPickerPlacement>("left");
   const [underdogPickerPosition, setUnderdogPickerPosition] = useState<UnderdogPickerPosition>("");
+  const [showDraftAnalysis, setShowDraftAnalysis] = useState(false);
+  const [analysisPromptDismissed, setAnalysisPromptDismissed] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [searchKey, setSearchKey] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -746,10 +897,18 @@ export function MockDraftBoard({
   }, [board, picks]);
 
   const draftable = useMemo(() => board.filter((s) => s.round <= 11 && !s.locked), [board]);
+  const draftableIndexByKey = useMemo(
+    () => new Map(draftable.map((slot, index) => [key(slot.round, slot.slot), index])),
+    [draftable]
+  );
   const onTheClockIndex = useMemo(() => draftable.findIndex((s) => !picks[key(s.round, s.slot)]), [draftable, picks]);
   const onTheClock = onTheClockIndex === -1 ? null : draftable[onTheClockIndex];
   const onTheClockKey = onTheClock ? key(onTheClock.round, onTheClock.slot) : null;
   const picksAway = onTheClockIndex === -1 ? 0 : draftable.length - onTheClockIndex;
+  const searchSlot = useMemo(() => (searchKey ? board.find((s) => key(s.round, s.slot) === searchKey) ?? null : null), [board, searchKey]);
+  const searchCurrent = searchSlot ? picks[key(searchSlot.round, searchSlot.slot)] : undefined;
+  const pickerSlot = searchSlot ?? onTheClock;
+  const pickerCurrent = pickerSlot ? picks[key(pickerSlot.round, pickerSlot.slot)] : undefined;
 
   const rounds = useMemo(() => {
     const map = new Map<number, DraftSlot[]>();
@@ -764,7 +923,22 @@ export function MockDraftBoard({
   const makePick = useCallback(
     (round: number, slot: number, player: MockPlayer) => {
       const k = key(round, slot);
-      setPicks((prev) => ({ ...prev, [k]: player }));
+      const targetIndex = draftableIndexByKey.get(k);
+      if (targetIndex == null || targetIndex < draftable.length - 1) {
+        setShowDraftAnalysis(false);
+        setAnalysisPromptDismissed(false);
+      }
+      setPicks((prev) => {
+        if (targetIndex == null) return { ...prev, [k]: player };
+
+        const next: Picks = {};
+        for (const [pickKey, picked] of Object.entries(prev)) {
+          const pickIndex = draftableIndexByKey.get(pickKey);
+          if (pickIndex != null && pickIndex < targetIndex) next[pickKey] = picked;
+        }
+        next[k] = player;
+        return next;
+      });
       // Only close the search panel if it was open for this slot — an autopick
       // landing elsewhere shouldn't cancel a search the user is browsing.
       if (searchKey === k) {
@@ -772,14 +946,26 @@ export function MockDraftBoard({
         setQuery("");
       }
     },
-    [searchKey]
+    [draftable.length, draftableIndexByKey, searchKey]
   );
 
   function clearPick(round: number, slot: number) {
     const k = key(round, slot);
+    const targetIndex = draftableIndexByKey.get(k);
+    setShowDraftAnalysis(false);
+    setAnalysisPromptDismissed(false);
     setPicks((prev) => {
+      if (targetIndex == null) {
+        const next = { ...prev };
+        delete next[k];
+        return next;
+      }
+
       const next = { ...prev };
-      delete next[k];
+      for (const pickKey of Object.keys(next)) {
+        const pickIndex = draftableIndexByKey.get(pickKey);
+        if (pickIndex == null || pickIndex >= targetIndex) delete next[pickKey];
+      }
       return next;
     });
     if (searchKey === k) {
@@ -790,6 +976,8 @@ export function MockDraftBoard({
 
   function resetAll() {
     setPicks({});
+    setShowDraftAnalysis(false);
+    setAnalysisPromptDismissed(false);
     localStorage.removeItem(STORAGE_KEY);
   }
 
@@ -808,6 +996,8 @@ export function MockDraftBoard({
   function autodraftRest() {
     const usedNames = new Set(taken);
     const next: Picks = { ...picks };
+    setShowDraftAnalysis(false);
+    setAnalysisPromptDismissed(false);
     for (const [i, slot] of draftable.entries()) {
       const k = key(slot.round, slot.slot);
       if (next[k]) continue;
@@ -827,12 +1017,36 @@ export function MockDraftBoard({
     setPicks(next);
   }
 
+  const availableForSlot = useCallback(
+    (slot: DraftSlot | null) => {
+      const blocked = new Set<string>();
+      for (const boardSlot of board) if (boardSlot.locked) blocked.add(boardSlot.locked.name);
+
+      const targetIndex = slot ? draftableIndexByKey.get(key(slot.round, slot.slot)) : undefined;
+      if (targetIndex != null) {
+        for (const draftSlot of draftable) {
+          const pickKey = key(draftSlot.round, draftSlot.slot);
+          const pickIndex = draftableIndexByKey.get(pickKey);
+          if (pickIndex == null || pickIndex >= targetIndex) continue;
+
+          const picked = picks[pickKey];
+          if (picked) blocked.add(picked.name);
+        }
+      } else {
+        for (const picked of Object.values(picks)) blocked.add(picked.name);
+      }
+
+      return players.filter((player) => !blocked.has(player.name));
+    },
+    [board, draftable, draftableIndexByKey, picks, players]
+  );
+
   const available = useMemo(
     () =>
-      players.filter((p) => !taken.has(p.name)).filter((p) =>
+      availableForSlot(pickerSlot).filter((p) =>
         query ? p.name.toLowerCase().includes(query.toLowerCase()) || p.pos.toLowerCase() === query.toLowerCase() : true
       ),
-    [players, taken, query]
+    [availableForSlot, pickerSlot, query]
   );
   const underdogAvailable = useMemo(
     () => available.filter((player) => (underdogPickerPosition ? player.pos === underdogPickerPosition : true)),
@@ -850,7 +1064,7 @@ export function MockDraftBoard({
     const pick = computeAutopick({
       overallPick: onTheClockIndex + 1,
       teamId: onTheClock.teamId,
-      available: players.filter((p) => !taken.has(p.name)),
+      available: availableForSlot(onTheClock),
       roster: [...keepers, ...drafted],
       drafted,
       remainingPicks: draftable.filter((s) => s.teamId === onTheClock.teamId && !picks[key(s.round, s.slot)]).length,
@@ -858,10 +1072,8 @@ export function MockDraftBoard({
     if (!pick) return;
     const timeout = setTimeout(() => makePick(onTheClock.round, onTheClock.slot, pick), AUTOPICK_DELAY_MS);
     return () => clearTimeout(timeout);
-  }, [loaded, userTeamId, onTheClock, onTheClockIndex, players, taken, board, picks, draftable, searchKey, makePick]);
+  }, [loaded, userTeamId, onTheClock, onTheClockIndex, availableForSlot, board, picks, draftable, searchKey, makePick]);
 
-  const searchSlot = searchKey ? board.find((s) => key(s.round, s.slot) === searchKey) : null;
-  const searchCurrent = searchSlot ? picks[key(searchSlot.round, searchSlot.slot)] : undefined;
   const isManual = userTeamId === MANUAL_TEAM_ID;
   const isUsersClock = !!onTheClock && (isManual || onTheClock.teamId === userTeamId);
   const isComplete = !onTheClock;
@@ -904,9 +1116,112 @@ export function MockDraftBoard({
   const lineupTeamId = viewTeamId ?? (isManual ? teams[0]?.id ?? null : userTeamId ?? teams[0]?.id ?? null);
   const lineupRows = lineupTeamId != null ? lineupFor(lineupTeamId) : [];
   const lineupTeam = teams.find((team) => team.id === lineupTeamId);
-  const pickerSlot = searchSlot ?? onTheClock;
-  const pickerCurrent = pickerSlot ? picks[key(pickerSlot.round, pickerSlot.slot)] : undefined;
   const showUnderdogPicker = viewMode === "underdog" && underdogPickerPlacement !== "hidden";
+  const draftAnalysis = useMemo(() => {
+    const columnCount = Math.max(...board.map((slot) => slot.slot), 1);
+
+    return teams
+      .map((team) => {
+        const rows = lineupFor(team.id);
+        const filledRows = rows.filter((row): row is FilledLineupRow => Boolean(row.player && row.draftSlot));
+        const starterRows = rows
+          .slice(0, STARTING_LINEUP.length)
+          .filter((row): row is FilledLineupRow => Boolean(row.player && row.draftSlot));
+        const projected = filledRows.reduce((sum, row) => sum + (row.player.projected ?? 0), 0);
+        const startersProjected = starterRows.reduce((sum, row) => sum + (row.player.projected ?? 0), 0);
+        const adpValues = filledRows
+          .map((row) => row.player.adp ?? row.player.rank)
+          .filter((value): value is number => typeof value === "number");
+        const avgAdp = adpValues.length ? adpValues.reduce((sum, value) => sum + value, 0) / adpValues.length : null;
+        const valuePicks = filledRows
+          .filter((row) => !row.draftSlot.locked && row.draftSlot.round <= 11)
+          .map((row) => {
+            const expectedPick = row.player.adp ?? row.player.rank;
+            if (typeof expectedPick !== "number") return null;
+
+            return {
+              ...row,
+              value: overallPick(row.draftSlot.round, row.draftSlot.slot, columnCount) - expectedPick,
+            };
+          })
+          .filter((row): row is DraftAnalysisPick => row != null);
+        const bestValue = valuePicks
+          .filter((row) => row.value > 0)
+          .sort((a, b) => b.value - a.value || draftValue(a.player) - draftValue(b.player))[0];
+        const topPlayerRow = filledRows
+          .slice()
+          .sort((a, b) => (b.player.projected ?? 0) - (a.player.projected ?? 0) || draftValue(a.player) - draftValue(b.player))[0];
+        const topPlayer = topPlayerRow ? { ...topPlayerRow, value: topPlayerRow.player.projected ?? 0 } : undefined;
+        const positionCounts = positionCountsFor(board, picks, team.id);
+        const balanceScore =
+          Math.min(positionCounts.QB, 1) * 14 +
+          Math.min(positionCounts.RB, 4) * 8 +
+          Math.min(positionCounts.WR, 5) * 8 +
+          Math.min(positionCounts.TE, 1) * 14;
+        const valueScore = valuePicks.reduce((sum, row) => sum + Math.max(-10, Math.min(20, row.value)), 0);
+        const totalScore = startersProjected + projected * 0.18 + valueScore * 1.6 + balanceScore;
+
+        return {
+          team,
+          projected,
+          startersProjected,
+          rostered: filledRows.length,
+          avgAdp,
+          valueScore,
+          balanceScore,
+          totalScore,
+          positionCounts,
+          topPlayer,
+          bestValue,
+        };
+      })
+      .sort((a, b) => b.totalScore - a.totalScore || b.projected - a.projected || a.team.name.localeCompare(b.team.name));
+  }, [board, picks, teams, lineupFor]);
+  const draftAnalysisHighlights = useMemo(() => {
+    const bestTeam = draftAnalysis[0];
+    if (!bestTeam) return [];
+
+    const bestValueTeam = draftAnalysis
+      .filter((entry) => entry.bestValue)
+      .sort((a, b) => (b.bestValue?.value ?? -Infinity) - (a.bestValue?.value ?? -Infinity))[0];
+    const balancedTeam = draftAnalysis.slice().sort((a, b) => b.balanceScore - a.balanceScore || b.projected - a.projected)[0];
+    const topPlayerTeam = draftAnalysis
+      .filter((entry) => entry.topPlayer)
+      .sort((a, b) => (b.topPlayer?.value ?? -Infinity) - (a.topPlayer?.value ?? -Infinity))[0];
+
+    const highlights: DraftAnalysisHighlight[] = [
+      {
+        title: "Top roster",
+        value: bestTeam.team.name,
+        detail: `${formatDraftNumber(bestTeam.projected)} projected points with a ${formatDraftNumber(bestTeam.totalScore)} overall score.`,
+      },
+      {
+        title: "Best build",
+        value: balancedTeam.team.name,
+        detail: positionSummary(balancedTeam.positionCounts),
+      },
+      {
+        title: "Top scorer",
+        value: topPlayerTeam?.topPlayer?.player.name ?? "-",
+        detail: topPlayerTeam?.topPlayer
+          ? `${topPlayerTeam.team.name}, ${formatDraftNumber(topPlayerTeam.topPlayer.player.projected)} projected points.`
+          : "No projected points available.",
+      },
+      {
+        title: "Best value",
+        value: bestValueTeam?.bestValue?.player.name ?? "-",
+        detail: bestValueTeam?.bestValue
+          ? `${bestValueTeam.team.name} got ${formatDraftNumber(bestValueTeam.bestValue.value)} picks of ADP value at ${bestValueTeam.bestValue.draftSlot.round}.${bestValueTeam.bestValue.draftSlot.slot}.`
+          : "No positive ADP values found.",
+      },
+    ];
+
+    return highlights;
+  }, [draftAnalysis]);
+  const closeDraftAnalysis = useCallback(() => {
+    setShowDraftAnalysis(false);
+    setAnalysisPromptDismissed(true);
+  }, []);
   const renderUnderdogPickerPanel = (className = "") =>
     showUnderdogPicker ? (
       <UnderdogPlayerPickerPanel
@@ -993,12 +1308,23 @@ export function MockDraftBoard({
             "Mock draft complete!"
           )}
         </span>
-        <button
-          onClick={resetAll}
-          className="shrink-0 rounded-lg bg-white/15 px-2.5 py-1 font-cond text-xs font-semibold hover:bg-white/25"
-        >
-          Reset
-        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          {isComplete && (
+            <button
+              type="button"
+              onClick={() => setShowDraftAnalysis(true)}
+              className="rounded-lg bg-white px-2.5 py-1 font-cond text-xs font-semibold text-teal hover:bg-white/90"
+            >
+              Analysis
+            </button>
+          )}
+          <button
+            onClick={resetAll}
+            className="rounded-lg bg-white/15 px-2.5 py-1 font-cond text-xs font-semibold hover:bg-white/25"
+          >
+            Reset
+          </button>
+        </div>
       </div>
 
       {viewMode !== "underdog" && (
@@ -1237,6 +1563,17 @@ export function MockDraftBoard({
             </div>
           ))}
         </div>
+      )}
+      {loaded && isComplete && !analysisPromptDismissed && !showDraftAnalysis && (
+        <DraftCompletePrompt
+          onViewAnalysis={() => {
+            setShowDraftAnalysis(true);
+          }}
+          onDismiss={() => setAnalysisPromptDismissed(true)}
+        />
+      )}
+      {loaded && showDraftAnalysis && (
+        <DraftAnalysisModal rankings={draftAnalysis} highlights={draftAnalysisHighlights} onClose={closeDraftAnalysis} />
       )}
     </div>
   );

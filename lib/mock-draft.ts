@@ -1,4 +1,5 @@
 import { TEAMS } from "./teams";
+import { UNDERDOG_BIG_BOARD } from "./underdog-big-board";
 import type { TeamId } from "./types";
 
 // Static data transcribed from the live 2026 Sleeper draft board: the snake
@@ -21,6 +22,10 @@ export interface MockPlayer {
    *  differs sharply from FantasyPros (e.g. Jeremiyah Love is the consensus 1.01 here).
    *  Takes precedence over `rank` everywhere draft order matters. */
   adp?: number;
+  /** Underdog projected fantasy points from the 2026 ADP big board. */
+  projected?: number;
+  /** Underdog positional ADP rank, e.g. RB12 or WR38. */
+  underdogPositionRank?: string;
 }
 
 export interface DraftSlot {
@@ -163,7 +168,7 @@ export function buildDraftBoard(): DraftSlot[] {
   KEEPER_ROUNDS.forEach((players, ri) => {
     const round = 12 + ri;
     KEEPER_TEAM_ORDER.forEach((teamId, si) => {
-      board.push({ round, slot: si + 1, teamId, locked: players[si] });
+      board.push({ round, slot: si + 1, teamId, locked: withUnderdogData(players[si]) });
     });
   });
 
@@ -180,6 +185,28 @@ export function normalizeName(name: string): string {
     .replace(/[.'’]/g, "")
     .replace(/\s+(jr|sr|ii|iii|iv)\.?$/, "")
     .trim();
+}
+
+const UNDERDOG_NAME_ALIASES: Record<string, string> = {
+  "kenneth gainwell": "kenny gainwell",
+};
+
+const UNDERDOG_BIG_BOARD_BY_NAME = new Map(UNDERDOG_BIG_BOARD.map((entry) => [normalizeName(entry.name), entry]));
+
+function underdogEntryFor(player: MockPlayer) {
+  const nameKey = normalizeName(player.name);
+  return UNDERDOG_BIG_BOARD_BY_NAME.get(nameKey) ?? UNDERDOG_BIG_BOARD_BY_NAME.get(UNDERDOG_NAME_ALIASES[nameKey]);
+}
+
+function withUnderdogData<T extends MockPlayer>(player: T): T {
+  const entry = underdogEntryFor(player);
+  if (!entry) return player;
+  return {
+    ...player,
+    adp: entry.adp ?? player.adp,
+    projected: entry.projected,
+    underdogPositionRank: entry.positionRank,
+  };
 }
 
 /** Attaches a Sleeper player id (for the real headshot CDN) by matching name → Sleeper's
@@ -396,7 +423,7 @@ const RAW_PLAYERS: MockPlayer[] = [
   { name: "San Francisco 49ers", pos: "DEF", proTeam: "SF", bye: 8, rank: 286 },
 ];
 
-export const AVAILABLE_PLAYERS: MockPlayer[] = RAW_PLAYERS.slice().sort(
+export const AVAILABLE_PLAYERS: MockPlayer[] = RAW_PLAYERS.map(withUnderdogData).sort(
   (a, b) => draftValue(a) - draftValue(b)
 );
 
