@@ -39,9 +39,10 @@ export function MatchupCard({
   return (
     <Card>
       <Link href={`/matchups/${matchup.id}`} className="block" suppressHydrationWarning>
+        {title ? (
         <div className="flex items-center justify-between bg-section px-4 py-2">
           <span className="font-cond text-sm font-semibold uppercase tracking-wide text-text">
-            {title ?? `Week ${matchup.week}`}
+            {title}
           </span>
           {status === "live" ? (
             <Pill tone="live">
@@ -53,6 +54,7 @@ export function MatchupCard({
             <span className="font-cond text-xs uppercase text-text-muted">Upcoming</span>
           )}
         </div>
+        ) : null}
 
         <div className="px-4 py-4">
           <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2">

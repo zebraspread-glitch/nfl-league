@@ -39,11 +39,11 @@ export default async function MatchupsPage({
 
       <div className="space-y-3">
         {matchups.length ? (
-          matchups.map((m, i) => (
+          matchups.map((m) => (
             <MatchupCard
               key={m.id}
               matchup={m}
-              title={m.id === PRIMETIME_MATCHUP_ID ? "Primetime" : `Matchup ${i + 1}`}
+              title={m.id === PRIMETIME_MATCHUP_ID ? "Primetime" : undefined}
             />
           ))
         ) : (
