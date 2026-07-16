@@ -271,7 +271,7 @@ function formatDraftNumber(value?: number) {
 }
 
 function UnderdogPlayerPickerPanel({
-  searchSlot,
+  targetSlot,
   current,
   players,
   query,
@@ -284,7 +284,7 @@ function UnderdogPlayerPickerPanel({
   onClear,
   onCancel,
 }: {
-  searchSlot: DraftSlot;
+  targetSlot: DraftSlot | null;
   current?: MockPlayer;
   players: MockPlayer[];
   query: string;
@@ -297,15 +297,22 @@ function UnderdogPlayerPickerPanel({
   onClear: () => void;
   onCancel: () => void;
 }) {
-  const team = teamById(searchSlot.teamId);
+  const team = targetSlot ? teamById(targetSlot.teamId) : undefined;
+  const canPick = Boolean(targetSlot);
 
   return (
     <div className={`flex min-h-0 flex-col overflow-hidden border border-[#444] bg-[#191919] text-white shadow-sm ${className}`}>
       <div className="relative border-b border-[#2c2c2c] px-3 py-2 text-center">
         <div className="font-cond text-base font-extrabold">Players</div>
         <div className="mt-0.5 truncate text-[11px] font-semibold text-white/55">
-          Pick {searchSlot.round}.{searchSlot.slot} - {team?.name ?? "Team"}
-          {current ? ` - ${current.name}` : ""}
+          {targetSlot ? (
+            <>
+              Pick {targetSlot.round}.{targetSlot.slot} - {team?.name ?? "Team"}
+              {current ? ` - ${current.name}` : ""}
+            </>
+          ) : (
+            "Select a pick"
+          )}
         </div>
         <div className="absolute right-2 top-2 flex items-center gap-2">
           {current && (
@@ -363,8 +370,9 @@ function UnderdogPlayerPickerPanel({
             <button
               key={player.name}
               type="button"
-              onClick={() => onPick(player)}
-              className="grid min-h-[3.25rem] w-full grid-cols-[1fr_4.3rem_4.3rem_1.4rem] items-center gap-2 border-b border-[#303030] bg-[#1b1b1b] px-3 py-2 text-left last:border-b-0 hover:bg-[#242424]"
+              onClick={() => canPick && onPick(player)}
+              disabled={!canPick}
+              className="grid min-h-[3.25rem] w-full grid-cols-[1fr_4.3rem_4.3rem_1.4rem] items-center gap-2 border-b border-[#303030] bg-[#1b1b1b] px-3 py-2 text-left last:border-b-0 hover:bg-[#242424] disabled:cursor-default disabled:opacity-60"
               style={{ boxShadow: `inset 3px 0 0 ${color}` }}
             >
               <div className="flex min-w-0 items-center gap-2">
@@ -793,6 +801,7 @@ export function MockDraftBoard({
   const openSearch = useCallback((slot: DraftSlot) => {
     setSearchKey(key(slot.round, slot.slot));
     setQuery("");
+    setUnderdogPickerPlacement((placement) => (placement === "hidden" ? "left" : placement));
   }, []);
 
   /** Fills every remaining draftable slot with a realistic autopick for that team. */
@@ -895,12 +904,14 @@ export function MockDraftBoard({
   const lineupTeamId = viewTeamId ?? (isManual ? teams[0]?.id ?? null : userTeamId ?? teams[0]?.id ?? null);
   const lineupRows = lineupTeamId != null ? lineupFor(lineupTeamId) : [];
   const lineupTeam = teams.find((team) => team.id === lineupTeamId);
-  const showUnderdogPicker = viewMode === "underdog" && Boolean(searchSlot) && underdogPickerPlacement !== "hidden";
+  const pickerSlot = searchSlot ?? onTheClock;
+  const pickerCurrent = pickerSlot ? picks[key(pickerSlot.round, pickerSlot.slot)] : undefined;
+  const showUnderdogPicker = viewMode === "underdog" && underdogPickerPlacement !== "hidden";
   const renderUnderdogPickerPanel = (className = "") =>
-    showUnderdogPicker && searchSlot ? (
+    showUnderdogPicker ? (
       <UnderdogPlayerPickerPanel
-        searchSlot={searchSlot}
-        current={searchCurrent}
+        targetSlot={pickerSlot}
+        current={pickerCurrent}
         players={underdogAvailable}
         query={query}
         position={underdogPickerPosition}
@@ -908,9 +919,12 @@ export function MockDraftBoard({
         className={className}
         onQueryChange={setQuery}
         onPositionChange={setUnderdogPickerPosition}
-        onPick={(player) => makePick(searchSlot.round, searchSlot.slot, player)}
-        onClear={() => clearPick(searchSlot.round, searchSlot.slot)}
-        onCancel={() => setSearchKey(null)}
+        onPick={(player) => pickerSlot && makePick(pickerSlot.round, pickerSlot.slot, player)}
+        onClear={() => pickerSlot && clearPick(pickerSlot.round, pickerSlot.slot)}
+        onCancel={() => {
+          setSearchKey(null);
+          setUnderdogPickerPlacement("hidden");
+        }}
       />
     ) : null;
 
@@ -1084,29 +1098,25 @@ export function MockDraftBoard({
       {viewMode === "underdog" ? (
         <div className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-2 px-1">
-            {searchSlot ? (
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="font-cond text-xs font-semibold uppercase text-text-muted">Players panel:</span>
-                <div className="inline-flex rounded-md border border-border bg-card p-0.5 shadow-sm">
-                  {(["left", "above", "below", "hidden"] as const).map((placement) => (
-                    <button
-                      key={placement}
-                      type="button"
-                      onClick={() => setUnderdogPickerPlacement(placement)}
-                      className={`rounded px-2 py-1 font-cond text-[11px] font-semibold uppercase ${
-                        underdogPickerPlacement === placement
-                          ? "bg-text text-white"
-                          : "text-text-muted hover:bg-card-hover hover:text-text"
-                      }`}
-                    >
-                      {placement === "hidden" ? "Hide" : placement}
-                    </button>
-                  ))}
-                </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-cond text-xs font-semibold uppercase text-text-muted">Players panel:</span>
+              <div className="inline-flex rounded-md border border-border bg-card p-0.5 shadow-sm">
+                {(["left", "above", "below", "hidden"] as const).map((placement) => (
+                  <button
+                    key={placement}
+                    type="button"
+                    onClick={() => setUnderdogPickerPlacement(placement)}
+                    className={`rounded px-2 py-1 font-cond text-[11px] font-semibold uppercase ${
+                      underdogPickerPlacement === placement
+                        ? "bg-text text-white"
+                        : "text-text-muted hover:bg-card-hover hover:text-text"
+                    }`}
+                  >
+                    {placement === "hidden" ? "Hide" : placement}
+                  </button>
+                ))}
               </div>
-            ) : (
-              <span />
-            )}
+            </div>
             <button
               type="button"
               onClick={() => setShowUnderdogRoster((show) => !show)}
