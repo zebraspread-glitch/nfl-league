@@ -487,6 +487,30 @@ export async function getRosterByFranchise(franchiseId: number, week: number): P
   return getRoster(match.roster_id, week);
 }
 
+export async function getWeekKickoff(week: number): Promise<WeekKickoff | null> {
+  const season = Number(process.env.SLEEPER_SEASON) || CURRENT_SEASON;
+  const [schedule, scores] = await Promise.all([fetchSchedule(season), fetchScores(season, week)]);
+  const scoreByGameId = new Map(scores.map((score) => [score.game_id, score]));
+
+  const candidates: number[] = [];
+  for (const game of schedule) {
+    if (game.week !== week) continue;
+    const score = scoreByGameId.get(game.game_id);
+    const timestamp = parseKickoffTimestamp(score?.metadata?.date_time ?? score?.date ?? game.date);
+    if (timestamp != null) candidates.push(timestamp);
+  }
+
+  if (!candidates.length) {
+    for (const score of scores) {
+      const timestamp = parseKickoffTimestamp(score.metadata?.date_time ?? score.date);
+      if (timestamp != null) candidates.push(timestamp);
+    }
+  }
+
+  if (!candidates.length) return null;
+  return { week, iso: new Date(Math.min(...candidates)).toISOString() };
+}
+
 export interface KeeperPlayer {
   sleeperId: string;
   name: string;
@@ -626,7 +650,13 @@ interface SleeperScoreGame {
     is_in_progress?: boolean;
     is_over?: boolean;
     status?: string;
+    date_time?: string;
   };
+}
+
+export interface WeekKickoff {
+  week: number;
+  iso: string;
 }
 
 const projectionCache = new Map<string, Map<string, number>>();
@@ -743,6 +773,12 @@ function gameInfoForWeek(
     map.set(g.home, { label: homeLabel, when, started });
   }
   return map;
+}
+
+function parseKickoffTimestamp(value?: string): number | null {
+  if (!value) return null;
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) ? timestamp : null;
 }
 
 function resultLetter(teamScore: number, oppScore: number): "W" | "L" | "T" {

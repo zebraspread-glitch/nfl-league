@@ -1,10 +1,11 @@
 import { Fragment } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getMatchups, getRoster } from "@/lib/sleeper";
+import { getMatchups, getRoster, getWeekKickoff } from "@/lib/sleeper";
 import { Card, TeamAvatar, Score, SectionTitle, EmptyState } from "@/components/ui";
 import { SleeperPlayerAvatar } from "@/components/sleeper-player-avatar";
 import { MatchupTabs } from "@/components/matchup-tabs";
+import { MatchupCountdown } from "@/components/matchup-countdown";
 import { proTeamLogoUrl, resolvePlayerImage, POS_COLOR } from "@/lib/player-images";
 import { getFranchiseGames, getHeadToHead, shortWeek, type FranchiseGame } from "@/lib/games";
 import { getAllTimeRecords } from "@/lib/league-data";
@@ -22,9 +23,10 @@ export default async function MatchupPage({ params }: { params: Promise<{ id: st
   const matchup = matchups.find((m) => m.id === id);
   if (!matchup) notFound();
 
-  const [awayRoster, homeRoster] = await Promise.all([
+  const [awayRoster, homeRoster, kickoff] = await Promise.all([
     matchup.away.rosterId != null ? getRoster(matchup.away.rosterId, week) : null,
     matchup.home.rosterId != null ? getRoster(matchup.home.rosterId, week) : null,
+    getWeekKickoff(week),
   ]);
 
   const statusLabel = matchup.status === "final" ? "Final" : matchup.status === "live" ? "Live" : "";
@@ -65,6 +67,7 @@ export default async function MatchupPage({ params }: { params: Promise<{ id: st
     <MatchupPreview
       away={matchup.away.team}
       home={matchup.home.team}
+      kickoff={kickoff}
       h2h={h2h}
       awaySnap={awaySnap}
       homeSnap={homeSnap}
@@ -159,6 +162,7 @@ function franchiseSnapshot(
 function MatchupPreview({
   away,
   home,
+  kickoff,
   h2h,
   awaySnap,
   homeSnap,
@@ -169,6 +173,7 @@ function MatchupPreview({
 }: {
   away: TeamMeta;
   home: TeamMeta;
+  kickoff: Awaited<ReturnType<typeof getWeekKickoff>>;
   h2h: Awaited<ReturnType<typeof getHeadToHead>>;
   awaySnap: Snapshot;
   homeSnap: Snapshot;
@@ -182,6 +187,7 @@ function MatchupPreview({
 
   return (
     <div className="mt-3 space-y-3">
+      {kickoff ? <MatchupCountdown kickoffIso={kickoff.iso} week={kickoff.week} /> : null}
       {noHistory ? (
         <EmptyState>No prior MGL history for these franchises yet — this is fresh ground.</EmptyState>
       ) : (
