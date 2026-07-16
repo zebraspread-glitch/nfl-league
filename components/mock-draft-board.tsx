@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { SleeperPlayerAvatar } from "@/components/sleeper-player-avatar";
 import { TeamAvatar } from "@/components/ui";
 import { sleeperPlayerImage } from "@/lib/player-images";
-import { TEAM_NEEDS, computeAutopick, teamById, type DraftSlot, type MockPlayer } from "@/lib/mock-draft";
+import { TEAM_NEEDS, computeAutopick, draftValue, teamById, type DraftSlot, type MockPlayer } from "@/lib/mock-draft";
 import type { TeamMeta } from "@/lib/types";
 
 const STORAGE_KEY = "mgl-mock-draft-2026-v2";
@@ -16,6 +16,7 @@ const MANUAL_TEAM_ID = 0;
 
 type Picks = Record<string, MockPlayer>;
 type DraftViewMode = "classic" | "underdog";
+type UnderdogPickerPlacement = "left" | "above" | "below" | "hidden";
 type LineupSlot = "QB" | "RB" | "WR" | "TE" | "RB/WR" | "K" | "DEF" | "BN";
 
 interface LineupRow {
@@ -64,6 +65,7 @@ const UNDERDOG_POS_COLOR: Record<string, string> = {
 };
 
 const UNDERDOG_HEADER_POSITIONS = ["QB", "RB", "WR", "TE"] as const;
+type UnderdogPickerPosition = "" | (typeof UNDERDOG_HEADER_POSITIONS)[number];
 
 function canFillLineupSlot(label: LineupSlot, player: MockPlayer) {
   if (label === "BN") return true;
@@ -259,6 +261,138 @@ function UnderdogRosterPanel({
             ))}
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function formatDraftNumber(value?: number) {
+  return typeof value === "number" ? value.toFixed(1) : "-";
+}
+
+function UnderdogPlayerPickerPanel({
+  searchSlot,
+  current,
+  players,
+  query,
+  position,
+  positionRanks,
+  className = "",
+  onQueryChange,
+  onPositionChange,
+  onPick,
+  onClear,
+  onCancel,
+}: {
+  searchSlot: DraftSlot;
+  current?: MockPlayer;
+  players: MockPlayer[];
+  query: string;
+  position: UnderdogPickerPosition;
+  positionRanks: Map<string, number>;
+  className?: string;
+  onQueryChange: (query: string) => void;
+  onPositionChange: (position: UnderdogPickerPosition) => void;
+  onPick: (player: MockPlayer) => void;
+  onClear: () => void;
+  onCancel: () => void;
+}) {
+  const team = teamById(searchSlot.teamId);
+
+  return (
+    <div className={`flex min-h-0 flex-col overflow-hidden border border-[#444] bg-[#191919] text-white shadow-sm ${className}`}>
+      <div className="relative border-b border-[#2c2c2c] px-3 py-2 text-center">
+        <div className="font-cond text-base font-extrabold">Players</div>
+        <div className="mt-0.5 truncate text-[11px] font-semibold text-white/55">
+          Pick {searchSlot.round}.{searchSlot.slot} - {team?.name ?? "Team"}
+          {current ? ` - ${current.name}` : ""}
+        </div>
+        <div className="absolute right-2 top-2 flex items-center gap-2">
+          {current && (
+            <button type="button" onClick={onClear} className="font-cond text-[11px] font-bold uppercase text-white/55 hover:text-white">
+              Clear
+            </button>
+          )}
+          <button type="button" onClick={onCancel} className="font-cond text-[11px] font-bold uppercase text-white/55 hover:text-white">
+            Close
+          </button>
+        </div>
+      </div>
+
+      <div className="border-b border-[#292929] p-2.5">
+        <div className="grid grid-cols-[minmax(5.5rem,1.15fr)_repeat(4,minmax(0,1fr))] gap-1.5">
+          <input
+            autoFocus
+            value={query}
+            onChange={(e) => onQueryChange(e.target.value)}
+            placeholder="Search"
+            className="min-w-0 rounded-sm border border-white/35 bg-[#2c2c2c] px-2 py-2 text-sm font-semibold text-white outline-none placeholder:text-white/45 focus:border-white/70"
+          />
+          {UNDERDOG_HEADER_POSITIONS.map((pos) => {
+            const selected = position === pos;
+            return (
+              <button
+                key={pos}
+                type="button"
+                onClick={() => onPositionChange(selected ? "" : pos)}
+                className={`rounded-sm px-2 py-2 font-cond text-sm font-extrabold uppercase text-white transition ${
+                  selected ? "brightness-110 ring-2 ring-white/40" : "brightness-90 hover:brightness-105"
+                }`}
+                style={{ background: UNDERDOG_POS_COLOR[pos] }}
+              >
+                {pos}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-[1fr_4.3rem_4.3rem_1.4rem] gap-2 border-b border-[#303030] px-3 py-2 text-right font-cond text-[13px] font-extrabold text-white/80">
+        <span />
+        <span>ADP</span>
+        <span>Rank</span>
+        <span />
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {players.slice(0, 80).map((player) => {
+          const color = UNDERDOG_POS_COLOR[player.pos] ?? "#8f98a3";
+          const positionRank = positionRanks.get(player.name);
+
+          return (
+            <button
+              key={player.name}
+              type="button"
+              onClick={() => onPick(player)}
+              className="grid min-h-[3.25rem] w-full grid-cols-[1fr_4.3rem_4.3rem_1.4rem] items-center gap-2 border-b border-[#303030] bg-[#1b1b1b] px-3 py-2 text-left last:border-b-0 hover:bg-[#242424]"
+              style={{ boxShadow: `inset 3px 0 0 ${color}` }}
+            >
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="grid h-8 w-8 shrink-0 place-items-center text-xl leading-none text-white/75">☆</span>
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-semibold leading-tight text-white">{player.name}</div>
+                  <div className="mt-1 flex min-w-0 items-center gap-1 text-xs font-semibold text-white/70">
+                    <span
+                      className="shrink-0 rounded px-1 py-0.5 font-cond text-[10px] font-extrabold uppercase leading-none text-white"
+                      style={{ background: color }}
+                    >
+                      {player.pos}
+                      {positionRank ?? ""}
+                    </span>
+                    <span className="truncate">
+                      {player.proTeam}
+                      {player.bye ? `, Bye ${player.bye}` : ""}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="text-right font-cond text-sm font-extrabold text-white/85">{formatDraftNumber(player.adp ?? player.rank)}</div>
+              <div className="text-right font-cond text-sm font-extrabold text-white/85">{formatDraftNumber(player.rank ?? draftValue(player))}</div>
+              <div className="text-center font-cond text-lg font-extrabold text-white/65">v</div>
+            </button>
+          );
+        })}
+        {players.length === 0 && <div className="px-3 py-4 text-sm font-semibold text-white/55">No players match.</div>}
       </div>
     </div>
   );
@@ -546,10 +680,21 @@ export function MockDraftBoard({
   const [focusTeamId, setFocusTeamId] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<DraftViewMode>("classic");
   const [showUnderdogRoster, setShowUnderdogRoster] = useState(true);
+  const [underdogPickerPlacement, setUnderdogPickerPlacement] = useState<UnderdogPickerPlacement>("left");
+  const [underdogPickerPosition, setUnderdogPickerPosition] = useState<UnderdogPickerPosition>("");
   const [loaded, setLoaded] = useState(false);
   const [searchKey, setSearchKey] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const rankByName = useMemo(() => new Map(players.map((p) => [p.name, p.rank ?? 9999])), [players]);
+  const positionRanks = useMemo(() => {
+    const counts: Record<string, number> = {};
+    const ranks = new Map<string, number>();
+    for (const player of players.slice().sort((a, b) => draftValue(a) - draftValue(b))) {
+      counts[player.pos] = (counts[player.pos] ?? 0) + 1;
+      ranks.set(player.name, counts[player.pos]);
+    }
+    return ranks;
+  }, [players]);
 
   useEffect(() => {
     // One-time hydration load from localStorage. Reading on the client only
@@ -680,6 +825,10 @@ export function MockDraftBoard({
       ),
     [players, taken, query]
   );
+  const underdogAvailable = useMemo(
+    () => available.filter((player) => (underdogPickerPosition ? player.pos === underdogPickerPosition : true)),
+    [available, underdogPickerPosition]
+  );
 
   // Autopick for every team except the one the user is controlling (nobody in
   // manual mode) — need- and roster-aware, with a little randomness so runs differ.
@@ -746,6 +895,24 @@ export function MockDraftBoard({
   const lineupTeamId = viewTeamId ?? (isManual ? teams[0]?.id ?? null : userTeamId ?? teams[0]?.id ?? null);
   const lineupRows = lineupTeamId != null ? lineupFor(lineupTeamId) : [];
   const lineupTeam = teams.find((team) => team.id === lineupTeamId);
+  const showUnderdogPicker = viewMode === "underdog" && Boolean(searchSlot) && underdogPickerPlacement !== "hidden";
+  const renderUnderdogPickerPanel = (className = "") =>
+    showUnderdogPicker && searchSlot ? (
+      <UnderdogPlayerPickerPanel
+        searchSlot={searchSlot}
+        current={searchCurrent}
+        players={underdogAvailable}
+        query={query}
+        position={underdogPickerPosition}
+        positionRanks={positionRanks}
+        className={className}
+        onQueryChange={setQuery}
+        onPositionChange={setUnderdogPickerPosition}
+        onPick={(player) => makePick(searchSlot.round, searchSlot.slot, player)}
+        onClear={() => clearPick(searchSlot.round, searchSlot.slot)}
+        onCancel={() => setSearchKey(null)}
+      />
+    ) : null;
 
   return (
     <div>
@@ -867,7 +1034,7 @@ export function MockDraftBoard({
         </div>
       )}
 
-      {searchSlot && (
+      {searchSlot && viewMode !== "underdog" && (
         <div className="mb-3 rounded-xl border border-border bg-card p-3 shadow-sm">
           <div className="mb-2 flex items-center justify-between gap-2">
             <span className="min-w-0 truncate font-cond text-sm font-semibold">
@@ -916,7 +1083,30 @@ export function MockDraftBoard({
 
       {viewMode === "underdog" ? (
         <div className="space-y-2">
-          <div className="flex justify-end px-1">
+          <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+            {searchSlot ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-cond text-xs font-semibold uppercase text-text-muted">Players panel:</span>
+                <div className="inline-flex rounded-md border border-border bg-card p-0.5 shadow-sm">
+                  {(["left", "above", "below", "hidden"] as const).map((placement) => (
+                    <button
+                      key={placement}
+                      type="button"
+                      onClick={() => setUnderdogPickerPlacement(placement)}
+                      className={`rounded px-2 py-1 font-cond text-[11px] font-semibold uppercase ${
+                        underdogPickerPlacement === placement
+                          ? "bg-text text-white"
+                          : "text-text-muted hover:bg-card-hover hover:text-text"
+                      }`}
+                    >
+                      {placement === "hidden" ? "Hide" : placement}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <span />
+            )}
             <button
               type="button"
               onClick={() => setShowUnderdogRoster((show) => !show)}
@@ -925,7 +1115,12 @@ export function MockDraftBoard({
               {showUnderdogRoster ? "Hide roster" : "Show roster"}
             </button>
           </div>
+          {underdogPickerPlacement === "above" && renderUnderdogPickerPanel("h-[24rem] rounded-lg")}
           <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:items-start">
+            {underdogPickerPlacement === "left" &&
+              renderUnderdogPickerPanel(
+                "h-[24rem] rounded-lg xl:sticky xl:top-24 xl:h-[calc(100dvh-7.5rem)] xl:w-80 xl:shrink-0 2xl:w-[22rem]"
+              )}
             <div className="min-w-0 flex-1">
               <UnderdogDraftBoard
                 board={board}
@@ -935,7 +1130,7 @@ export function MockDraftBoard({
                 userTeamId={userTeamId}
                 focusedTeamId={focusTeamId}
                 isManual={isManual}
-                compact={showUnderdogRoster}
+                compact={showUnderdogRoster || (showUnderdogPicker && underdogPickerPlacement === "left")}
                 onTheClockKey={onTheClockKey}
                 openSearch={openSearch}
               />
@@ -954,6 +1149,7 @@ export function MockDraftBoard({
               />
             )}
           </div>
+          {underdogPickerPlacement === "below" && renderUnderdogPickerPanel("h-[24rem] rounded-lg")}
         </div>
       ) : (
         <div className="space-y-3">
