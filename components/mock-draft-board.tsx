@@ -2,16 +2,20 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { SleeperPlayerAvatar } from "@/components/sleeper-player-avatar";
+import { TeamAvatar } from "@/components/ui";
+import { sleeperPlayerImage } from "@/lib/player-images";
 import { TEAM_NEEDS, computeAutopick, teamById, type DraftSlot, type MockPlayer } from "@/lib/mock-draft";
 import type { TeamMeta } from "@/lib/types";
 
 const STORAGE_KEY = "mgl-mock-draft-2026-v2";
 const TEAM_STORAGE_KEY = "mgl-mock-draft-team-v1";
+const VIEW_STORAGE_KEY = "mgl-mock-draft-view-v1";
 const AUTOPICK_DELAY_MS = 450;
 /** Sentinel "team" for the drafting-as select: autopick is off, the user makes every pick. */
 const MANUAL_TEAM_ID = 0;
 
 type Picks = Record<string, MockPlayer>;
+type DraftViewMode = "classic" | "underdog";
 type LineupSlot = "QB" | "RB" | "WR" | "TE" | "RB/WR" | "K" | "DEF" | "BN";
 
 interface LineupRow {
@@ -50,6 +54,17 @@ const POS_COLOR: Record<string, string> = {
   DEF: "#aab4c1",
 };
 
+const UNDERDOG_POS_COLOR: Record<string, string> = {
+  QB: "#a65bd4",
+  RB: "#2fb39f",
+  WR: "#f18b3a",
+  TE: "#4aa6d8",
+  K: "#aeb6c0",
+  DEF: "#8792a2",
+};
+
+const UNDERDOG_HEADER_POSITIONS = ["QB", "RB", "WR", "TE"] as const;
+
 function canFillLineupSlot(label: LineupSlot, player: MockPlayer) {
   if (label === "BN") return true;
   if (label === "RB/WR") return player.pos === "RB" || player.pos === "WR";
@@ -80,6 +95,253 @@ function PickedPlayer({ player }: { player: MockPlayer }) {
   );
 }
 
+function compactPlayerName(name: string) {
+  const parts = name.split(" ");
+  if (parts.length < 2) return name;
+  const [first, ...rest] = parts;
+  return `${first[0]}. ${rest.join(" ")}`;
+}
+
+function overallPick(round: number, slot: number, columnCount: number) {
+  return (round - 1) * columnCount + slot;
+}
+
+function columnForSlot(slot: DraftSlot, columnCount: number) {
+  return slot.round % 2 === 0 ? columnCount - slot.slot + 1 : slot.slot;
+}
+
+function positionCountsFor(board: DraftSlot[], picks: Picks, teamId: number) {
+  const { keepers, drafted } = rosterEntriesFor(board, picks, teamId);
+  const roster = [...keepers, ...drafted];
+  return Object.fromEntries(
+    UNDERDOG_HEADER_POSITIONS.map((pos) => [pos, roster.filter((player) => player.pos === pos).length])
+  ) as Record<(typeof UNDERDOG_HEADER_POSITIONS)[number], number>;
+}
+
+function UnderdogPlayerImage({ player }: { player: MockPlayer }) {
+  const [failed, setFailed] = useState(false);
+  const image = player.sleeperId ? sleeperPlayerImage(player.sleeperId) : null;
+
+  if (!image || failed) {
+    return (
+      <span
+        className="absolute bottom-1 right-1 grid h-12 w-12 place-items-center rounded-full font-cond text-xs font-bold text-white/95"
+        style={{ background: "rgba(0,0,0,0.28)" }}
+      >
+        {player.pos}
+      </span>
+    );
+  }
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={image.url}
+      alt={player.name}
+      width={66}
+      height={66}
+      onError={() => setFailed(true)}
+      className={`absolute bottom-0 right-0 h-16 w-16 ${
+        image.isLogo ? "object-contain p-2" : "object-cover object-top"
+      }`}
+    />
+  );
+}
+
+function UnderdogPickCard({
+  slot,
+  picked,
+  columnCount,
+  isOnClock,
+  isUserSlot,
+  canEdit,
+  onOpen,
+}: {
+  slot: DraftSlot;
+  picked?: MockPlayer;
+  columnCount: number;
+  isOnClock: boolean;
+  isUserSlot: boolean;
+  canEdit: boolean;
+  onOpen: () => void;
+}) {
+  const team = teamById(slot.teamId);
+  const pickLabel = `${slot.round}.${slot.slot}`;
+  const pickNumber = overallPick(slot.round, slot.slot, columnCount);
+  const direction = slot.round % 2 === 0 ? "<" : ">";
+  const baseClass =
+    "relative h-20 w-full overflow-hidden rounded-md border text-left shadow-sm transition focus:outline-none focus:ring-2 focus:ring-white/70";
+  const clockClass = isOnClock ? "ring-2 ring-[#f5d15f] ring-offset-1 ring-offset-[#101010]" : "";
+
+  if (picked) {
+    const bg = UNDERDOG_POS_COLOR[picked.pos] ?? "#aeb6c0";
+    const content = (
+      <>
+        <div className="absolute right-1.5 top-1 text-[10px] font-bold text-black/40">{pickNumber}</div>
+        {slot.locked && (
+          <div className="absolute left-1.5 top-1 rounded bg-black/20 px-1 font-cond text-[9px] font-bold uppercase text-black/65">
+            Keep
+          </div>
+        )}
+        <div className="relative z-10 flex h-full flex-col justify-between p-2 pr-12 text-[#111418]">
+          <div className="min-w-0">
+            <div className="truncate font-cond text-sm font-extrabold uppercase leading-none">{compactPlayerName(picked.name)}</div>
+            <div className="mt-1 truncate text-[10px] font-bold uppercase text-black/55">
+              {picked.pos} - {picked.proTeam}
+              {picked.bye ? ` (${picked.bye})` : ""}
+            </div>
+          </div>
+          <div className="flex items-center gap-1 font-cond text-base font-extrabold leading-none text-black/70">
+            {pickLabel} <span className="text-black/45">{direction}</span>
+          </div>
+        </div>
+        <UnderdogPlayerImage player={picked} />
+      </>
+    );
+
+    if (canEdit) {
+      return (
+        <button
+          type="button"
+          onClick={onOpen}
+          title="Change this pick"
+          className={`${baseClass} ${clockClass} border-black/60 hover:brightness-105`}
+          style={{ background: bg }}
+        >
+          {content}
+        </button>
+      );
+    }
+
+    return (
+      <div className={`${baseClass} ${clockClass} border-black/60`} style={{ background: bg }}>
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      disabled={!canEdit}
+      className={`${baseClass} ${clockClass} border-[#2a2a2a] bg-[#1b1b1b] p-2 text-white disabled:cursor-default`}
+    >
+      <div className="absolute right-1.5 top-1 text-[10px] font-bold text-white/30">{pickNumber}</div>
+      <div className="flex h-full flex-col justify-between">
+        <div>
+          <div className="truncate pr-8 font-cond text-xs font-bold uppercase text-white/70">{team?.abbrev ?? "FA"}</div>
+          <div className="mt-1 flex flex-wrap gap-1">
+            {(TEAM_NEEDS[slot.teamId] ?? []).slice(0, 3).map((need) => (
+              <span key={need} className="rounded bg-white/10 px-1 font-cond text-[9px] font-bold text-white/55">
+                {need}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div className="flex items-end justify-between gap-2">
+          <span className="font-cond text-base font-extrabold leading-none text-white/80">
+            {pickLabel} <span className="text-white/35">{direction}</span>
+          </span>
+          {slot.round <= 11 && (
+            <span
+              className={`rounded px-1.5 py-0.5 font-cond text-[10px] font-bold uppercase ${
+                isOnClock && isUserSlot ? "bg-[#f5d15f] text-[#17130a]" : "bg-white/10 text-white/60"
+              }`}
+            >
+              {isOnClock ? (isUserSlot ? "Make" : "Auto") : "Pick"}
+            </span>
+          )}
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function UnderdogDraftBoard({
+  board,
+  rounds,
+  picks,
+  userTeamId,
+  isManual,
+  onTheClockKey,
+  openSearch,
+}: {
+  board: DraftSlot[];
+  rounds: [number, DraftSlot[]][];
+  picks: Picks;
+  userTeamId: number | null;
+  isManual: boolean;
+  onTheClockKey: string | null;
+  openSearch: (slot: DraftSlot) => void;
+}) {
+  const columnCount = Math.max(...board.map((slot) => slot.slot));
+  const gridStyle = { gridTemplateColumns: `repeat(${columnCount}, minmax(8.75rem, 8.75rem))` };
+  const rows = rounds.map(([round, slots]) => {
+    const cells: (DraftSlot | undefined)[] = Array(columnCount);
+    for (const slot of slots) cells[columnForSlot(slot, columnCount) - 1] = slot;
+    return { round, cells };
+  });
+  const headerSlots = rows[0]?.cells ?? [];
+
+  return (
+    <div className="overflow-x-auto rounded-xl bg-[#101010] p-1.5 shadow-sm">
+      <div className="grid min-w-max gap-1.5" style={gridStyle}>
+        {headerSlots.map((slot, i) => {
+          const team = slot ? teamById(slot.teamId) : undefined;
+          const counts = slot ? positionCountsFor(board, picks, slot.teamId) : null;
+          return (
+            <div key={slot ? key(slot.round, slot.slot) : `header-${i}`} className="h-[7.35rem] rounded-md border border-[#2b2b2b] bg-[#171717] p-2 text-white">
+              {team ? (
+                <div className="flex h-full flex-col items-center justify-between gap-1 text-center">
+                  <TeamAvatar team={team} size="sm" />
+                  <div className="w-full truncate font-cond text-[13px] font-extrabold uppercase leading-none">{team.name}</div>
+                  <div className="grid w-full grid-cols-4 gap-1">
+                    {UNDERDOG_HEADER_POSITIONS.map((pos) => (
+                      <div key={pos} className="min-w-0 text-center">
+                        <div
+                          className="font-cond text-[10px] font-extrabold leading-none"
+                          style={{ color: UNDERDOG_POS_COLOR[pos] }}
+                        >
+                          {pos}
+                        </div>
+                        <div className="font-cond text-sm font-extrabold leading-tight text-white/90">{counts?.[pos] ?? 0}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
+
+        {rows.map(({ round, cells }) =>
+          cells.map((slot, i) => {
+            if (!slot) return <div key={`${round}-${i}`} className="h-20 rounded-md bg-[#151515]" />;
+            const k = key(slot.round, slot.slot);
+            const picked = slot.locked ?? picks[k];
+            const isOnClock = k === onTheClockKey;
+            const isUserSlot = isManual || slot.teamId === userTeamId;
+            const canEdit = slot.round <= 11 && !slot.locked;
+            return (
+              <UnderdogPickCard
+                key={k}
+                slot={slot}
+                picked={picked}
+                columnCount={columnCount}
+                isOnClock={isOnClock}
+                isUserSlot={isUserSlot}
+                canEdit={canEdit}
+                onOpen={() => openSearch(slot)}
+              />
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function MockDraftBoard({
   board,
   players,
@@ -92,6 +354,7 @@ export function MockDraftBoard({
   const [picks, setPicks] = useState<Picks>({});
   const [userTeamId, setUserTeamId] = useState<number | null>(null);
   const [viewTeamId, setViewTeamId] = useState<number | null>(null);
+  const [viewMode, setViewMode] = useState<DraftViewMode>("classic");
   const [loaded, setLoaded] = useState(false);
   const [searchKey, setSearchKey] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -107,6 +370,8 @@ export function MockDraftBoard({
       if (raw) setPicks(JSON.parse(raw));
       const team = localStorage.getItem(TEAM_STORAGE_KEY);
       setUserTeamId(team ? Number(team) : teams[0]?.id ?? null);
+      const savedView = localStorage.getItem(VIEW_STORAGE_KEY);
+      if (savedView === "classic" || savedView === "underdog") setViewMode(savedView);
     } catch {
       // ignore corrupt storage
     }
@@ -123,6 +388,11 @@ export function MockDraftBoard({
     if (!loaded || userTeamId == null) return;
     localStorage.setItem(TEAM_STORAGE_KEY, String(userTeamId));
   }, [userTeamId, loaded]);
+
+  useEffect(() => {
+    if (!loaded) return;
+    localStorage.setItem(VIEW_STORAGE_KEY, viewMode);
+  }, [viewMode, loaded]);
 
   const taken = useMemo(() => {
     const names = new Set<string>();
@@ -183,6 +453,11 @@ export function MockDraftBoard({
     setUserTeamId(id);
     resetAll();
   }
+
+  const openSearch = useCallback((slot: DraftSlot) => {
+    setSearchKey(key(slot.round, slot.slot));
+    setQuery("");
+  }, []);
 
   /** Fills every remaining draftable slot with a realistic autopick for that team. */
   function autodraftRest() {
@@ -281,7 +556,7 @@ export function MockDraftBoard({
 
   return (
     <div>
-      <div className="mb-2 flex items-center gap-2 px-1">
+      <div className="mb-2 flex flex-wrap items-center gap-2 px-1">
         <label className="text-xs font-semibold text-text-muted">Drafting as:</label>
         <select
           value={userTeamId ?? ""}
@@ -298,9 +573,23 @@ export function MockDraftBoard({
         <span className="text-xs text-text-muted">
           {isManual ? "- you make every pick" : "- every other team autopicks"}
         </span>
+        <div className="ml-auto inline-flex rounded-lg border border-border bg-card p-0.5 shadow-sm">
+          {(["classic", "underdog"] as const).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => setViewMode(mode)}
+              className={`rounded-md px-2.5 py-1 font-cond text-xs font-semibold uppercase ${
+                viewMode === mode ? "bg-text text-white" : "text-text-muted hover:bg-card-hover hover:text-text"
+              }`}
+            >
+              {mode === "classic" ? "Classic" : "Underdog"}
+            </button>
+          ))}
+        </div>
         <button
           onClick={autodraftRest}
-          className="ml-auto shrink-0 rounded-lg bg-text px-2.5 py-1 font-cond text-xs font-semibold text-white hover:opacity-90"
+          className="shrink-0 rounded-lg bg-text px-2.5 py-1 font-cond text-xs font-semibold text-white hover:opacity-90"
         >
           Autodraft All
         </button>
@@ -418,84 +707,92 @@ export function MockDraftBoard({
         </div>
       )}
 
-      <div className="space-y-3">
-        {rounds.map(([round, slots]) => (
-          <div key={round}>
-            <div className="mb-1.5 px-1 font-cond text-xs font-bold uppercase tracking-widest text-text-muted">
-              {round <= 11 ? `Round ${round}` : `Round ${round} - Keepers`}
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {slots.map((slot) => {
-                const k = key(slot.round, slot.slot);
-                const team = teamById(slot.teamId);
-                const picked = slot.locked ?? picks[k];
-                const isOnClock = k === onTheClockKey;
-                const isUserSlot = isManual || slot.teamId === userTeamId;
-                const canEdit = slot.round <= 11 && !slot.locked;
-                const openSearch = () => {
-                  setSearchKey(k);
-                  setQuery("");
-                };
+      {viewMode === "underdog" ? (
+        <UnderdogDraftBoard
+          board={board}
+          rounds={rounds}
+          picks={picks}
+          userTeamId={userTeamId}
+          isManual={isManual}
+          onTheClockKey={onTheClockKey}
+          openSearch={openSearch}
+        />
+      ) : (
+        <div className="space-y-3">
+          {rounds.map(([round, slots]) => (
+            <div key={round}>
+              <div className="mb-1.5 px-1 font-cond text-xs font-bold uppercase tracking-widest text-text-muted">
+                {round <= 11 ? `Round ${round}` : `Round ${round} - Keepers`}
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {slots.map((slot) => {
+                  const k = key(slot.round, slot.slot);
+                  const team = teamById(slot.teamId);
+                  const picked = slot.locked ?? picks[k];
+                  const isOnClock = k === onTheClockKey;
+                  const isUserSlot = isManual || slot.teamId === userTeamId;
+                  const canEdit = slot.round <= 11 && !slot.locked;
 
-                return (
-                  <div
-                    key={k}
-                    className={`flex min-w-0 flex-col overflow-hidden rounded-lg border bg-card text-center shadow-sm ${
-                      isOnClock ? "border-teal" : isUserSlot ? "border-teal/40" : "border-border"
-                    }`}
-                  >
+                  return (
                     <div
-                      className="truncate bg-section px-1 py-1 pt-1.5 text-[10px] font-semibold text-text-muted"
-                      style={teamHeaderStyle(team)}
+                      key={k}
+                      className={`flex min-w-0 flex-col overflow-hidden rounded-lg border bg-card text-center shadow-sm ${
+                        isOnClock ? "border-teal" : isUserSlot ? "border-teal/40" : "border-border"
+                      }`}
                     >
-                      {slot.round}.{slot.slot} ({team?.abbrev ?? "FA"})
-                    </div>
-
-                    {picked ? (
-                      canEdit ? (
-                        <button
-                          onClick={openSearch}
-                          title="Change this pick"
-                          className="flex min-w-0 flex-1 flex-col hover:bg-card-hover"
-                        >
-                          <PickedPlayer player={picked} />
-                        </button>
-                      ) : (
-                        <PickedPlayer player={picked} />
-                      )
-                    ) : (
-                      <div className="flex flex-1 flex-col items-center justify-between gap-1 px-1.5 py-2">
-                        <div className="flex flex-wrap justify-center gap-0.5">
-                          {(TEAM_NEEDS[slot.teamId] ?? []).map((n) => (
-                            <span
-                              key={n}
-                              className="rounded bg-section px-1 py-0.5 font-cond text-[9px] font-bold text-text-muted"
-                            >
-                              {n}
-                            </span>
-                          ))}
-                        </div>
-                        {round <= 11 ? (
-                          <button
-                            onClick={openSearch}
-                            className={`w-full rounded-md px-1 py-1 font-cond text-[10px] font-bold ${
-                              isOnClock && isUserSlot
-                                ? "bg-teal text-white"
-                                : "bg-section text-text-dim hover:bg-card-hover"
-                            }`}
-                          >
-                            {isOnClock ? (isUserSlot ? "Make Pick" : "Auto...") : "Pick"}
-                          </button>
-                        ) : null}
+                      <div
+                        className="truncate bg-section px-1 py-1 pt-1.5 text-[10px] font-semibold text-text-muted"
+                        style={teamHeaderStyle(team)}
+                      >
+                        {slot.round}.{slot.slot} ({team?.abbrev ?? "FA"})
                       </div>
-                    )}
-                  </div>
-                );
-              })}
+
+                      {picked ? (
+                        canEdit ? (
+                          <button
+                            onClick={() => openSearch(slot)}
+                            title="Change this pick"
+                            className="flex min-w-0 flex-1 flex-col hover:bg-card-hover"
+                          >
+                            <PickedPlayer player={picked} />
+                          </button>
+                        ) : (
+                          <PickedPlayer player={picked} />
+                        )
+                      ) : (
+                        <div className="flex flex-1 flex-col items-center justify-between gap-1 px-1.5 py-2">
+                          <div className="flex flex-wrap justify-center gap-0.5">
+                            {(TEAM_NEEDS[slot.teamId] ?? []).map((n) => (
+                              <span
+                                key={n}
+                                className="rounded bg-section px-1 py-0.5 font-cond text-[9px] font-bold text-text-muted"
+                              >
+                                {n}
+                              </span>
+                            ))}
+                          </div>
+                          {round <= 11 ? (
+                            <button
+                              onClick={() => openSearch(slot)}
+                              className={`w-full rounded-md px-1 py-1 font-cond text-[10px] font-bold ${
+                                isOnClock && isUserSlot
+                                  ? "bg-teal text-white"
+                                  : "bg-section text-text-dim hover:bg-card-hover"
+                              }`}
+                            >
+                              {isOnClock ? (isUserSlot ? "Make Pick" : "Auto...") : "Pick"}
+                            </button>
+                          ) : null}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
