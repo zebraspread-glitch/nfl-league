@@ -3,10 +3,10 @@
 import { useRouter } from "next/navigation";
 import { TEAMS } from "@/lib/teams";
 import { Card, SectionHeader, PageIntro, TeamAvatar } from "@/components/ui";
-import { useSettings, type Theme } from "@/components/settings-provider";
+import { useSettings, type DesktopLayout, type Theme } from "@/components/settings-provider";
 
 export default function SettingsPage() {
-  const { ready, theme, setTheme, teamId, setTeamId } = useSettings();
+  const { ready, theme, setTheme, desktopLayout, setDesktopLayout, teamId, setTeamId } = useSettings();
   const router = useRouter();
 
   // Team is stored in a cookie the server reads for the My Team home page, so
@@ -29,6 +29,20 @@ export default function SettingsPage() {
           </div>
           <p className="mt-2 px-1 text-xs text-text-muted">
             Choose how the app looks. Your choice is saved on this device.
+          </p>
+        </div>
+      </Card>
+
+      <Card className="hidden lg:block">
+        <SectionHeader>Desktop Layout</SectionHeader>
+        <div className="p-3">
+          <div className="grid grid-cols-3 gap-1 rounded-lg bg-section p-1">
+            <DesktopLayoutOption label="Default" value="default" current={desktopLayout} onSelect={setDesktopLayout} />
+            <DesktopLayoutOption label="Half" value="half" current={desktopLayout} onSelect={setDesktopLayout} />
+            <DesktopLayoutOption label="Full" value="full" current={desktopLayout} onSelect={setDesktopLayout} />
+          </div>
+          <p className="mt-2 px-1 text-xs text-text-muted">
+            Choose how wide the app feels on desktop. Mobile keeps the standard layout.
           </p>
         </div>
       </Card>
@@ -75,6 +89,31 @@ export default function SettingsPage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+function DesktopLayoutOption({
+  label,
+  value,
+  current,
+  onSelect,
+}: {
+  label: string;
+  value: DesktopLayout;
+  current: DesktopLayout;
+  onSelect: (layout: DesktopLayout) => void;
+}) {
+  const active = current === value;
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(value)}
+      className={`rounded-md py-2.5 text-center font-cond text-sm font-semibold uppercase tracking-wide transition-colors ${
+        active ? "bg-card text-text shadow-sm" : "text-text-muted hover:text-text"
+      }`}
+    >
+      {label}
+    </button>
   );
 }
 

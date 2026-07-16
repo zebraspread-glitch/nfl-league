@@ -8,7 +8,7 @@ import { SettingsProvider } from "@/components/settings-provider";
 
 // Runs before paint to apply the saved theme, preventing a flash of light mode
 // on load. Keep in sync with SettingsProvider's THEME_KEY.
-const themeScript = `(function(){try{if(localStorage.getItem('mgl_theme')==='dark'){document.documentElement.classList.add('dark')}}catch(e){}})()`;
+const themeScript = `(function(){try{var r=document.documentElement;if(localStorage.getItem('mgl_theme')==='dark'){r.classList.add('dark')}var l=localStorage.getItem('mgl_desktop_layout');if(l==='half'||l==='full'){r.classList.add('desktop-layout-'+l)}}catch(e){}})()`;
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const saira = Saira_Condensed({
@@ -57,7 +57,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       </head>
       <body className={`${geistSans.variable} ${saira.variable}`}>
         <SettingsProvider>
-          <div className="mx-auto flex min-h-dvh max-w-xl flex-col bg-bg">
+          <div className="app-shell mx-auto flex min-h-dvh max-w-xl flex-col bg-bg">
             <TopBar />
             <main
               className="flex-1 px-3 pb-24"

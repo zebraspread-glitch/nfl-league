@@ -3,8 +3,10 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 export type Theme = "light" | "dark";
+export type DesktopLayout = "default" | "half" | "full";
 
 const THEME_KEY = "mgl_theme";
+const DESKTOP_LAYOUT_KEY = "mgl_desktop_layout";
 // The selected team is stored in a cookie (not localStorage) so the server can
 // read it and render the My Team home page without a client round-trip.
 const TEAM_COOKIE = "mgl_team";
@@ -30,6 +32,8 @@ interface Settings {
   ready: boolean;
   theme: Theme;
   setTheme: (t: Theme) => void;
+  desktopLayout: DesktopLayout;
+  setDesktopLayout: (layout: DesktopLayout) => void;
   teamId: number | null;
   setTeamId: (id: number | null) => void;
 }
@@ -43,9 +47,16 @@ function applyThemeClass(theme: Theme) {
   root.classList.toggle("dark", theme === "dark");
 }
 
+function applyDesktopLayoutClass(layout: DesktopLayout) {
+  const root = document.documentElement;
+  root.classList.remove("desktop-layout-half", "desktop-layout-full");
+  if (layout !== "default") root.classList.add(`desktop-layout-${layout}`);
+}
+
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   const [theme, setThemeState] = useState<Theme>("light");
+  const [desktopLayout, setDesktopLayoutState] = useState<DesktopLayout>("default");
   const [teamId, setTeamIdState] = useState<number | null>(null);
 
   // One-time hydration load from localStorage on the client.
@@ -59,6 +70,19 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       } else {
         // Fall back to whatever the inline script already applied.
         setThemeState(document.documentElement.classList.contains("dark") ? "dark" : "light");
+      }
+      const storedLayout = localStorage.getItem(DESKTOP_LAYOUT_KEY);
+      if (storedLayout === "default" || storedLayout === "half" || storedLayout === "full") {
+        setDesktopLayoutState(storedLayout);
+        applyDesktopLayoutClass(storedLayout);
+      } else {
+        setDesktopLayoutState(
+          document.documentElement.classList.contains("desktop-layout-full")
+            ? "full"
+            : document.documentElement.classList.contains("desktop-layout-half")
+            ? "half"
+            : "default",
+        );
       }
       setTeamIdState(readTeamCookie());
     } catch {
@@ -76,13 +100,21 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   };
 
+  const setDesktopLayout = (layout: DesktopLayout) => {
+    setDesktopLayoutState(layout);
+    applyDesktopLayoutClass(layout);
+    try {
+      localStorage.setItem(DESKTOP_LAYOUT_KEY, layout);
+    } catch {}
+  };
+
   const setTeamId = (id: number | null) => {
     setTeamIdState(id);
     writeTeamCookie(id);
   };
 
   return (
-    <SettingsContext.Provider value={{ ready, theme, setTheme, teamId, setTeamId }}>
+    <SettingsContext.Provider value={{ ready, theme, setTheme, desktopLayout, setDesktopLayout, teamId, setTeamId }}>
       {children}
     </SettingsContext.Provider>
   );

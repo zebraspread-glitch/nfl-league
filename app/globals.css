@@ -87,6 +87,27 @@ body {
   min-height: 100dvh;
 }
 
+@media (min-width: 1024px) {
+  html.desktop-layout-half .app-shell,
+  html.desktop-layout-half .app-fixed-bar,
+  html.desktop-layout-half .app-profile-shell {
+    width: 50vw;
+    max-width: none;
+  }
+
+  html.desktop-layout-full .app-shell,
+  html.desktop-layout-full .app-fixed-bar,
+  html.desktop-layout-full .app-profile-shell {
+    width: 100%;
+    max-width: none;
+  }
+
+  html.desktop-layout-half .app-profile-shell,
+  html.desktop-layout-full .app-profile-shell {
+    border-radius: 0;
+  }
+}
+
 /* Condensed display type for headings, scores and labels (NFL feel). */
 .font-cond {
   font-family: var(--font-cond);
