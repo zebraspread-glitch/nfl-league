@@ -16,6 +16,9 @@ type FullStatsItem = Omit<PlayerBrowserItem, "stats" | "projection" | "statsByPe
 const SLEEPER_API = "https://api.sleeper.app/v1";
 const SLEEPER_DATA_API = "https://api.sleeper.com";
 const LEAGUE_ID = process.env.SLEEPER_LEAGUE_ID || "1374614405412560896";
+const SLEEPER_LEAGUE_API = `${SLEEPER_API}/league/${LEAGUE_ID}`;
+const SLEEPER_NFL_PLAYERS_API = `${SLEEPER_API}/players/nfl`;
+const SLEEPER_NFL_TRENDING_API = `${SLEEPER_NFL_PLAYERS_API}/trending`;
 export const PLAYER_DATA_SEASON = Number(process.env.SLEEPER_SEASON) || 2026;
 const DEFAULT_SEASON = PLAYER_DATA_SEASON;
 export const PLAYER_PROFILE_WEEK = CURRENT_WEEK;
@@ -256,8 +259,8 @@ function ownerTeam(roster: SleeperRoster, user?: SleeperUser): TeamMeta {
 
 async function getOwnership(): Promise<Map<string, OwnedBy>> {
   const [rosters, users] = await Promise.all([
-    fetchJson<SleeperRoster[]>(`${SLEEPER_API}/league/${LEAGUE_ID}/rosters`, 300),
-    fetchJson<SleeperUser[]>(`${SLEEPER_API}/league/${LEAGUE_ID}/users`, 300),
+    fetchJson<SleeperRoster[]>(`${SLEEPER_LEAGUE_API}/rosters`, 300),
+    fetchJson<SleeperUser[]>(`${SLEEPER_LEAGUE_API}/users`, 300),
   ]);
   const userById = new Map((users ?? []).map((user) => [user.user_id, user]));
   const ownership = new Map<string, OwnedBy>();
@@ -286,7 +289,7 @@ async function getOwnership(): Promise<Map<string, OwnedBy>> {
 
 async function getTransactions(): Promise<TransactionSummary> {
   const weeks = await Promise.all(
-    WEEKS.map((week) => fetchJson<SleeperTransaction[]>(`${SLEEPER_API}/league/${LEAGUE_ID}/transactions/${week}`, 300)),
+    WEEKS.map((week) => fetchJson<SleeperTransaction[]>(`${SLEEPER_LEAGUE_API}/transactions/${week}`, 300)),
   );
   const rosterAdds = new Map<string, number>();
   const rosterDrops = new Map<string, number>();
@@ -317,7 +320,7 @@ async function getTransactions(): Promise<TransactionSummary> {
 }
 
 async function getTrending(type: "add" | "drop"): Promise<Map<string, number>> {
-  const rows = await fetchJson<SleeperTrendRow[]>(`${SLEEPER_API}/players/nfl/trending/${type}?lookback_hours=24&limit=200`, 900);
+  const rows = await fetchJson<SleeperTrendRow[]>(`${SLEEPER_NFL_TRENDING_API}/${type}?lookback_hours=24&limit=200`, 900);
   return new Map((rows ?? []).map((row) => [row.player_id, Number(row.count) || 0]));
 }
 
@@ -426,7 +429,7 @@ export async function getPlayerBrowserItems(): Promise<PlayerBrowserItem[]> {
     getTransactions(),
     getTrending("add"),
     getTrending("drop"),
-    fetchJson<Record<string, SleeperPlayerMeta>>(`${SLEEPER_API}/players/nfl`, 86400),
+    fetchJson<Record<string, SleeperPlayerMeta>>(SLEEPER_NFL_PLAYERS_API, 86400),
     Promise.all(
       WEEKS.map((week) =>
         fetchJson<SleeperStatRow[]>(`${SLEEPER_DATA_API}/stats/nfl/${DEFAULT_SEASON}/${week}?season_type=regular`, 86400),

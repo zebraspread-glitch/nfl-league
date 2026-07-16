@@ -652,9 +652,24 @@ function NextFiveCell({ items }: { items: ScheduleItem[] }) {
         <span
           key={`${item.week}-${item.opponent.id}`}
           title={`Week ${item.week} ${item.homeAway} ${item.opponent.name}`}
-          className="grid h-6 w-6 shrink-0 place-items-center rounded bg-section font-cond text-[9px] font-semibold leading-none text-text-muted sm:w-8 sm:text-[10px]"
+          className="grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded-full bg-section"
         >
-          {item.opponent.abbrev}
+          {item.opponent.logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={item.opponent.logo}
+              alt={`${item.opponent.name} logo`}
+              className="h-7 w-7 rounded-full object-cover"
+              suppressHydrationWarning
+            />
+          ) : (
+            <span
+              className="grid h-7 w-7 place-items-center rounded-full font-cond text-[10px] font-bold text-white"
+              style={{ background: `linear-gradient(135deg, ${item.opponent.primary}, ${item.opponent.secondary})` }}
+            >
+              {item.opponent.abbrev}
+            </span>
+          )}
         </span>
       ))}
     </div>

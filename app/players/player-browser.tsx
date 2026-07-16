@@ -127,7 +127,7 @@ interface Column {
 const VIEWS: View[] = ["PROJECTIONS", "STATS", "TRENDS"];
 const POSITIONS: PositionFilter[] = ["All Offense", "QB", "RB", "WR", "TE", "W/R", "K", "DEF"];
 const STATUS_OPTIONS: StatusFilter[] = ["All Available Players", "All Players", "Taken", "Free Agents", "On Waivers"];
-const PERIODS = ["2026 Season", "Last 4 WKS", "Last 2 WKS", "18", "17", "16", "15", "14", "13", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "1"];
+const WEEK_PERIODS = ["Last 4 WKS", "Last 2 WKS", "18", "17", "16", "15", "14", "13", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "1"];
 
 const EMPTY_STATS: PlayerStats = {
   passAtt: 0,
@@ -168,13 +168,23 @@ const DEFAULT_SORT: Record<View, SortState> = {
 // thousands of rows) and the initial paint fast; Show More reveals the rest.
 const PAGE_SIZE = 50;
 
-export function PlayerBrowser({ players, mode = "search" }: { players: PlayerBrowserItem[]; mode?: PlayerBrowserMode }) {
+export function PlayerBrowser({
+  players,
+  mode = "search",
+  season = 2026,
+}: {
+  players: PlayerBrowserItem[];
+  mode?: PlayerBrowserMode;
+  season?: number;
+}) {
   void mode;
+  const seasonPeriod = `${season} Season`;
+  const periods = useMemo(() => [seasonPeriod, ...WEEK_PERIODS], [seasonPeriod]);
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<StatusFilter>("All Available Players");
   const [position, setPosition] = useState<PositionFilter>("All Offense");
   const [view, setView] = useState<View>("STATS");
-  const [period, setPeriod] = useState("2025 Season");
+  const [period, setPeriod] = useState(seasonPeriod);
   const [team, setTeam] = useState("All MGL Teams");
   const [sort, setSort] = useState<SortState>(DEFAULT_SORT.STATS);
   const [limit, setLimit] = useState(PAGE_SIZE);
@@ -301,7 +311,7 @@ export function PlayerBrowser({ players, mode = "search" }: { players: PlayerBro
                 className="h-full w-full appearance-none bg-transparent px-2.5 pr-7 font-cond text-[12px] font-bold text-[#2f3338] outline-none"
                 aria-label="Stats period"
               >
-                {PERIODS.map((option) => (
+                {periods.map((option) => (
                   <option key={option} value={option}>
                     {option.length <= 2 ? `Week ${option}` : option}
                   </option>
@@ -336,7 +346,7 @@ export function PlayerBrowser({ players, mode = "search" }: { players: PlayerBro
         Filter Results
       </div>
 
-      <PlayerStatsTable players={filtered.slice(0, limit)} view={view} period={period} sort={sort} onSort={requestSort} />
+      <PlayerStatsTable players={filtered.slice(0, limit)} view={view} period={period} sort={sort} onSort={requestSort} season={season} />
 
       {filtered.length > limit ? (
         <div className="bg-white px-4 pb-6 pt-3 text-center">
@@ -370,12 +380,14 @@ function PlayerStatsTable({
   period,
   sort,
   onSort,
+  season,
 }: {
   players: PlayerBrowserItem[];
   view: View;
   period: string;
   sort: SortState;
   onSort: (key: string) => void;
+  season: number;
 }) {
   const columns = columnsFor(view);
   const groups = groupColumns(columns);
@@ -415,7 +427,7 @@ function PlayerStatsTable({
         </thead>
         <tbody>
           {players.map((player) => (
-            <PlayerRow key={player.playerId} player={player} columns={columns} view={view} period={period} />
+            <PlayerRow key={player.playerId} player={player} columns={columns} view={view} period={period} season={season} />
           ))}
           {players.length === 0 ? (
             <tr>
@@ -430,7 +442,19 @@ function PlayerStatsTable({
   );
 }
 
-function PlayerRow({ player, columns, view, period }: { player: PlayerBrowserItem; columns: Column[]; view: View; period: string }) {
+function PlayerRow({
+  player,
+  columns,
+  view,
+  period,
+  season,
+}: {
+  player: PlayerBrowserItem;
+  columns: Column[];
+  view: View;
+  period: string;
+  season: number;
+}) {
   const actual = statsFor(player, "stats", period);
   const projection = statsFor(player, "projection", period);
   const active = view === "PROJECTIONS" ? projection : actual;
@@ -446,7 +470,7 @@ function PlayerRow({ player, columns, view, period }: { player: PlayerBrowserIte
           <div className="min-w-0">
             <div className="flex min-w-0 items-center gap-1">
               <RankBadge rank={view === "PROJECTIONS" ? player.projectionRank : player.posRank} />
-              <Link href={`/players/${player.playerId}?season=2026`} className="truncate font-cond text-[15px] font-bold text-[#303236]">
+              <Link href={`/players/${player.playerId}?season=${season}`} className="truncate font-cond text-[15px] font-bold text-[#303236]">
                 {player.displayName}
               </Link>
               <AvailabilityBadge status={player.status} />

@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { PageIntro } from "@/components/ui";
 import { PlayerBrowser } from "../player-browser";
-import { getPlayerBrowserItems } from "../player-data";
+import { getPlayerBrowserItems, PLAYER_DATA_SEASON } from "../player-data";
 
-export const revalidate = 86400;
+export const revalidate = 300;
 
 export const metadata = { title: "Player Search - MGL Fantasy" };
 
@@ -18,7 +18,7 @@ export default async function PlayerSearchPage() {
           &lt; Player records
         </Link>
       </div>
-      <PlayerBrowser players={players} mode="search" />
+      <PlayerBrowser players={players} mode="search" season={PLAYER_DATA_SEASON} />
     </div>
   );
 }
