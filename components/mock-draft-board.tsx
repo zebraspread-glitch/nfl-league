@@ -137,6 +137,7 @@ function UnderdogRosterPanel({
   team,
   selectedTeamId,
   isComplete,
+  className = "",
   onTeamChange,
 }: {
   board: DraftSlot[];
@@ -146,6 +147,7 @@ function UnderdogRosterPanel({
   team?: TeamMeta;
   selectedTeamId: number | null;
   isComplete: boolean;
+  className?: string;
   onTeamChange: (teamId: number) => void;
 }) {
   const columnCount = Math.max(...board.map((slot) => slot.slot));
@@ -165,12 +167,12 @@ function UnderdogRosterPanel({
   }, []);
 
   return (
-    <div className="mb-3 overflow-hidden rounded-lg border border-[#2b2b2b] bg-[#0d0d0d] text-white shadow-sm">
-      <div className="border-b border-[#232323] px-3 py-2">
+    <div className={`flex min-h-0 flex-col overflow-hidden rounded-lg border border-[#2b2b2b] bg-[#0d0d0d] text-white shadow-sm ${className}`}>
+      <div className="border-b border-[#232323] px-2.5 py-2">
         <select
           value={selectedTeamId ?? ""}
           onChange={(e) => onTeamChange(Number(e.target.value))}
-          className="w-full bg-[#0d0d0d] font-cond text-sm font-extrabold uppercase text-white outline-none"
+          className="w-full bg-[#0d0d0d] font-cond text-[13px] font-extrabold uppercase text-white outline-none"
         >
           {teams.map((t) => (
             <option key={t.id} value={t.id} className="bg-[#0d0d0d] text-white">
@@ -180,23 +182,23 @@ function UnderdogRosterPanel({
         </select>
       </div>
 
-      <div className="px-3 py-4 text-center">
+      <div className="px-2.5 py-3 text-center">
         {team && (
-          <div className="mx-auto mb-3 grid place-items-center">
-            <TeamAvatar team={team} size="xl" />
+          <div className="mx-auto mb-2 grid place-items-center">
+            <TeamAvatar team={team} size="lg" />
           </div>
         )}
-        <div className="mx-auto grid max-w-56 grid-cols-2 gap-4">
+        <div className="mx-auto grid max-w-44 grid-cols-2 gap-2">
           <div>
-            <div className="font-cond text-xl font-extrabold">{team ? firstPickPosition(board, team.id, columnCount) : "-"}</div>
-            <div className="text-xs font-semibold text-white/70">Pick position</div>
+            <div className="font-cond text-lg font-extrabold">{team ? firstPickPosition(board, team.id, columnCount) : "-"}</div>
+            <div className="text-[11px] font-semibold text-white/70">Pick position</div>
           </div>
           <div>
-            <div className="font-cond text-xl font-extrabold">{rostered}</div>
-            <div className="text-xs font-semibold text-white/70">{isComplete ? "Rostered" : "Players"}</div>
+            <div className="font-cond text-lg font-extrabold">{rostered}</div>
+            <div className="text-[11px] font-semibold text-white/70">{isComplete ? "Rostered" : "Players"}</div>
           </div>
         </div>
-        <div className="mx-auto mt-3 grid h-1.5 max-w-56 grid-cols-4 overflow-hidden rounded-full bg-[#242424]">
+        <div className="mx-auto mt-2 grid h-1.5 max-w-44 grid-cols-4 overflow-hidden rounded-full bg-[#242424]">
           {UNDERDOG_HEADER_POSITIONS.map((pos) => (
             <span
               key={pos}
@@ -205,7 +207,7 @@ function UnderdogRosterPanel({
             />
           ))}
         </div>
-        <div className="mx-auto mt-1 grid max-w-56 grid-cols-4 gap-1">
+        <div className="mx-auto mt-1 grid max-w-44 grid-cols-4 gap-1">
           {UNDERDOG_HEADER_POSITIONS.map((pos) => (
             <div key={pos} className="text-center">
               <div className="font-cond text-[11px] font-extrabold leading-none" style={{ color: UNDERDOG_POS_COLOR[pos] }}>
@@ -217,14 +219,14 @@ function UnderdogRosterPanel({
         </div>
       </div>
 
-      <div className="max-h-96 overflow-y-auto">
+      <div className="min-h-0 flex-1 overflow-y-auto">
         {sections.map((section) => (
           <div key={section.label}>
-            <div className="px-3 pb-1 pt-3 font-cond text-lg font-extrabold leading-none text-white">{section.label}</div>
+            <div className="px-2.5 pb-1 pt-2.5 font-cond text-base font-extrabold leading-none text-white">{section.label}</div>
             {section.rows.map(({ label, player, draftSlot }, i) => (
               <div
                 key={draftSlot ? key(draftSlot.round, draftSlot.slot) : `${label}-${i}`}
-                className="flex items-center gap-3 border-b border-[#2a2a2a] px-3 py-2.5 last:border-b-0"
+                className="flex items-center gap-2 border-b border-[#2a2a2a] px-2.5 py-2 last:border-b-0"
               >
                 {player ? (
                   <SleeperPlayerAvatar sleeperId={player.sleeperId ?? ""} pos={player.pos} name={player.name} size="sm" />
@@ -237,17 +239,17 @@ function UnderdogRosterPanel({
                   </div>
                   <div className="truncate text-xs font-semibold text-white/65">{player?.proTeam ?? "-"}</div>
                 </div>
-                <div className="grid shrink-0 grid-cols-3 gap-3 text-right">
+                <div className="grid w-[6.3rem] shrink-0 grid-cols-3 gap-1 text-right">
                   <div>
-                    <div className="font-cond text-sm font-extrabold leading-none text-white">{player?.bye ?? "-"}</div>
+                    <div className="font-cond text-[13px] font-extrabold leading-none text-white">{player?.bye ?? "-"}</div>
                     <div className="text-[10px] font-semibold text-white/55">Bye</div>
                   </div>
                   <div>
-                    <div className="font-cond text-sm font-extrabold leading-none text-white">{player?.adp ?? player?.rank ?? "-"}</div>
+                    <div className="font-cond text-[13px] font-extrabold leading-none text-white">{player?.adp ?? player?.rank ?? "-"}</div>
                     <div className="text-[10px] font-semibold text-white/55">ADP</div>
                   </div>
                   <div>
-                    <div className="font-cond text-sm font-extrabold leading-none text-white">
+                    <div className="font-cond text-[13px] font-extrabold leading-none text-white">
                       {draftSlot ? `${draftSlot.round}.${draftSlot.slot}` : "-"}
                     </div>
                     <div className="text-[10px] font-semibold text-white/55">Pick</div>
@@ -533,6 +535,7 @@ export function MockDraftBoard({
   const [viewTeamId, setViewTeamId] = useState<number | null>(null);
   const [focusTeamId, setFocusTeamId] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<DraftViewMode>("classic");
+  const [showUnderdogRoster, setShowUnderdogRoster] = useState(true);
   const [loaded, setLoaded] = useState(false);
   const [searchKey, setSearchKey] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -807,18 +810,7 @@ export function MockDraftBoard({
         </button>
       </div>
 
-      {viewMode === "underdog" ? (
-        <UnderdogRosterPanel
-          board={board}
-          picks={picks}
-          rows={lineupRows}
-          teams={teams}
-          team={lineupTeam}
-          selectedTeamId={lineupTeamId}
-          isComplete={isComplete}
-          onTeamChange={setViewTeamId}
-        />
-      ) : (
+      {viewMode !== "underdog" && (
         <div className="mb-3 rounded-xl border border-border bg-card p-3 shadow-sm">
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <span className="font-cond text-sm font-semibold">
@@ -913,17 +905,45 @@ export function MockDraftBoard({
       )}
 
       {viewMode === "underdog" ? (
-        <UnderdogDraftBoard
-          board={board}
-          rounds={rounds}
-          teams={teams}
-          picks={picks}
-          userTeamId={userTeamId}
-          focusedTeamId={focusTeamId}
-          isManual={isManual}
-          onTheClockKey={onTheClockKey}
-          openSearch={openSearch}
-        />
+        <div className="space-y-2">
+          <div className="flex justify-end px-1">
+            <button
+              type="button"
+              onClick={() => setShowUnderdogRoster((show) => !show)}
+              className="rounded-md border border-border bg-card px-2.5 py-1 font-cond text-xs font-semibold uppercase text-text-muted shadow-sm hover:bg-card-hover hover:text-text"
+            >
+              {showUnderdogRoster ? "Hide roster" : "Show roster"}
+            </button>
+          </div>
+          <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:items-start">
+            <div className="min-w-0 flex-1">
+              <UnderdogDraftBoard
+                board={board}
+                rounds={rounds}
+                teams={teams}
+                picks={picks}
+                userTeamId={userTeamId}
+                focusedTeamId={focusTeamId}
+                isManual={isManual}
+                onTheClockKey={onTheClockKey}
+                openSearch={openSearch}
+              />
+            </div>
+            {showUnderdogRoster && (
+              <UnderdogRosterPanel
+                board={board}
+                picks={picks}
+                rows={lineupRows}
+                teams={teams}
+                team={lineupTeam}
+                selectedTeamId={lineupTeamId}
+                isComplete={isComplete}
+                className="w-full xl:sticky xl:top-24 xl:max-h-[calc(100dvh-7.5rem)] xl:w-72 xl:shrink-0"
+                onTeamChange={setViewTeamId}
+              />
+            )}
+          </div>
+        </div>
       ) : (
         <div className="space-y-3">
           {rounds.map(([round, slots]) => (
