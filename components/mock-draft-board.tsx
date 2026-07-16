@@ -734,13 +734,6 @@ function DraftCompletePrompt({ onViewAnalysis, onDismiss }: { onViewAnalysis: ()
   );
 }
 
-function starterRankLabel(player: MockPlayer) {
-  const positionRank = player.underdogPositionRank?.match(/\d+$/)?.[0];
-  if (positionRank) return `#${positionRank}`;
-  const fallbackRank = player.adp ?? player.rank;
-  return typeof fallbackRank === "number" ? `#${Math.round(fallbackRank)}` : "";
-}
-
 function starterSlotLabel(starters: FilledLineupRow[], index: number) {
   const label = starters[index].label;
   if (label === "RB" || label === "WR") {
@@ -755,30 +748,32 @@ function starterSlotLabel(starters: FilledLineupRow[], index: number) {
 function DraftStartingLineupChart({
   entry,
   rankings,
+  starterSlotRanks,
   onTeamChange,
 }: {
   entry: DraftAnalysisTeam;
   rankings: DraftAnalysisTeam[];
+  starterSlotRanks: Map<string, number>;
   onTeamChange: (teamId: number) => void;
 }) {
   const maxProjected = Math.max(...entry.starters.map((row) => row.player.projected ?? 0), 1);
 
   return (
-    <div className="mt-4 rounded-lg border border-[#d9e0e8] bg-white p-4 text-[#111827]">
+    <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.04] p-4 text-white">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="font-cond text-lg font-extrabold">Starting Lineup</div>
-          <div className="mt-0.5 text-xs font-semibold text-[#657282]">
+          <div className="mt-0.5 text-xs font-semibold text-white/55">
             {entry.team.name} - {formatDraftNumber(entry.startersProjected)} starter projection
           </div>
         </div>
         <select
           value={entry.team.id}
           onChange={(event) => onTeamChange(Number(event.target.value))}
-          className="rounded-md border border-[#cfd7e2] bg-white px-2.5 py-1.5 font-cond text-xs font-bold uppercase text-[#111827] outline-none focus:border-teal"
+          className="rounded-md border border-white/15 bg-[#1d1d1d] px-2.5 py-1.5 font-cond text-xs font-bold uppercase text-white outline-none focus:border-teal"
         >
           {rankings.map((teamEntry, index) => (
-            <option key={teamEntry.team.id} value={teamEntry.team.id}>
+            <option key={teamEntry.team.id} value={teamEntry.team.id} className="bg-[#1d1d1d] text-white">
               #{index + 1} {teamEntry.team.name}
             </option>
           ))}
@@ -793,18 +788,20 @@ function DraftStartingLineupChart({
             const height = 5 + (projection / maxProjected) * 7;
             const color = UNDERDOG_POS_COLOR[player.pos] ?? "#a8becd";
             const isDef = player.pos === "DEF";
+            const slotLabel = starterSlotLabel(entry.starters, index);
+            const slotRank = starterSlotRanks.get(`${entry.team.id}:${slotLabel}`);
 
             return (
               <div key={`${row.draftSlot.round}-${row.draftSlot.slot}-${row.label}`} title={player.name} className="flex w-16 shrink-0 flex-col items-center">
-                <div className="mb-1 h-4 font-cond text-xs font-extrabold leading-none text-[#111827]">{starterRankLabel(player)}</div>
+                <div className="mb-1 h-4 font-cond text-xs font-extrabold leading-none text-white">{slotRank ? `#${slotRank}` : "-"}</div>
                 <div
                   className="relative flex w-12 items-end justify-center overflow-hidden rounded-t-md"
                   style={{
                     height: `${height}rem`,
-                    backgroundColor: `${color}45`,
-                    boxShadow: `inset 0 0 0 1px ${color}55`,
+                    backgroundColor: `${color}33`,
+                    boxShadow: `inset 0 0 0 1px ${color}70`,
                     backgroundImage:
-                      "radial-gradient(circle at 28% 20%, rgba(255,255,255,0.35) 0 7%, transparent 8%), radial-gradient(circle at 70% 52%, rgba(255,255,255,0.22) 0 6%, transparent 7%), radial-gradient(circle at 45% 82%, rgba(255,255,255,0.25) 0 5%, transparent 6%)",
+                      "radial-gradient(circle at 28% 20%, rgba(255,255,255,0.22) 0 7%, transparent 8%), radial-gradient(circle at 70% 52%, rgba(255,255,255,0.14) 0 6%, transparent 7%), radial-gradient(circle at 45% 82%, rgba(255,255,255,0.16) 0 5%, transparent 6%)",
                   }}
                 >
                   <div className="absolute bottom-0 z-10 grid h-11 w-11 place-items-end overflow-hidden">
@@ -817,7 +814,7 @@ function DraftStartingLineupChart({
                     )}
                   </div>
                 </div>
-                <div className="mt-2 font-cond text-xs font-extrabold text-[#3d4752]">{starterSlotLabel(entry.starters, index)}</div>
+                <div className="mt-2 font-cond text-xs font-extrabold text-white/70">{slotLabel}</div>
               </div>
             );
           })}
@@ -838,6 +835,34 @@ function DraftAnalysisModal({
 }) {
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(rankings[0]?.team.id ?? null);
   const selectedEntry = rankings.find((entry) => entry.team.id === selectedTeamId) ?? rankings[0];
+  const starterSlotRanks = useMemo(() => {
+    const slots = new Map<string, { teamId: number; row: FilledLineupRow }[]>();
+
+    for (const entry of rankings) {
+      entry.starters.forEach((row, index) => {
+        const slotLabel = starterSlotLabel(entry.starters, index);
+        const group = slots.get(slotLabel) ?? [];
+        group.push({ teamId: entry.team.id, row });
+        slots.set(slotLabel, group);
+      });
+    }
+
+    const ranks = new Map<string, number>();
+    for (const [slotLabel, rows] of slots) {
+      rows
+        .sort(
+          (a, b) =>
+            (b.row.player.projected ?? 0) - (a.row.player.projected ?? 0) ||
+            draftValue(a.row.player) - draftValue(b.row.player) ||
+            a.row.player.name.localeCompare(b.row.player.name)
+        )
+        .forEach(({ teamId }, index) => {
+          ranks.set(`${teamId}:${slotLabel}`, index + 1);
+        });
+    }
+
+    return ranks;
+  }, [rankings]);
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/65 px-3 py-5">
@@ -868,7 +893,12 @@ function DraftAnalysisModal({
           </div>
 
           {selectedEntry && (
-            <DraftStartingLineupChart entry={selectedEntry} rankings={rankings} onTeamChange={setSelectedTeamId} />
+            <DraftStartingLineupChart
+              entry={selectedEntry}
+              rankings={rankings}
+              starterSlotRanks={starterSlotRanks}
+              onTeamChange={setSelectedTeamId}
+            />
           )}
 
           <div className="mt-4 overflow-x-auto rounded-lg border border-white/10">
