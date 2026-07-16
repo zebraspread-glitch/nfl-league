@@ -106,6 +106,10 @@ function overallPick(round: number, slot: number, columnCount: number) {
   return (round - 1) * columnCount + slot;
 }
 
+function columnForSlot(slot: DraftSlot, columnCount: number) {
+  return slot.round % 2 === 0 ? columnCount - slot.slot + 1 : slot.slot;
+}
+
 function positionCountsFor(board: DraftSlot[], picks: Picks, teamId: number) {
   const { keepers, drafted } = rosterEntriesFor(board, picks, teamId);
   const roster = [...keepers, ...drafted];
@@ -294,21 +298,18 @@ function UnderdogDraftBoard({
   onTheClockKey: string | null;
   openSearch: (slot: DraftSlot) => void;
 }) {
-  const roundPickCount = Math.max(...board.map((slot) => slot.slot));
-  const columnCount = teams.length;
+  const columnCount = Math.max(...board.map((slot) => slot.slot));
   const gridStyle = { gridTemplateColumns: `repeat(${columnCount}, minmax(8.75rem, 8.75rem))` };
   const rows = rounds.map(([round, slots]) => {
-    const cells = teams.map((team) => ({
-      team,
-      slots: slots.filter((slot) => slot.teamId === team.id).sort((a, b) => a.slot - b.slot),
-    }));
+    const cells: (DraftSlot | undefined)[] = Array(columnCount);
+    for (const slot of slots) cells[columnForSlot(slot, columnCount) - 1] = slot;
     return { round, cells };
   });
 
   return (
     <div className="overflow-x-auto rounded-xl bg-[#101010] p-1.5 shadow-sm">
       <div className="grid min-w-max gap-1.5" style={gridStyle}>
-        {teams.map((team) => {
+        {teams.slice(0, columnCount).map((team) => {
           const counts = positionCountsFor(board, picks, team.id);
           return (
             <div key={team.id} className="h-[7.35rem] rounded-md border border-[#2b2b2b] bg-[#171717] p-2 text-white">
@@ -334,33 +335,24 @@ function UnderdogDraftBoard({
         })}
 
         {rows.map(({ round, cells }) =>
-          cells.map(({ team, slots }) => {
-            if (!slots.length) {
-              return <div key={`${round}-${team.id}`} className="h-20 rounded-md border border-[#1f1f1f] bg-[#151515]" />;
-            }
-
+          cells.map((slot, i) => {
+            if (!slot) return <div key={`${round}-${i}`} className="h-20 rounded-md bg-[#151515]" />;
+            const k = key(slot.round, slot.slot);
+            const picked = slot.locked ?? picks[k];
+            const isOnClock = k === onTheClockKey;
+            const isUserSlot = isManual || slot.teamId === userTeamId;
+            const canEdit = slot.round <= 11 && !slot.locked;
             return (
-              <div key={`${round}-${team.id}`} className="flex flex-col gap-1.5">
-                {slots.map((slot) => {
-                  const k = key(slot.round, slot.slot);
-                  const picked = slot.locked ?? picks[k];
-                  const isOnClock = k === onTheClockKey;
-                  const isUserSlot = isManual || slot.teamId === userTeamId;
-                  const canEdit = slot.round <= 11 && !slot.locked;
-                  return (
-                    <UnderdogPickCard
-                      key={k}
-                      slot={slot}
-                      picked={picked}
-                      columnCount={roundPickCount}
-                      isOnClock={isOnClock}
-                      isUserSlot={isUserSlot}
-                      canEdit={canEdit}
-                      onOpen={() => openSearch(slot)}
-                    />
-                  );
-                })}
-              </div>
+              <UnderdogPickCard
+                key={k}
+                slot={slot}
+                picked={picked}
+                columnCount={columnCount}
+                isOnClock={isOnClock}
+                isUserSlot={isUserSlot}
+                canEdit={canEdit}
+                onOpen={() => openSearch(slot)}
+              />
             );
           })
         )}
