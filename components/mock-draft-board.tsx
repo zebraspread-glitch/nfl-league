@@ -118,6 +118,150 @@ function positionCountsFor(board: DraftSlot[], picks: Picks, teamId: number) {
   ) as Record<(typeof UNDERDOG_HEADER_POSITIONS)[number], number>;
 }
 
+function displayLineupLabel(label: LineupSlot) {
+  return label === "RB/WR" ? "FLEX" : label;
+}
+
+function firstPickPosition(board: DraftSlot[], teamId: number, columnCount: number) {
+  const firstPick = board
+    .filter((slot) => slot.teamId === teamId && slot.round <= 11)
+    .sort((a, b) => overallPick(a.round, a.slot, columnCount) - overallPick(b.round, b.slot, columnCount))[0];
+  return firstPick?.slot ?? "-";
+}
+
+function UnderdogRosterPanel({
+  board,
+  picks,
+  rows,
+  teams,
+  team,
+  selectedTeamId,
+  isComplete,
+  onTeamChange,
+}: {
+  board: DraftSlot[];
+  picks: Picks;
+  rows: LineupRow[];
+  teams: TeamMeta[];
+  team?: TeamMeta;
+  selectedTeamId: number | null;
+  isComplete: boolean;
+  onTeamChange: (teamId: number) => void;
+}) {
+  const columnCount = Math.max(...board.map((slot) => slot.slot));
+  const counts = team
+    ? positionCountsFor(board, picks, team.id)
+    : (Object.fromEntries(UNDERDOG_HEADER_POSITIONS.map((pos) => [pos, 0])) as Record<
+        (typeof UNDERDOG_HEADER_POSITIONS)[number],
+        number
+      >);
+  const rostered = rows.filter((row) => row.player).length;
+  const sections = rows.reduce<{ label: string; rows: LineupRow[] }[]>((acc, row) => {
+    const label = displayLineupLabel(row.label);
+    const current = acc[acc.length - 1];
+    if (current?.label === label) current.rows.push(row);
+    else acc.push({ label, rows: [row] });
+    return acc;
+  }, []);
+
+  return (
+    <div className="mb-3 overflow-hidden rounded-lg border border-[#2b2b2b] bg-[#0d0d0d] text-white shadow-sm">
+      <div className="border-b border-[#232323] px-3 py-2">
+        <select
+          value={selectedTeamId ?? ""}
+          onChange={(e) => onTeamChange(Number(e.target.value))}
+          className="w-full bg-[#0d0d0d] font-cond text-sm font-extrabold uppercase text-white outline-none"
+        >
+          {teams.map((t) => (
+            <option key={t.id} value={t.id} className="bg-[#0d0d0d] text-white">
+              {t.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="px-3 py-4 text-center">
+        {team && (
+          <div className="mx-auto mb-3 grid place-items-center">
+            <TeamAvatar team={team} size="xl" />
+          </div>
+        )}
+        <div className="mx-auto grid max-w-56 grid-cols-2 gap-4">
+          <div>
+            <div className="font-cond text-xl font-extrabold">{team ? firstPickPosition(board, team.id, columnCount) : "-"}</div>
+            <div className="text-xs font-semibold text-white/70">Pick position</div>
+          </div>
+          <div>
+            <div className="font-cond text-xl font-extrabold">{rostered}</div>
+            <div className="text-xs font-semibold text-white/70">{isComplete ? "Rostered" : "Players"}</div>
+          </div>
+        </div>
+        <div className="mx-auto mt-3 grid h-1.5 max-w-56 grid-cols-4 overflow-hidden rounded-full bg-[#242424]">
+          {UNDERDOG_HEADER_POSITIONS.map((pos) => (
+            <span
+              key={pos}
+              className={counts[pos] ? "opacity-100" : "opacity-35"}
+              style={{ background: UNDERDOG_POS_COLOR[pos] }}
+            />
+          ))}
+        </div>
+        <div className="mx-auto mt-1 grid max-w-56 grid-cols-4 gap-1">
+          {UNDERDOG_HEADER_POSITIONS.map((pos) => (
+            <div key={pos} className="text-center">
+              <div className="font-cond text-[11px] font-extrabold leading-none" style={{ color: UNDERDOG_POS_COLOR[pos] }}>
+                {pos}
+              </div>
+              <div className="font-cond text-sm font-extrabold leading-tight text-white">{counts[pos]}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="max-h-96 overflow-y-auto">
+        {sections.map((section) => (
+          <div key={section.label}>
+            <div className="px-3 pb-1 pt-3 font-cond text-lg font-extrabold leading-none text-white">{section.label}</div>
+            {section.rows.map(({ label, player, draftSlot }, i) => (
+              <div
+                key={draftSlot ? key(draftSlot.round, draftSlot.slot) : `${label}-${i}`}
+                className="flex items-center gap-3 border-b border-[#2a2a2a] px-3 py-2.5 last:border-b-0"
+              >
+                {player ? (
+                  <SleeperPlayerAvatar sleeperId={player.sleeperId ?? ""} pos={player.pos} name={player.name} size="sm" />
+                ) : (
+                  <span className="h-8 w-8 shrink-0 rounded-full bg-white/10" />
+                )}
+                <div className="min-w-0 flex-1 text-left">
+                  <div className="truncate text-sm font-semibold leading-tight text-white">
+                    {player?.name ?? `Empty ${displayLineupLabel(label)}`}
+                  </div>
+                  <div className="truncate text-xs font-semibold text-white/65">{player?.proTeam ?? "-"}</div>
+                </div>
+                <div className="grid shrink-0 grid-cols-3 gap-3 text-right">
+                  <div>
+                    <div className="font-cond text-sm font-extrabold leading-none text-white">{player?.bye ?? "-"}</div>
+                    <div className="text-[10px] font-semibold text-white/55">Bye</div>
+                  </div>
+                  <div>
+                    <div className="font-cond text-sm font-extrabold leading-none text-white">{player?.adp ?? player?.rank ?? "-"}</div>
+                    <div className="text-[10px] font-semibold text-white/55">ADP</div>
+                  </div>
+                  <div>
+                    <div className="font-cond text-sm font-extrabold leading-none text-white">
+                      {draftSlot ? `${draftSlot.round}.${draftSlot.slot}` : "-"}
+                    </div>
+                    <div className="text-[10px] font-semibold text-white/55">Pick</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function UnderdogTeamPickTag({ team, dark = false }: { team?: TeamMeta; dark?: boolean }) {
   return (
     <div
@@ -387,6 +531,7 @@ export function MockDraftBoard({
   const [picks, setPicks] = useState<Picks>({});
   const [userTeamId, setUserTeamId] = useState<number | null>(null);
   const [viewTeamId, setViewTeamId] = useState<number | null>(null);
+  const [focusTeamId, setFocusTeamId] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<DraftViewMode>("classic");
   const [loaded, setLoaded] = useState(false);
   const [searchKey, setSearchKey] = useState<string | null>(null);
@@ -586,6 +731,8 @@ export function MockDraftBoard({
 
   // In manual mode there's no "your team", so the roster viewer starts on the first team.
   const lineupTeamId = viewTeamId ?? (isManual ? teams[0]?.id ?? null : userTeamId ?? teams[0]?.id ?? null);
+  const lineupRows = lineupTeamId != null ? lineupFor(lineupTeamId) : [];
+  const lineupTeam = teams.find((team) => team.id === lineupTeamId);
 
   return (
     <div>
@@ -620,6 +767,19 @@ export function MockDraftBoard({
             </button>
           ))}
         </div>
+        <label className="text-xs font-semibold text-text-muted">Board focus:</label>
+        <select
+          value={focusTeamId ?? ""}
+          onChange={(e) => setFocusTeamId(e.target.value ? Number(e.target.value) : null)}
+          className="rounded-md border border-border bg-card px-2 py-1 text-sm font-medium"
+        >
+          <option value="">All teams</option>
+          {teams.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.name}
+            </option>
+          ))}
+        </select>
         <button
           onClick={autodraftRest}
           className="shrink-0 rounded-lg bg-text px-2.5 py-1 font-cond text-xs font-semibold text-white hover:opacity-90"
@@ -647,26 +807,37 @@ export function MockDraftBoard({
         </button>
       </div>
 
-      <div className="mb-3 rounded-xl border border-border bg-card p-3 shadow-sm">
-        <div className="mb-2 flex flex-wrap items-center gap-2">
-          <span className="font-cond text-sm font-semibold">
-            {isComplete ? "Full mock draft lineup:" : "Live team roster:"}
-          </span>
-          <select
-            value={lineupTeamId ?? ""}
-            onChange={(e) => setViewTeamId(Number(e.target.value))}
-            className="rounded-md border border-border bg-card px-2 py-1 text-sm font-medium"
-          >
-            {teams.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="max-h-80 overflow-y-auto">
-          {lineupTeamId != null &&
-            lineupFor(lineupTeamId).map(({ label, player, draftSlot }, i) => (
+      {viewMode === "underdog" ? (
+        <UnderdogRosterPanel
+          board={board}
+          picks={picks}
+          rows={lineupRows}
+          teams={teams}
+          team={lineupTeam}
+          selectedTeamId={lineupTeamId}
+          isComplete={isComplete}
+          onTeamChange={setViewTeamId}
+        />
+      ) : (
+        <div className="mb-3 rounded-xl border border-border bg-card p-3 shadow-sm">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <span className="font-cond text-sm font-semibold">
+              {isComplete ? "Full mock draft lineup:" : "Live team roster:"}
+            </span>
+            <select
+              value={lineupTeamId ?? ""}
+              onChange={(e) => setViewTeamId(Number(e.target.value))}
+              className="rounded-md border border-border bg-card px-2 py-1 text-sm font-medium"
+            >
+              {teams.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="max-h-80 overflow-y-auto">
+            {lineupRows.map(({ label, player, draftSlot }, i) => (
               <div
                 key={draftSlot ? key(draftSlot.round, draftSlot.slot) : `${label}-${i}`}
                 className="flex items-center gap-2 border-b border-border py-1.5 last:border-0"
@@ -690,8 +861,9 @@ export function MockDraftBoard({
                 )}
               </div>
             ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {searchSlot && (
         <div className="mb-3 rounded-xl border border-border bg-card p-3 shadow-sm">
@@ -747,7 +919,7 @@ export function MockDraftBoard({
           teams={teams}
           picks={picks}
           userTeamId={userTeamId}
-          focusedTeamId={lineupTeamId}
+          focusedTeamId={focusTeamId}
           isManual={isManual}
           onTheClockKey={onTheClockKey}
           openSearch={openSearch}
@@ -766,7 +938,7 @@ export function MockDraftBoard({
                   const picked = slot.locked ?? picks[k];
                   const isOnClock = k === onTheClockKey;
                   const isUserSlot = isManual || slot.teamId === userTeamId;
-                  const isFocusedSlot = lineupTeamId == null || slot.teamId === lineupTeamId;
+                  const isFocusedSlot = focusTeamId == null || slot.teamId === focusTeamId;
                   const canEdit = slot.round <= 11 && !slot.locked;
 
                   return (
