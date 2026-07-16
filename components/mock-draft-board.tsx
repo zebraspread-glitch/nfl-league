@@ -42,6 +42,7 @@ interface DraftAnalysisTeam {
   balanceScore: number;
   totalScore: number;
   positionCounts: Record<UnderdogHeaderPosition, number>;
+  starters: FilledLineupRow[];
   topPlayer?: DraftAnalysisPick;
   bestValue?: DraftAnalysisPick;
 }
@@ -733,6 +734,99 @@ function DraftCompletePrompt({ onViewAnalysis, onDismiss }: { onViewAnalysis: ()
   );
 }
 
+function starterRankLabel(player: MockPlayer) {
+  const positionRank = player.underdogPositionRank?.match(/\d+$/)?.[0];
+  if (positionRank) return `#${positionRank}`;
+  const fallbackRank = player.adp ?? player.rank;
+  return typeof fallbackRank === "number" ? `#${Math.round(fallbackRank)}` : "";
+}
+
+function starterSlotLabel(starters: FilledLineupRow[], index: number) {
+  const label = starters[index].label;
+  if (label === "RB" || label === "WR") {
+    const occurrence = starters.slice(0, index + 1).filter((row) => row.label === label).length;
+    return `${label}${occurrence}`;
+  }
+  if (label === "RB/WR") return "FLX";
+  if (label === "DEF") return "DST";
+  return label;
+}
+
+function DraftStartingLineupChart({
+  entry,
+  rankings,
+  onTeamChange,
+}: {
+  entry: DraftAnalysisTeam;
+  rankings: DraftAnalysisTeam[];
+  onTeamChange: (teamId: number) => void;
+}) {
+  const maxProjected = Math.max(...entry.starters.map((row) => row.player.projected ?? 0), 1);
+
+  return (
+    <div className="mt-4 rounded-lg border border-[#d9e0e8] bg-white p-4 text-[#111827]">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div className="font-cond text-lg font-extrabold">Starting Lineup</div>
+          <div className="mt-0.5 text-xs font-semibold text-[#657282]">
+            {entry.team.name} - {formatDraftNumber(entry.startersProjected)} starter projection
+          </div>
+        </div>
+        <select
+          value={entry.team.id}
+          onChange={(event) => onTeamChange(Number(event.target.value))}
+          className="rounded-md border border-[#cfd7e2] bg-white px-2.5 py-1.5 font-cond text-xs font-bold uppercase text-[#111827] outline-none focus:border-teal"
+        >
+          {rankings.map((teamEntry, index) => (
+            <option key={teamEntry.team.id} value={teamEntry.team.id}>
+              #{index + 1} {teamEntry.team.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="mt-5 overflow-x-auto pb-1">
+        <div className="flex min-w-[44rem] items-end justify-between gap-4">
+          {entry.starters.map((row, index) => {
+            const player = row.player;
+            const projection = player.projected ?? 0;
+            const height = 5 + (projection / maxProjected) * 7;
+            const color = UNDERDOG_POS_COLOR[player.pos] ?? "#a8becd";
+            const isDef = player.pos === "DEF";
+
+            return (
+              <div key={`${row.draftSlot.round}-${row.draftSlot.slot}-${row.label}`} title={player.name} className="flex w-16 shrink-0 flex-col items-center">
+                <div className="mb-1 h-4 font-cond text-xs font-extrabold leading-none text-[#111827]">{starterRankLabel(player)}</div>
+                <div
+                  className="relative flex w-12 items-end justify-center overflow-hidden rounded-t-md"
+                  style={{
+                    height: `${height}rem`,
+                    backgroundColor: `${color}45`,
+                    boxShadow: `inset 0 0 0 1px ${color}55`,
+                    backgroundImage:
+                      "radial-gradient(circle at 28% 20%, rgba(255,255,255,0.35) 0 7%, transparent 8%), radial-gradient(circle at 70% 52%, rgba(255,255,255,0.22) 0 6%, transparent 7%), radial-gradient(circle at 45% 82%, rgba(255,255,255,0.25) 0 5%, transparent 6%)",
+                  }}
+                >
+                  <div className="absolute bottom-0 z-10 grid h-11 w-11 place-items-end overflow-hidden">
+                    {isDef ? (
+                      <span className="grid h-10 w-10 place-items-center rounded bg-[#17344c] font-cond text-sm font-extrabold text-white">
+                        {player.proTeam}
+                      </span>
+                    ) : (
+                      <SleeperPlayerAvatar sleeperId={player.sleeperId ?? ""} pos={player.pos} name={player.name} size="md" />
+                    )}
+                  </div>
+                </div>
+                <div className="mt-2 font-cond text-xs font-extrabold text-[#3d4752]">{starterSlotLabel(entry.starters, index)}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function DraftAnalysisModal({
   rankings,
   highlights,
@@ -742,6 +836,9 @@ function DraftAnalysisModal({
   highlights: DraftAnalysisHighlight[];
   onClose: () => void;
 }) {
+  const [selectedTeamId, setSelectedTeamId] = useState<number | null>(rankings[0]?.team.id ?? null);
+  const selectedEntry = rankings.find((entry) => entry.team.id === selectedTeamId) ?? rankings[0];
+
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/65 px-3 py-5">
       <div className="flex max-h-[92dvh] w-full max-w-6xl flex-col overflow-hidden rounded-xl border border-white/10 bg-[#111] text-white shadow-2xl">
@@ -770,6 +867,10 @@ function DraftAnalysisModal({
             ))}
           </div>
 
+          {selectedEntry && (
+            <DraftStartingLineupChart entry={selectedEntry} rankings={rankings} onTeamChange={setSelectedTeamId} />
+          )}
+
           <div className="mt-4 overflow-x-auto rounded-lg border border-white/10">
             <div className="min-w-[56rem]">
               <div className="grid grid-cols-[3rem_minmax(12rem,1fr)_5rem_5.5rem_5.5rem_7.5rem_minmax(10rem,1fr)] gap-3 border-b border-white/10 bg-white/[0.05] px-3 py-2 font-cond text-[11px] font-extrabold uppercase text-white/55">
@@ -782,9 +883,13 @@ function DraftAnalysisModal({
                 <span>Best Pick</span>
               </div>
               {rankings.map((entry, index) => (
-                <div
+                <button
                   key={entry.team.id}
-                  className="grid grid-cols-[3rem_minmax(12rem,1fr)_5rem_5.5rem_5.5rem_7.5rem_minmax(10rem,1fr)] items-center gap-3 border-b border-white/10 px-3 py-2 last:border-b-0"
+                  type="button"
+                  onClick={() => setSelectedTeamId(entry.team.id)}
+                  className={`grid w-full grid-cols-[3rem_minmax(12rem,1fr)_5rem_5.5rem_5.5rem_7.5rem_minmax(10rem,1fr)] items-center gap-3 border-b border-white/10 px-3 py-2 text-left last:border-b-0 hover:bg-white/[0.06] ${
+                    selectedEntry?.team.id === entry.team.id ? "bg-white/[0.08]" : ""
+                  }`}
                 >
                   <div className="font-cond text-lg font-extrabold text-white/80">#{index + 1}</div>
                   <div className="flex min-w-0 items-center gap-2">
@@ -812,7 +917,7 @@ function DraftAnalysisModal({
                       <span className="text-xs font-semibold text-white/45">No ADP value</span>
                     )}
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           </div>
@@ -1171,6 +1276,7 @@ export function MockDraftBoard({
           balanceScore,
           totalScore,
           positionCounts,
+          starters: starterRows,
           topPlayer,
           bestValue,
         };
