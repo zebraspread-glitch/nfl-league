@@ -57,7 +57,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       </head>
       <body className={`${geistSans.variable} ${saira.variable}`}>
         <SettingsProvider>
-          <div className="mx-auto flex min-h-dvh max-w-xl flex-col bg-bg">
+          <div className="mx-auto flex min-h-dvh max-w-xl flex-col bg-bg lg:max-w-none">
             <TopBar />
             <main
               className="flex-1 px-3 pb-24"

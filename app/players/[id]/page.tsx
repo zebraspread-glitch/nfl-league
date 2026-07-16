@@ -348,7 +348,7 @@ function CurrentPlayerProfile({
   const isStatsTab = tab === "stats";
 
   return (
-    <div className="-mx-3 -mt-3 min-h-[calc(100dvh-4rem)] bg-[#d9d6cf] pb-10 text-[#303236] sm:mx-auto sm:max-w-xl sm:overflow-hidden sm:rounded-2xl">
+    <div className="-mx-3 -mt-3 min-h-[calc(100dvh-4rem)] bg-[#d9d6cf] pb-10 text-[#303236] sm:mx-auto sm:max-w-xl sm:overflow-hidden sm:rounded-2xl lg:max-w-none lg:rounded-none">
       <section className="relative overflow-hidden bg-[#eeeeef] shadow-[0_4px_10px_rgba(0,0,0,0.22)]">
         {teamLogo ? (
           // eslint-disable-next-line @next/next/no-img-element
