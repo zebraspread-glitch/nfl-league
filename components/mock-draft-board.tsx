@@ -570,8 +570,8 @@ export function MockDraftBoard({
     };
   }, [board, picks, rankByName]);
 
-  // In manual mode there's no "your team", so the lineup viewer starts on the first team.
-  const lineupTeamId = viewTeamId ?? (isManual ? teams[0]?.id ?? null : userTeamId);
+  // In manual mode there's no "your team", so the roster viewer starts on the first team.
+  const lineupTeamId = viewTeamId ?? (isManual ? teams[0]?.id ?? null : userTeamId ?? teams[0]?.id ?? null);
 
   return (
     <div>
@@ -633,51 +633,51 @@ export function MockDraftBoard({
         </button>
       </div>
 
-      {isComplete && (
-        <div className="mb-3 rounded-xl border border-border bg-card p-3 shadow-sm">
-          <div className="mb-2 flex items-center gap-2">
-            <span className="font-cond text-sm font-semibold">Full mock draft lineup:</span>
-            <select
-              value={lineupTeamId ?? ""}
-              onChange={(e) => setViewTeamId(Number(e.target.value))}
-              className="rounded-md border border-border bg-card px-2 py-1 text-sm font-medium"
-            >
-              {teams.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="max-h-80 overflow-y-auto">
-            {lineupTeamId != null &&
-              lineupFor(lineupTeamId).map(({ label, player, draftSlot }, i) => (
-                <div
-                  key={draftSlot ? key(draftSlot.round, draftSlot.slot) : `${label}-${i}`}
-                  className="flex items-center gap-2 border-b border-border py-1.5 last:border-0"
-                >
-                  <span className="w-11 shrink-0 text-center font-cond text-xs font-bold text-text-muted">
-                    {label}
-                  </span>
-                  {player ? (
-                    <>
-                      <SleeperPlayerAvatar sleeperId={player.sleeperId ?? ""} pos={player.pos} name={player.name} size="sm" />
-                      <span className="min-w-0 flex-1 truncate text-sm font-medium">{player.name}</span>
-                      <span
-                        className="shrink-0 rounded px-1.5 py-0.5 font-cond text-[10px] font-bold uppercase text-white"
-                        style={{ background: POS_COLOR[player.pos] ?? "#9aa1ad" }}
-                      >
-                        {player.proTeam} - {player.pos}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="min-w-0 flex-1 truncate text-sm font-medium text-text-dim">Empty {label}</span>
-                  )}
-                </div>
-              ))}
-          </div>
+      <div className="mb-3 rounded-xl border border-border bg-card p-3 shadow-sm">
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          <span className="font-cond text-sm font-semibold">
+            {isComplete ? "Full mock draft lineup:" : "Live team roster:"}
+          </span>
+          <select
+            value={lineupTeamId ?? ""}
+            onChange={(e) => setViewTeamId(Number(e.target.value))}
+            className="rounded-md border border-border bg-card px-2 py-1 text-sm font-medium"
+          >
+            {teams.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
+          </select>
         </div>
-      )}
+        <div className="max-h-80 overflow-y-auto">
+          {lineupTeamId != null &&
+            lineupFor(lineupTeamId).map(({ label, player, draftSlot }, i) => (
+              <div
+                key={draftSlot ? key(draftSlot.round, draftSlot.slot) : `${label}-${i}`}
+                className="flex items-center gap-2 border-b border-border py-1.5 last:border-0"
+              >
+                <span className="w-11 shrink-0 text-center font-cond text-xs font-bold text-text-muted">
+                  {label}
+                </span>
+                {player ? (
+                  <>
+                    <SleeperPlayerAvatar sleeperId={player.sleeperId ?? ""} pos={player.pos} name={player.name} size="sm" />
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium">{player.name}</span>
+                    <span
+                      className="shrink-0 rounded px-1.5 py-0.5 font-cond text-[10px] font-bold uppercase text-white"
+                      style={{ background: POS_COLOR[player.pos] ?? "#9aa1ad" }}
+                    >
+                      {player.proTeam} - {player.pos}
+                    </span>
+                  </>
+                ) : (
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-text-dim">Empty {label}</span>
+                )}
+              </div>
+            ))}
+        </div>
+      </div>
 
       {searchSlot && (
         <div className="mb-3 rounded-xl border border-border bg-card p-3 shadow-sm">
