@@ -77,8 +77,55 @@ const WEEK_ONE_MATCHUPS: Matchup[] = [
   },
 ];
 
+const WEEK_FOURTEEN_MATCHUPS: Matchup[] = [
+  {
+    id: "14-1",
+    week: 14,
+    status: "upcoming",
+    away: matchupSide(9),
+    home: matchupSide(11),
+  },
+  {
+    id: "14-2",
+    week: 14,
+    status: "upcoming",
+    away: matchupSide(1),
+    home: matchupSide(2),
+  },
+  {
+    id: "14-3",
+    week: 14,
+    status: "upcoming",
+    away: matchupSide(6),
+    home: matchupSide(10),
+  },
+  {
+    id: "14-4",
+    week: 14,
+    status: "upcoming",
+    away: matchupSide(5),
+    home: matchupSide(4),
+  },
+  {
+    id: "14-5",
+    week: 14,
+    status: "upcoming",
+    away: matchupSide(8),
+    home: matchupSide(12),
+  },
+  {
+    id: "14-6",
+    week: 14,
+    status: "upcoming",
+    away: matchupSide(7),
+    home: matchupSide(3),
+  },
+];
+
 export function getCurrentSeasonMatchups(week: number): Matchup[] {
-  return week === 1 ? WEEK_ONE_MATCHUPS : [];
+  if (week === 1) return WEEK_ONE_MATCHUPS;
+  if (week === 14) return WEEK_FOURTEEN_MATCHUPS;
+  return [];
 }
 
 export function getFallbackMatchups(week: number): Matchup[] {

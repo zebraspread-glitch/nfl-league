@@ -6,7 +6,7 @@ import { EmptyState } from "@/components/ui";
 export const revalidate = 120;
 
 const TOTAL_WEEKS = 14;
-const AVAILABLE_WEEKS = [1];
+const AVAILABLE_WEEKS = [1, 14];
 const PRIMETIME_MATCHUP_ID = "1-primetime";
 
 export default async function MatchupsPage({
