@@ -410,10 +410,11 @@ export function draftValue(p: MockPlayer): number {
 
 // Randomness mirrors real drafters occasionally reaching a few spots early —
 // weights apply to the top of the candidate list after need adjustments.
-const VARIANCE_WEIGHTS = [0.55, 0.22, 0.13, 0.06, 0.04];
+const VARIANCE_WEIGHTS = [0.42, 0.22, 0.14, 0.09, 0.06, 0.04, 0.03];
 // Candidates more than this many value spots behind the best option are never
 // picked. Big tier gaps therefore make a pick deterministic (e.g. the 1.01).
-const TIER_WIDTH = 12;
+const TIER_WIDTH = 18;
+const SCORE_JITTER = 6;
 // Value-spot boosts for matching a listed team need / plugging an empty starting slot.
 const NEED_BONUS = 10;
 const LINEUP_BONUS = 6;
@@ -427,6 +428,17 @@ const FIXED_AUTOPICK_PLAN = [
   ["Drake Maye", "Javonte Williams"],
   ["Javonte Williams", "Tee Higgins"],
 ];
+
+function weightedRandom<T>(candidates: T[], random: () => number): T | undefined {
+  if (!candidates.length) return undefined;
+  const r = random();
+  let acc = 0;
+  for (let i = 0; i < candidates.length; i++) {
+    acc += VARIANCE_WEIGHTS[i];
+    if (r <= acc) return candidates[i];
+  }
+  return candidates[0];
+}
 
 interface LineupHole {
   label: string;
@@ -479,6 +491,7 @@ export function computeAutopick({
 }): MockPlayer | undefined {
   if (!available.length) return undefined;
   const fixedPick = overallPick ? FIXED_AUTOPICK_PLAN[overallPick - 1] : undefined;
+  const allowVariance = !overallPick || overallPick > FIXED_AUTOPICK_PLAN.length;
   if (fixedPick) {
     const lockedIn = fixedPick
       .map((name) => available.find((p) => p.name === name))
@@ -492,7 +505,12 @@ export function computeAutopick({
   // Endgame: no picks to spare, so plug the empty starting slots — this is what
   // pushes K/DEF (and a forgotten QB or TE) into a team's final picks.
   if (remainingPicks <= holes.length) {
-    const mustFill = pool.find((p) => holes.some((h) => h.fits(p.pos)));
+    const mustFill = allowVariance
+      ? weightedRandom(
+          pool.filter((p) => holes.some((h) => h.fits(p.pos))).slice(0, VARIANCE_WEIGHTS.length),
+          random
+        )
+      : pool.find((p) => holes.some((h) => h.fits(p.pos)));
     if (mustFill) return mustFill;
   }
 
@@ -510,23 +528,18 @@ export function computeAutopick({
 
   const hasQB = roster.some((p) => p.pos === "QB");
   const hasTE = roster.some((p) => p.pos === "TE");
-  const scored = pool.slice(0, 30).map((p) => {
+  const scored = pool.slice(0, 36).map((p) => {
     let score = draftValue(p);
     if (p.pos === "K" || p.pos === "DEF") score += 500; // only drafted via the endgame branch above
     if (p.pos === "QB" && hasQB) score += 150; // 1-QB league — nobody drafts two
     if (p.pos === "TE" && hasTE) score += 80;
     if (needs.includes(p.pos) || (needs.includes("FLX") && (p.pos === "RB" || p.pos === "WR"))) score -= NEED_BONUS;
     if (holes.some((h) => h.fits(p.pos))) score -= LINEUP_BONUS;
+    if (allowVariance) score += random() * SCORE_JITTER;
     return { player: p, score };
   });
   scored.sort((a, b) => a.score - b.score);
 
   const candidates = scored.filter((c, i) => i < VARIANCE_WEIGHTS.length && c.score - scored[0].score <= TIER_WIDTH);
-  const r = random();
-  let acc = 0;
-  for (let i = 0; i < candidates.length; i++) {
-    acc += VARIANCE_WEIGHTS[i];
-    if (r <= acc) return candidates[i].player;
-  }
-  return candidates[0].player;
+  return weightedRandom(candidates, random)?.player;
 }
