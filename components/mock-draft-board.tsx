@@ -106,16 +106,29 @@ function overallPick(round: number, slot: number, columnCount: number) {
   return (round - 1) * columnCount + slot;
 }
 
-function columnForSlot(slot: DraftSlot, columnCount: number) {
-  return slot.round % 2 === 0 ? columnCount - slot.slot + 1 : slot.slot;
-}
-
 function positionCountsFor(board: DraftSlot[], picks: Picks, teamId: number) {
   const { keepers, drafted } = rosterEntriesFor(board, picks, teamId);
   const roster = [...keepers, ...drafted];
   return Object.fromEntries(
     UNDERDOG_HEADER_POSITIONS.map((pos) => [pos, roster.filter((player) => player.pos === pos).length])
   ) as Record<(typeof UNDERDOG_HEADER_POSITIONS)[number], number>;
+}
+
+function UnderdogTeamPickTag({ team, dark = false }: { team?: TeamMeta; dark?: boolean }) {
+  return (
+    <div
+      title={team ? `${team.name} pick` : "Team pick"}
+      className={`absolute left-1.5 top-1 z-20 flex max-w-[5rem] items-center gap-1 rounded px-1 py-0.5 font-cond text-[9px] font-extrabold uppercase ${
+        dark ? "bg-white/10 text-white/75" : "bg-black/20 text-black/70"
+      }`}
+    >
+      <span
+        className="h-2 w-2 shrink-0 rounded-full"
+        style={{ background: team ? `linear-gradient(135deg, ${team.primary}, ${team.secondary})` : "#8f98a3" }}
+      />
+      <span className="truncate">{team?.abbrev ?? "FA"}</span>
+    </div>
+  );
 }
 
 function UnderdogPlayerImage({ player }: { player: MockPlayer }) {
@@ -177,13 +190,14 @@ function UnderdogPickCard({
     const bg = UNDERDOG_POS_COLOR[picked.pos] ?? "#aeb6c0";
     const content = (
       <>
-        <div className="absolute right-1.5 top-1 text-[10px] font-bold text-black/40">{pickNumber}</div>
+        <UnderdogTeamPickTag team={team} />
+        <div className="absolute right-1.5 top-1 text-[10px] font-bold text-black/40">#{pickNumber}</div>
         {slot.locked && (
-          <div className="absolute left-1.5 top-1 rounded bg-black/20 px-1 font-cond text-[9px] font-bold uppercase text-black/65">
+          <div className="absolute right-1.5 top-4 rounded bg-black/20 px-1 font-cond text-[9px] font-bold uppercase text-black/65">
             Keep
           </div>
         )}
-        <div className="relative z-10 flex h-full flex-col justify-between p-2 pr-12 text-[#111418]">
+        <div className="relative z-10 flex h-full flex-col justify-between p-2 pr-12 pt-5 text-[#111418]">
           <div className="min-w-0">
             <div className="truncate font-cond text-sm font-extrabold uppercase leading-none">{compactPlayerName(picked.name)}</div>
             <div className="mt-1 truncate text-[10px] font-bold uppercase text-black/55">
@@ -227,10 +241,13 @@ function UnderdogPickCard({
       disabled={!canEdit}
       className={`${baseClass} ${clockClass} border-[#2a2a2a] bg-[#1b1b1b] p-2 text-white disabled:cursor-default`}
     >
-      <div className="absolute right-1.5 top-1 text-[10px] font-bold text-white/30">{pickNumber}</div>
-      <div className="flex h-full flex-col justify-between">
+      <UnderdogTeamPickTag team={team} dark />
+      <div className="absolute right-1.5 top-1 text-[10px] font-bold text-white/30">#{pickNumber}</div>
+      <div className="flex h-full flex-col justify-between pt-5">
         <div>
-          <div className="truncate pr-8 font-cond text-xs font-bold uppercase text-white/70">{team?.abbrev ?? "FA"}</div>
+          <div className="truncate pr-8 font-cond text-xs font-bold uppercase text-white/70">
+            {team?.name ?? "Team pick"}
+          </div>
           <div className="mt-1 flex flex-wrap gap-1">
             {(TEAM_NEEDS[slot.teamId] ?? []).slice(0, 3).map((need) => (
               <span key={need} className="rounded bg-white/10 px-1 font-cond text-[9px] font-bold text-white/55">
@@ -261,6 +278,7 @@ function UnderdogPickCard({
 function UnderdogDraftBoard({
   board,
   rounds,
+  teams,
   picks,
   userTeamId,
   isManual,
@@ -269,71 +287,80 @@ function UnderdogDraftBoard({
 }: {
   board: DraftSlot[];
   rounds: [number, DraftSlot[]][];
+  teams: TeamMeta[];
   picks: Picks;
   userTeamId: number | null;
   isManual: boolean;
   onTheClockKey: string | null;
   openSearch: (slot: DraftSlot) => void;
 }) {
-  const columnCount = Math.max(...board.map((slot) => slot.slot));
+  const roundPickCount = Math.max(...board.map((slot) => slot.slot));
+  const columnCount = teams.length;
   const gridStyle = { gridTemplateColumns: `repeat(${columnCount}, minmax(8.75rem, 8.75rem))` };
   const rows = rounds.map(([round, slots]) => {
-    const cells: (DraftSlot | undefined)[] = Array(columnCount);
-    for (const slot of slots) cells[columnForSlot(slot, columnCount) - 1] = slot;
+    const cells = teams.map((team) => ({
+      team,
+      slots: slots.filter((slot) => slot.teamId === team.id).sort((a, b) => a.slot - b.slot),
+    }));
     return { round, cells };
   });
-  const headerSlots = rows[0]?.cells ?? [];
 
   return (
     <div className="overflow-x-auto rounded-xl bg-[#101010] p-1.5 shadow-sm">
       <div className="grid min-w-max gap-1.5" style={gridStyle}>
-        {headerSlots.map((slot, i) => {
-          const team = slot ? teamById(slot.teamId) : undefined;
-          const counts = slot ? positionCountsFor(board, picks, slot.teamId) : null;
+        {teams.map((team) => {
+          const counts = positionCountsFor(board, picks, team.id);
           return (
-            <div key={slot ? key(slot.round, slot.slot) : `header-${i}`} className="h-[7.35rem] rounded-md border border-[#2b2b2b] bg-[#171717] p-2 text-white">
-              {team ? (
-                <div className="flex h-full flex-col items-center justify-between gap-1 text-center">
-                  <TeamAvatar team={team} size="sm" />
-                  <div className="w-full truncate font-cond text-[13px] font-extrabold uppercase leading-none">{team.name}</div>
-                  <div className="grid w-full grid-cols-4 gap-1">
-                    {UNDERDOG_HEADER_POSITIONS.map((pos) => (
-                      <div key={pos} className="min-w-0 text-center">
-                        <div
-                          className="font-cond text-[10px] font-extrabold leading-none"
-                          style={{ color: UNDERDOG_POS_COLOR[pos] }}
-                        >
-                          {pos}
-                        </div>
-                        <div className="font-cond text-sm font-extrabold leading-tight text-white/90">{counts?.[pos] ?? 0}</div>
+            <div key={team.id} className="h-[7.35rem] rounded-md border border-[#2b2b2b] bg-[#171717] p-2 text-white">
+              <div className="flex h-full flex-col items-center justify-between gap-1 text-center">
+                <TeamAvatar team={team} size="sm" />
+                <div className="w-full truncate font-cond text-[13px] font-extrabold uppercase leading-none">{team.name}</div>
+                <div className="grid w-full grid-cols-4 gap-1">
+                  {UNDERDOG_HEADER_POSITIONS.map((pos) => (
+                    <div key={pos} className="min-w-0 text-center">
+                      <div
+                        className="font-cond text-[10px] font-extrabold leading-none"
+                        style={{ color: UNDERDOG_POS_COLOR[pos] }}
+                      >
+                        {pos}
                       </div>
-                    ))}
-                  </div>
+                      <div className="font-cond text-sm font-extrabold leading-tight text-white/90">{counts[pos]}</div>
+                    </div>
+                  ))}
                 </div>
-              ) : null}
+              </div>
             </div>
           );
         })}
 
         {rows.map(({ round, cells }) =>
-          cells.map((slot, i) => {
-            if (!slot) return <div key={`${round}-${i}`} className="h-20 rounded-md bg-[#151515]" />;
-            const k = key(slot.round, slot.slot);
-            const picked = slot.locked ?? picks[k];
-            const isOnClock = k === onTheClockKey;
-            const isUserSlot = isManual || slot.teamId === userTeamId;
-            const canEdit = slot.round <= 11 && !slot.locked;
+          cells.map(({ team, slots }) => {
+            if (!slots.length) {
+              return <div key={`${round}-${team.id}`} className="h-20 rounded-md border border-[#1f1f1f] bg-[#151515]" />;
+            }
+
             return (
-              <UnderdogPickCard
-                key={k}
-                slot={slot}
-                picked={picked}
-                columnCount={columnCount}
-                isOnClock={isOnClock}
-                isUserSlot={isUserSlot}
-                canEdit={canEdit}
-                onOpen={() => openSearch(slot)}
-              />
+              <div key={`${round}-${team.id}`} className="flex flex-col gap-1.5">
+                {slots.map((slot) => {
+                  const k = key(slot.round, slot.slot);
+                  const picked = slot.locked ?? picks[k];
+                  const isOnClock = k === onTheClockKey;
+                  const isUserSlot = isManual || slot.teamId === userTeamId;
+                  const canEdit = slot.round <= 11 && !slot.locked;
+                  return (
+                    <UnderdogPickCard
+                      key={k}
+                      slot={slot}
+                      picked={picked}
+                      columnCount={roundPickCount}
+                      isOnClock={isOnClock}
+                      isUserSlot={isUserSlot}
+                      canEdit={canEdit}
+                      onOpen={() => openSearch(slot)}
+                    />
+                  );
+                })}
+              </div>
             );
           })
         )}
@@ -711,6 +738,7 @@ export function MockDraftBoard({
         <UnderdogDraftBoard
           board={board}
           rounds={rounds}
+          teams={teams}
           picks={picks}
           userTeamId={userTeamId}
           isManual={isManual}
