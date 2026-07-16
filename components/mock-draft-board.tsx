@@ -107,7 +107,7 @@ function overallPick(round: number, slot: number, columnCount: number) {
 }
 
 function columnForSlot(slot: DraftSlot, columnCount: number) {
-  return slot.round % 2 === 0 ? columnCount - slot.slot + 1 : slot.slot;
+  return Math.min(slot.slot, columnCount);
 }
 
 function positionCountsFor(board: DraftSlot[], picks: Picks, teamId: number) {
@@ -171,6 +171,7 @@ function UnderdogPickCard({
   columnCount,
   isOnClock,
   isUserSlot,
+  isDimmed,
   canEdit,
   onOpen,
 }: {
@@ -179,16 +180,18 @@ function UnderdogPickCard({
   columnCount: number;
   isOnClock: boolean;
   isUserSlot: boolean;
+  isDimmed: boolean;
   canEdit: boolean;
   onOpen: () => void;
 }) {
   const team = teamById(slot.teamId);
   const pickLabel = `${slot.round}.${slot.slot}`;
   const pickNumber = overallPick(slot.round, slot.slot, columnCount);
-  const direction = slot.round % 2 === 0 ? "<" : ">";
+  const direction = ">";
   const baseClass =
     "relative h-20 w-full overflow-hidden rounded-md border text-left shadow-sm transition focus:outline-none focus:ring-2 focus:ring-white/70";
   const clockClass = isOnClock ? "ring-2 ring-[#f5d15f] ring-offset-1 ring-offset-[#101010]" : "";
+  const focusClass = isDimmed ? "opacity-25" : "opacity-100";
 
   if (picked) {
     const bg = UNDERDOG_POS_COLOR[picked.pos] ?? "#aeb6c0";
@@ -223,7 +226,7 @@ function UnderdogPickCard({
           type="button"
           onClick={onOpen}
           title="Change this pick"
-          className={`${baseClass} ${clockClass} border-black/60 hover:brightness-105`}
+          className={`${baseClass} ${clockClass} ${focusClass} border-black/60 hover:brightness-105`}
           style={{ background: bg }}
         >
           {content}
@@ -232,7 +235,7 @@ function UnderdogPickCard({
     }
 
     return (
-      <div className={`${baseClass} ${clockClass} border-black/60`} style={{ background: bg }}>
+      <div className={`${baseClass} ${clockClass} ${focusClass} border-black/60`} style={{ background: bg }}>
         {content}
       </div>
     );
@@ -243,7 +246,7 @@ function UnderdogPickCard({
       type="button"
       onClick={onOpen}
       disabled={!canEdit}
-      className={`${baseClass} ${clockClass} border-[#2a2a2a] bg-[#1b1b1b] p-2 text-white disabled:cursor-default`}
+      className={`${baseClass} ${clockClass} ${focusClass} border-[#2a2a2a] bg-[#1b1b1b] p-2 text-white disabled:cursor-default`}
     >
       <UnderdogTeamPickTag team={team} dark />
       <div className="absolute right-1.5 top-1 text-[10px] font-bold text-white/30">#{pickNumber}</div>
@@ -285,6 +288,7 @@ function UnderdogDraftBoard({
   teams,
   picks,
   userTeamId,
+  focusedTeamId,
   isManual,
   onTheClockKey,
   openSearch,
@@ -294,12 +298,14 @@ function UnderdogDraftBoard({
   teams: TeamMeta[];
   picks: Picks;
   userTeamId: number | null;
+  focusedTeamId: number | null;
   isManual: boolean;
   onTheClockKey: string | null;
   openSearch: (slot: DraftSlot) => void;
 }) {
   const columnCount = Math.max(...board.map((slot) => slot.slot));
   const gridStyle = { gridTemplateColumns: `repeat(${columnCount}, minmax(8.75rem, 8.75rem))` };
+  const headerTeams = teams.slice(0, columnCount).reverse();
   const rows = rounds.map(([round, slots]) => {
     const cells: (DraftSlot | undefined)[] = Array(columnCount);
     for (const slot of slots) cells[columnForSlot(slot, columnCount) - 1] = slot;
@@ -309,10 +315,16 @@ function UnderdogDraftBoard({
   return (
     <div className="overflow-x-auto rounded-xl bg-[#101010] p-1.5 shadow-sm">
       <div className="grid min-w-max gap-1.5" style={gridStyle}>
-        {teams.slice(0, columnCount).map((team) => {
+        {headerTeams.map((team) => {
           const counts = positionCountsFor(board, picks, team.id);
+          const isFocusedHeader = focusedTeamId == null || team.id === focusedTeamId;
           return (
-            <div key={team.id} className="h-[7.35rem] rounded-md border border-[#2b2b2b] bg-[#171717] p-2 text-white">
+            <div
+              key={team.id}
+              className={`h-[7.35rem] rounded-md border border-[#2b2b2b] bg-[#171717] p-2 text-white transition-opacity ${
+                isFocusedHeader ? "opacity-100" : "opacity-25"
+              }`}
+            >
               <div className="flex h-full flex-col items-center justify-between gap-1 text-center">
                 <TeamAvatar team={team} size="sm" />
                 <div className="w-full truncate font-cond text-[13px] font-extrabold uppercase leading-none">{team.name}</div>
@@ -341,6 +353,7 @@ function UnderdogDraftBoard({
             const picked = slot.locked ?? picks[k];
             const isOnClock = k === onTheClockKey;
             const isUserSlot = isManual || slot.teamId === userTeamId;
+            const isDimmed = focusedTeamId != null && slot.teamId !== focusedTeamId;
             const canEdit = slot.round <= 11 && !slot.locked;
             return (
               <UnderdogPickCard
@@ -350,6 +363,7 @@ function UnderdogDraftBoard({
                 columnCount={columnCount}
                 isOnClock={isOnClock}
                 isUserSlot={isUserSlot}
+                isDimmed={isDimmed}
                 canEdit={canEdit}
                 onOpen={() => openSearch(slot)}
               />
@@ -733,6 +747,7 @@ export function MockDraftBoard({
           teams={teams}
           picks={picks}
           userTeamId={userTeamId}
+          focusedTeamId={lineupTeamId}
           isManual={isManual}
           onTheClockKey={onTheClockKey}
           openSearch={openSearch}
@@ -751,14 +766,15 @@ export function MockDraftBoard({
                   const picked = slot.locked ?? picks[k];
                   const isOnClock = k === onTheClockKey;
                   const isUserSlot = isManual || slot.teamId === userTeamId;
+                  const isFocusedSlot = lineupTeamId == null || slot.teamId === lineupTeamId;
                   const canEdit = slot.round <= 11 && !slot.locked;
 
                   return (
                     <div
                       key={k}
-                      className={`flex min-w-0 flex-col overflow-hidden rounded-lg border bg-card text-center shadow-sm ${
+                      className={`flex min-w-0 flex-col overflow-hidden rounded-lg border bg-card text-center shadow-sm transition-opacity ${
                         isOnClock ? "border-teal" : isUserSlot ? "border-teal/40" : "border-border"
-                      }`}
+                      } ${isFocusedSlot ? "opacity-100" : "opacity-25"}`}
                     >
                       <div
                         className="truncate bg-section px-1 py-1 pt-1.5 text-[10px] font-semibold text-text-muted"
