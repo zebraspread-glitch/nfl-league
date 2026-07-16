@@ -154,7 +154,7 @@ function IconPaths({ icon }: { icon: TabIcon }) {
 export function BottomNav() {
   const pathname = usePathname();
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-xl border-t border-border bg-card shadow-[0_-10px_30px_rgba(21,24,29,0.08)] lg:max-w-none">
+    <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-xl border-t border-border bg-card shadow-[0_-10px_30px_rgba(21,24,29,0.08)]">
       <div className="grid grid-cols-5">
         {TABS.map((t) => {
           const active = t.match(pathname);

@@ -42,7 +42,7 @@ export function TopBar() {
   const pathname = usePathname();
   return (
     <header
-      className="fixed inset-x-0 top-0 z-30 mx-auto max-w-xl text-white lg:max-w-none"
+      className="fixed inset-x-0 top-0 z-30 mx-auto max-w-xl text-white"
       style={{
         background: "linear-gradient(180deg, var(--teal) 0%, var(--teal-dark) 100%)",
         paddingTop: "env(safe-area-inset-top)",
