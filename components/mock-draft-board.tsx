@@ -764,8 +764,6 @@ function DraftStartingLineupChart({
   starterSlotRanks: Map<string, number>;
   onTeamChange: (teamId: number) => void;
 }) {
-  const maxProjected = Math.max(...entry.starters.map((row) => row.player.projected ?? 0), 1);
-
   return (
     <div className="mt-4 rounded-md border border-white/15 bg-[#0f0f0f] px-4 pb-10 pt-6 text-white">
       <div className="font-cond text-lg font-extrabold leading-none">Starting Lineup</div>
@@ -774,11 +772,11 @@ function DraftStartingLineupChart({
         <div className="flex min-w-[47rem] items-end justify-between gap-6 px-5 pt-6">
           {entry.starters.map((row, index) => {
             const player = row.player;
-            const projection = player.projected ?? 0;
-            const height = 4.75 + (projection / maxProjected) * 10.5;
             const isDef = player.pos === "DEF";
             const slotLabel = starterSlotLabel(entry.starters, index);
             const slotRank = starterSlotRanks.get(`${entry.team.id}:${slotLabel}`);
+            const rankForHeight = Math.min(Math.max(slotRank ?? 12, 1), 12);
+            const height = 4.75 + ((12 - rankForHeight) / 11) * 10.5;
             const color = lineupStarterColor(slotRank);
 
             return (
