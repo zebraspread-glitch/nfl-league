@@ -1,10 +1,12 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import { Geist } from "next/font/google";
 import { Saira_Condensed } from "next/font/google";
 import "./globals.css";
 import { TopBar } from "@/components/top-bar";
 import { BottomNav } from "@/components/bottom-nav";
 import { SettingsProvider } from "@/components/settings-provider";
+import { NavigationProgress } from "@/components/navigation-progress";
 
 // Runs before paint to apply the saved theme, preventing a flash of light mode
 // on load. Keep in sync with SettingsProvider's THEME_KEY.
@@ -59,6 +61,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <SettingsProvider>
           <div className="app-shell mx-auto flex min-h-dvh max-w-xl flex-col bg-bg">
             <TopBar />
+            <Suspense fallback={null}>
+              <NavigationProgress />
+            </Suspense>
             <main
               className="flex-1 px-3 pb-24"
               style={{ paddingTop: "calc(env(safe-area-inset-top) + 3.5rem + 0.75rem)" }}
