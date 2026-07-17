@@ -92,6 +92,9 @@ const UNDERDOG_POS_COLOR: Record<string, string> = {
   DEF: "#8792a2",
 };
 
+const LINEUP_STAR_PATTERN =
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='52' height='52' viewBox='0 0 52 52'%3E%3Cpath fill='%23ffffff' fill-opacity='.14' d='M26 5l4.5 14h14.7L33.3 27.6 37.8 42 26 33.2 14.2 42l4.5-14.4L6.8 19h14.7z'/%3E%3Ccircle cx='11' cy='12' r='2.5' fill='%23ffffff' fill-opacity='.1'/%3E%3Ccircle cx='41' cy='38' r='2.3' fill='%23ffffff' fill-opacity='.1'/%3E%3C/svg%3E\")";
+
 const UNDERDOG_HEADER_POSITIONS = ["QB", "RB", "WR", "TE"] as const satisfies readonly UnderdogHeaderPosition[];
 type UnderdogPickerPosition = "" | UnderdogHeaderPosition;
 
@@ -745,11 +748,15 @@ function starterSlotLabel(starters: FilledLineupRow[], index: number) {
   return label;
 }
 
+function lineupStarterColor(slotLabel: string, position: string) {
+  if (slotLabel === "WR1") return "#e9aaa3";
+  if (position === "QB" || position === "WR") return "#f5c797";
+  return "#a8cdb7";
+}
+
 function DraftStartingLineupChart({
   entry,
-  rankings,
   starterSlotRanks,
-  onTeamChange,
 }: {
   entry: DraftAnalysisTeam;
   rankings: DraftAnalysisTeam[];
@@ -757,94 +764,39 @@ function DraftStartingLineupChart({
   onTeamChange: (teamId: number) => void;
 }) {
   const maxProjected = Math.max(...entry.starters.map((row) => row.player.projected ?? 0), 1);
-  const overallRank = rankings.findIndex((teamEntry) => teamEntry.team.id === entry.team.id) + 1;
 
   return (
-    <div className="mt-4 overflow-hidden rounded-xl border border-white/10 bg-[#151515] text-white shadow-[0_16px_50px_rgba(0,0,0,0.28)]">
-      <div
-        className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-4 py-3"
-        style={{
-          background: `linear-gradient(120deg, ${entry.team.primary}2b, ${entry.team.secondary}18 42%, rgba(255,255,255,0.035))`,
-        }}
-      >
-        <div className="flex min-w-0 items-center gap-3">
-          <div
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-white/20 font-cond text-base font-extrabold shadow-inner"
-            style={{
-              background: `linear-gradient(135deg, ${entry.team.primary}, ${entry.team.secondary})`,
-            }}
-          >
-            {overallRank > 0 ? `#${overallRank}` : "-"}
-          </div>
-          <div className="min-w-0">
-            <div className="font-cond text-xl font-extrabold uppercase leading-none">Starting Lineup</div>
-            <div className="mt-1 truncate text-xs font-semibold text-white/60">{entry.team.name}</div>
-          </div>
-        </div>
-        <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
-          <div className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-right">
-            <div className="font-cond text-lg font-extrabold leading-none tabular-nums">{formatDraftNumber(entry.startersProjected)}</div>
-            <div className="mt-0.5 text-[10px] font-bold uppercase text-white/45">Starter Proj</div>
-          </div>
-          <select
-            value={entry.team.id}
-            aria-label="Select team lineup"
-            onChange={(event) => onTeamChange(Number(event.target.value))}
-            className="h-10 min-w-52 rounded-lg border border-white/15 bg-[#202020] px-3 font-cond text-xs font-bold uppercase text-white outline-none transition hover:bg-[#272727] focus:border-teal"
-          >
-            {rankings.map((teamEntry, index) => (
-              <option key={teamEntry.team.id} value={teamEntry.team.id} className="bg-[#1d1d1d] text-white">
-                #{index + 1} {teamEntry.team.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+    <div className="mt-4 rounded-md border border-white/15 bg-[#0f0f0f] px-4 pb-10 pt-6 text-white">
+      <div className="font-cond text-lg font-extrabold leading-none">Starting Lineup</div>
 
-      <div className="overflow-x-auto px-4 py-4">
-        <div className="relative min-w-[58rem]">
-          <div className="pointer-events-none absolute inset-x-0 top-16 bottom-[4.9rem] rounded-lg bg-[linear-gradient(to_top,rgba(255,255,255,0.075)_1px,transparent_1px)] bg-[length:100%_25%]" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-[4.9rem] border-t border-white/15" />
-          <div className="relative grid grid-cols-9 items-end gap-3 pt-2">
-            {entry.starters.map((row, index) => {
-              const player = row.player;
-              const projection = player.projected ?? 0;
-              const height = 6 + (projection / maxProjected) * 8;
-              const color = UNDERDOG_POS_COLOR[player.pos] ?? "#a8becd";
-              const isDef = player.pos === "DEF";
-              const slotLabel = starterSlotLabel(entry.starters, index);
-              const slotRank = starterSlotRanks.get(`${entry.team.id}:${slotLabel}`);
-              const isEliteSlot = Boolean(slotRank && slotRank <= 3);
+      <div className="mt-8 overflow-x-auto pb-1">
+        <div className="flex min-w-[47rem] items-end justify-between gap-6 px-5 pt-6">
+          {entry.starters.map((row, index) => {
+            const player = row.player;
+            const projection = player.projected ?? 0;
+            const height = 4.75 + (projection / maxProjected) * 10.5;
+            const isDef = player.pos === "DEF";
+            const slotLabel = starterSlotLabel(entry.starters, index);
+            const slotRank = starterSlotRanks.get(`${entry.team.id}:${slotLabel}`);
+            const color = lineupStarterColor(slotLabel, player.pos);
 
-              return (
-                <div key={`${row.draftSlot.round}-${row.draftSlot.slot}-${row.label}`} title={player.name} className="flex min-w-0 flex-col">
-                  <div className="mb-2 flex items-center justify-between gap-1">
-                    <div
-                      className={`rounded-md border px-1.5 py-1 font-cond text-[11px] font-extrabold leading-none ${
-                        isEliteSlot ? "border-gold/50 bg-gold/15 text-gold" : "border-white/10 bg-white/10 text-white/65"
-                      }`}
-                    >
-                      {slotRank ? `#${slotRank}` : "-"}
-                    </div>
-                    <div className="font-cond text-xs font-extrabold leading-none text-white/75 tabular-nums">{formatDraftNumber(projection)}</div>
+            return (
+              <div key={`${row.draftSlot.round}-${row.draftSlot.slot}-${row.label}`} title={player.name} className="flex w-16 shrink-0 flex-col items-center">
+                <div className="relative flex w-12 items-end justify-center overflow-visible" style={{ height: `${height}rem` }}>
+                  <div className="absolute -top-5 left-0 right-0 text-center font-cond text-xs font-extrabold leading-none text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.9)]">
+                    {slotRank ? `#${slotRank}` : "-"}
                   </div>
                   <div
-                    className="relative flex items-end justify-center overflow-hidden rounded-lg border"
+                    className="relative flex h-full w-full items-end justify-center overflow-hidden rounded-t-[4px]"
                     style={{
-                      height: `${height}rem`,
-                      backgroundColor: `${color}28`,
-                      backgroundImage: `radial-gradient(circle at 24% 18%, rgba(255,255,255,0.22) 0 7%, transparent 8%), radial-gradient(circle at 76% 46%, rgba(255,255,255,0.14) 0 6%, transparent 7%), linear-gradient(180deg, rgba(255,255,255,0.08), transparent 42%), linear-gradient(180deg, ${color}5f 0%, ${color}28 48%, rgba(0,0,0,0.18) 100%)`,
-                      borderColor: `${color}95`,
-                      boxShadow: `0 12px 28px ${color}24, inset 0 1px 0 rgba(255,255,255,0.18)`,
+                      backgroundColor: color,
+                      backgroundImage: `${LINEUP_STAR_PATTERN}, linear-gradient(180deg, rgba(255,255,255,0.16), rgba(0,0,0,0.04))`,
+                      backgroundSize: "52px 52px, 100% 100%",
                     }}
                   >
-                    <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/50 to-transparent" />
-                    <div className="absolute left-2 top-2 rounded bg-black/25 px-1.5 py-0.5 font-cond text-[10px] font-extrabold uppercase text-white/80">
-                      {player.pos === "DEF" ? "DST" : player.pos}
-                    </div>
-                    <div className="relative z-10 mb-2 grid h-11 w-11 place-items-end overflow-hidden rounded-full ring-2 ring-white/25">
+                    <div className="absolute inset-x-0 bottom-0 z-10 flex justify-center">
                       {isDef ? (
-                        <span className="grid h-11 w-11 place-items-center rounded-full bg-[#17344c] font-cond text-sm font-extrabold text-white">
+                        <span className="grid h-12 w-12 place-items-center rounded-sm border-b-2 border-[#ef3b4d] bg-[#0d2a3b] font-cond text-lg font-extrabold text-white">
                           {player.proTeam}
                         </span>
                       ) : (
@@ -852,20 +804,11 @@ function DraftStartingLineupChart({
                       )}
                     </div>
                   </div>
-                  <div className="mt-2 min-w-0 rounded-md border border-white/10 bg-white/[0.045] px-2 py-1.5">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-cond text-xs font-extrabold text-white">{slotLabel}</span>
-                      <span className="font-cond text-[10px] font-bold text-white/40">
-                        {row.draftSlot.round}.{row.draftSlot.slot}
-                      </span>
-                    </div>
-                    <div className="mt-1 truncate text-xs font-bold leading-tight text-white/80">{player.name}</div>
-                    <div className="mt-0.5 truncate text-[10px] font-semibold uppercase text-white/40">{player.proTeam || player.pos}</div>
-                  </div>
                 </div>
-              );
-            })}
-          </div>
+                <div className="mt-2 font-cond text-xs font-extrabold leading-none text-white/80">{slotLabel}</div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
