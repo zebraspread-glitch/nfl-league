@@ -748,10 +748,11 @@ function starterSlotLabel(starters: FilledLineupRow[], index: number) {
   return label;
 }
 
-function lineupStarterColor(slotLabel: string, position: string) {
-  if (slotLabel === "WR1") return "#e9aaa3";
-  if (position === "QB" || position === "WR") return "#f5c797";
-  return "#a8cdb7";
+function lineupStarterColor(slotRank?: number) {
+  if (!slotRank) return "#a8cdb7";
+  if (slotRank <= 4) return "#a8cdb7";
+  if (slotRank <= 8) return "#f5c797";
+  return "#e9aaa3";
 }
 
 function DraftStartingLineupChart({
@@ -778,7 +779,7 @@ function DraftStartingLineupChart({
             const isDef = player.pos === "DEF";
             const slotLabel = starterSlotLabel(entry.starters, index);
             const slotRank = starterSlotRanks.get(`${entry.team.id}:${slotLabel}`);
-            const color = lineupStarterColor(slotLabel, player.pos);
+            const color = lineupStarterColor(slotRank);
 
             return (
               <div key={`${row.draftSlot.round}-${row.draftSlot.slot}-${row.label}`} title={player.name} className="flex w-16 shrink-0 flex-col items-center">
