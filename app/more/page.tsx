@@ -16,6 +16,7 @@ const LINKS = [
   { href: "/transactions", label: "Transactions", desc: "Every add & drop, 2021-2025", icon: "TX" },
   { href: "/playoffs", label: "Playoff Bracket", desc: "Full postseason bracket, 2021-2025", icon: "PO" },
   { href: "/history", label: "History", desc: "Champions and final standings, 2021-2025", icon: "HY" },
+  { href: "/scoregami", label: "Scoregami", desc: "Every integer matchup score and all-time scoregamis", icon: "SG" },
   { href: "/managers", label: "Managers", desc: "All-time managers, stats and legacy scores", icon: "MG" },
   { href: "/records", label: "Records", desc: "All-time wins, points and titles", icon: "RC" },
   { href: "/leaders", label: "All-Time Leaders", desc: "Career fantasy scoring leaders by player", icon: "🏅" },

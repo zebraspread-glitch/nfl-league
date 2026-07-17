@@ -11,6 +11,7 @@ const TITLES: Record<string, string> = {
   "/teams": "Ladder",
   "/history": "History",
   "/records": "Records",
+  "/scoregami": "Scoregami",
   "/head-to-head": "Head to Head",
   "/games": "Every Game",
   "/drafts": "Draft Results",
