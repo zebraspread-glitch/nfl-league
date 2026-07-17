@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { PageLoadingSkeleton } from "@/components/page-loading";
+import { loadingVariantForPath, PageLoadingSkeleton } from "@/components/page-loading";
 
 export const NAVIGATION_START_EVENT = "mgl:navigation-start";
 
@@ -14,6 +14,12 @@ function isSameDocumentOnly(next: URL, current: URL) {
   return next.pathname === current.pathname && next.search === current.search;
 }
 
+function navigationEventPathname(event: Event) {
+  if (!(event instanceof CustomEvent)) return window.location.pathname;
+  const detail = event.detail as { pathname?: unknown } | undefined;
+  return typeof detail?.pathname === "string" ? detail.pathname : window.location.pathname;
+}
+
 export function NavigationProgress() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -22,19 +28,25 @@ export function NavigationProgress() {
     return `${pathname}${search ? `?${search}` : ""}`;
   }, [pathname, searchParams]);
   const [pending, setPending] = useState(false);
+  const [targetPathname, setTargetPathname] = useState(pathname);
   const timeoutRef = useRef<number | null>(null);
+  const variant = loadingVariantForPath(targetPathname);
 
   useEffect(() => {
     if (timeoutRef.current != null) {
       window.clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
-    const resetTimer = window.setTimeout(() => setPending(false), 0);
+    const resetTimer = window.setTimeout(() => {
+      setPending(false);
+      setTargetPathname(pathname);
+    }, 0);
     return () => window.clearTimeout(resetTimer);
-  }, [routeKey]);
+  }, [pathname, routeKey]);
 
   useEffect(() => {
-    const startPending = () => {
+    const startPending = (nextPathname: string) => {
+      setTargetPathname(nextPathname);
       setPending(true);
       if (timeoutRef.current != null) window.clearTimeout(timeoutRef.current);
       timeoutRef.current = window.setTimeout(() => {
@@ -56,14 +68,16 @@ export function NavigationProgress() {
       const current = new URL(window.location.href);
       if (next.origin !== current.origin || isSameDocumentOnly(next, current)) return;
 
-      startPending();
+      startPending(next.pathname);
     };
 
+    const onNavigationStart = (event: Event) => startPending(navigationEventPathname(event));
+
     window.addEventListener("click", onClick, true);
-    window.addEventListener(NAVIGATION_START_EVENT, startPending);
+    window.addEventListener(NAVIGATION_START_EVENT, onNavigationStart);
     return () => {
       window.removeEventListener("click", onClick, true);
-      window.removeEventListener(NAVIGATION_START_EVENT, startPending);
+      window.removeEventListener(NAVIGATION_START_EVENT, onNavigationStart);
       if (timeoutRef.current != null) window.clearTimeout(timeoutRef.current);
     };
   }, []);
@@ -76,7 +90,7 @@ export function NavigationProgress() {
         className="h-full overflow-hidden bg-bg px-3 pb-24"
         style={{ paddingTop: "calc(env(safe-area-inset-top) + 3.5rem + 0.75rem)" }}
       >
-        <PageLoadingSkeleton compact />
+        <PageLoadingSkeleton compact variant={variant} />
       </div>
     </div>
   );
