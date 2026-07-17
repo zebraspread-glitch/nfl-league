@@ -1,17 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { loadingVariantForPath, PageLoadingSkeleton } from "@/components/page-loading";
 
 export const NAVIGATION_START_EVENT = "mgl:navigation-start";
 
 function shouldIgnoreClick(event: MouseEvent) {
   return event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
-}
-
-function isSameDocumentOnly(next: URL, current: URL) {
-  return next.pathname === current.pathname && next.search === current.search;
 }
 
 function navigationEventPathname(event: Event) {
@@ -22,11 +18,6 @@ function navigationEventPathname(event: Event) {
 
 export function NavigationProgress() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const routeKey = useMemo(() => {
-    const search = searchParams.toString();
-    return `${pathname}${search ? `?${search}` : ""}`;
-  }, [pathname, searchParams]);
   const [pending, setPending] = useState(false);
   const [targetPathname, setTargetPathname] = useState(pathname);
   const timeoutRef = useRef<number | null>(null);
@@ -42,10 +33,11 @@ export function NavigationProgress() {
       setTargetPathname(pathname);
     }, 0);
     return () => window.clearTimeout(resetTimer);
-  }, [pathname, routeKey]);
+  }, [pathname]);
 
   useEffect(() => {
     const startPending = (nextPathname: string) => {
+      if (nextPathname === window.location.pathname) return;
       setTargetPathname(nextPathname);
       setPending(true);
       if (timeoutRef.current != null) window.clearTimeout(timeoutRef.current);
@@ -66,7 +58,7 @@ export function NavigationProgress() {
 
       const next = new URL(anchor.href);
       const current = new URL(window.location.href);
-      if (next.origin !== current.origin || isSameDocumentOnly(next, current)) return;
+      if (next.origin !== current.origin || next.pathname === current.pathname) return;
 
       startPending(next.pathname);
     };

@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { NAVIGATION_START_EVENT } from "@/components/navigation-progress";
 
 type RoundOption = {
   week: number;
@@ -25,7 +24,6 @@ export function RoundSelect({
         aria-label="Round"
         value={selectedWeek}
         onChange={(event) => {
-          window.dispatchEvent(new CustomEvent(NAVIGATION_START_EVENT, { detail: { pathname: "/games" } }));
           router.push(`/games?season=${season}&week=${event.target.value}`);
         }}
         className="h-10 w-full rounded-xl border border-black/5 bg-card px-3 font-cond text-base font-semibold text-text shadow-sm outline-none transition-colors focus:border-teal focus:ring-2 focus:ring-teal/20 sm:max-w-72"
