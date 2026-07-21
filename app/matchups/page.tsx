@@ -2,8 +2,8 @@ import Link from "next/link";
 import { getMatchups, getSnapshot } from "@/lib/sleeper";
 import { getTeam, TEAMS } from "@/lib/teams";
 import { MatchupCard } from "@/components/matchup-card";
-import { Card, EmptyState, Pill, TeamAvatar } from "@/components/ui";
-import type { Matchup, MatchupSide, TeamMeta } from "@/lib/types";
+import { Card, EmptyState } from "@/components/ui";
+import type { TeamMeta } from "@/lib/types";
 
 export const revalidate = 120;
 
@@ -19,14 +19,12 @@ export default async function MatchupsPage({
   const snapshot = getSnapshot();
   const { week: weekParam, team: teamParam } = await searchParams;
   const week = Math.min(Math.max(Number(weekParam) || snapshot.currentWeek, 1), TOTAL_WEEKS);
-  const selectedTeam = getTeam(Number(teamParam)) ?? TEAMS[0];
+  const selectedTeam = teamParam ? getTeam(Number(teamParam)) : undefined;
 
-  const matchupEntries = await Promise.all(
-    AVAILABLE_WEEKS.map(async (w) => [w, await getMatchups(w)] as const),
-  );
-  const matchupsByWeek = new Map(matchupEntries);
-  const matchups = matchupsByWeek.get(week) ?? [];
-  const teamSchedule = buildTeamSchedule(selectedTeam.id, matchupsByWeek);
+  const matchups = await getMatchups(week);
+  const visibleMatchups = selectedTeam
+    ? matchups.filter((m) => m.away.team.id === selectedTeam.id || m.home.team.id === selectedTeam.id)
+    : matchups;
 
   return (
     <div>
@@ -34,7 +32,7 @@ export default async function MatchupsPage({
         {AVAILABLE_WEEKS.map((w) => (
           <Link
             key={w}
-            href={`/matchups?week=${w}&team=${selectedTeam.id}`}
+            href={matchupsHref(w, selectedTeam)}
             className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg font-cond text-base font-semibold transition-colors ${
               w === week ? "bg-teal text-white" : "bg-card text-text-muted hover:bg-card-hover"
             }`}
@@ -44,11 +42,11 @@ export default async function MatchupsPage({
         ))}
       </div>
 
-      <TeamSchedulePanel selectedTeam={selectedTeam} selectedWeek={week} schedule={teamSchedule} />
+      <TeamFilter selectedTeam={selectedTeam} week={week} />
 
       <div className="space-y-3">
-        {matchups.length ? (
-          matchups.map((m) => (
+        {visibleMatchups.length ? (
+          visibleMatchups.map((m) => (
             <MatchupCard
               key={m.id}
               matchup={m}
@@ -56,65 +54,36 @@ export default async function MatchupsPage({
             />
           ))
         ) : (
-          <EmptyState>No 2026 matchup data is available for Week {week} yet.</EmptyState>
+          <EmptyState>
+            {selectedTeam
+              ? `No 2026 matchup data is available for ${selectedTeam.name} in Week ${week} yet.`
+              : `No 2026 matchup data is available for Week ${week} yet.`}
+          </EmptyState>
         )}
       </div>
     </div>
   );
 }
 
-interface TeamScheduleItem {
-  week: number;
-  matchup?: Matchup;
-  self?: MatchupSide;
-  opponent?: MatchupSide;
-  homeAway?: "vs" | "@";
+function matchupsHref(week: number, selectedTeam?: TeamMeta): string {
+  return selectedTeam ? `/matchups?week=${week}&team=${selectedTeam.id}` : `/matchups?week=${week}`;
 }
 
-function buildTeamSchedule(
-  teamId: number,
-  matchupsByWeek: Map<number, Matchup[]>,
-): TeamScheduleItem[] {
-  return AVAILABLE_WEEKS.map((week) => {
-    const matchup = (matchupsByWeek.get(week) ?? []).find(
-      (m) => m.away.team.id === teamId || m.home.team.id === teamId,
-    );
-
-    if (!matchup) return { week };
-
-    const isAway = matchup.away.team.id === teamId;
-    return {
-      week,
-      matchup,
-      self: isAway ? matchup.away : matchup.home,
-      opponent: isAway ? matchup.home : matchup.away,
-      homeAway: isAway ? "@" : "vs",
-    };
-  });
-}
-
-function TeamSchedulePanel({
-  selectedTeam,
-  selectedWeek,
-  schedule,
-}: {
-  selectedTeam: TeamMeta;
-  selectedWeek: number;
-  schedule: TeamScheduleItem[];
-}) {
+function TeamFilter({ selectedTeam, week }: { selectedTeam?: TeamMeta; week: number }) {
   return (
     <Card className="mb-3 p-3">
       <form method="GET" className="grid grid-cols-[1fr_auto] items-end gap-2">
-        <input type="hidden" name="week" value={selectedWeek} />
+        <input type="hidden" name="week" value={week} />
         <label className="min-w-0">
           <span className="mb-1 block font-cond text-[11px] font-semibold uppercase tracking-wide text-text-muted">
-            Team schedule
+            Show matchups for
           </span>
           <select
             name="team"
-            defaultValue={selectedTeam.id}
+            defaultValue={selectedTeam?.id ?? ""}
             className="h-10 w-full rounded-lg border border-border bg-card px-3 text-sm font-medium outline-none focus:border-teal"
           >
+            <option value="">All teams</option>
             {TEAMS.map((team) => (
               <option key={team.id} value={team.id}>
                 {team.name}
@@ -129,96 +98,6 @@ function TeamSchedulePanel({
           View
         </button>
       </form>
-
-      <Link
-        href={`/teams/${selectedTeam.id}`}
-        className="mt-3 flex items-center gap-2 border-t border-border pt-3 hover:text-teal"
-      >
-        <TeamAvatar team={selectedTeam} size="sm" />
-        <div className="min-w-0">
-          <div className="truncate font-cond text-base font-semibold leading-tight">{selectedTeam.name}</div>
-          <div className="truncate text-xs text-text-muted">{selectedTeam.manager}</div>
-        </div>
-      </Link>
-
-      <div className="mt-3 grid gap-2 sm:grid-cols-2">
-        {schedule.map((item) => (
-          <ScheduleTile key={item.week} item={item} active={item.week === selectedWeek} />
-        ))}
-      </div>
     </Card>
-  );
-}
-
-function ScheduleTile({ item, active }: { item: TeamScheduleItem; active: boolean }) {
-  const baseClass = `flex min-h-14 items-center gap-2 rounded-lg border px-2.5 py-2 transition-colors ${
-    active ? "border-teal bg-teal/10" : "border-border bg-row"
-  }`;
-
-  if (!item.matchup || !item.self || !item.opponent || !item.homeAway) {
-    return (
-      <div className={`${baseClass} opacity-65`}>
-        <span className="w-8 shrink-0 text-center font-cond text-xs font-bold uppercase text-text-muted">
-          W{item.week}
-        </span>
-        <span className="min-w-0 flex-1 truncate text-sm font-medium text-text-muted">
-          No matchup posted
-        </span>
-      </div>
-    );
-  }
-
-  const { matchup, opponent, homeAway } = item;
-  const className = `flex min-h-14 items-center gap-2 rounded-lg border px-2.5 py-2 transition-colors ${
-    active ? "border-teal bg-teal/10" : "border-border bg-row"
-  } hover:bg-card-hover`;
-
-  const content = (
-    <>
-      <span className="w-8 shrink-0 text-center font-cond text-xs font-bold uppercase text-text-muted">
-        W{item.week}
-      </span>
-      <TeamAvatar team={opponent.team} size="sm" />
-      <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-semibold">
-          {homeAway} {opponent.team.name}
-        </span>
-        <span className="block truncate text-[11px] text-text-muted">
-          {opponent.team.manager}
-        </span>
-      </span>
-      <ScheduleResult item={item} />
-    </>
-  );
-
-  return (
-    <Link href={`/matchups/${matchup.id}`} className={className}>
-      {content}
-    </Link>
-  );
-}
-
-function ScheduleResult({ item }: { item: TeamScheduleItem }) {
-  if (!item.matchup || !item.self || !item.opponent) return null;
-
-  if (item.matchup.status === "upcoming") {
-    return <Pill>Upcoming</Pill>;
-  }
-
-  if (item.matchup.status === "live") {
-    return <Pill tone="live">Live</Pill>;
-  }
-
-  const result =
-    item.self.score > item.opponent.score ? "W" : item.self.score < item.opponent.score ? "L" : "T";
-  const tone = result === "W" ? "win" : result === "L" ? "loss" : "default";
-
-  return (
-    <span className="shrink-0 text-right">
-      <Pill tone={tone}>{result}</Pill>
-      <span className="mt-1 block font-cond text-xs font-semibold tabular-nums text-text-muted">
-        {item.self.score.toFixed(1)}-{item.opponent.score.toFixed(1)}
-      </span>
-    </span>
   );
 }
