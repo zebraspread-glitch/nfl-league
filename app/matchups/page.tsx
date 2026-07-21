@@ -84,9 +84,8 @@ function FixturePicker({
   return (
     <div className="relative z-10 mb-3 px-1">
       <details className="group relative inline-block">
-        <summary className="flex h-9 cursor-pointer list-none items-center gap-2 rounded-full border border-border bg-card px-3.5 font-cond text-sm font-bold text-text shadow-sm transition-colors hover:bg-card-hover">
+        <summary className="flex h-9 cursor-pointer list-none items-center rounded-full border border-border bg-card px-3.5 font-cond text-sm font-bold text-text shadow-sm transition-colors hover:bg-card-hover">
           <span>{selectedTeam ? selectedTeam.name : "Team"}</span>
-          <span className="text-xs text-text-muted">v</span>
         </summary>
 
         <div className="absolute left-0 top-11 w-64 overflow-hidden rounded-lg border border-border bg-card shadow-lg">
