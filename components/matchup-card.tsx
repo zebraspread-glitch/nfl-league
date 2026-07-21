@@ -28,9 +28,11 @@ function ScoreBlock({ side, win, upcoming }: { side: MatchupSide; win: boolean; 
 export function MatchupCard({
   matchup,
   title,
+  href,
 }: {
   matchup: Matchup;
   title?: string;
+  href?: string;
 }) {
   const { home, away, status } = matchup;
   const homeWin = status !== "upcoming" && home.score >= away.score;
@@ -38,7 +40,7 @@ export function MatchupCard({
 
   return (
     <Card>
-      <Link href={`/matchups/${matchup.id}`} className="block" suppressHydrationWarning>
+      <Link href={href ?? `/matchups/${matchup.id}`} className="block" suppressHydrationWarning>
         {title ? (
         <div className="flex items-center justify-between bg-section px-4 py-2">
           <span className="font-cond text-sm font-semibold uppercase tracking-wide text-text">
