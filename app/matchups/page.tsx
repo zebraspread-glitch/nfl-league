@@ -2,8 +2,8 @@ import Link from "next/link";
 import { getMatchups, getSnapshot } from "@/lib/sleeper";
 import { getTeam, TEAMS } from "@/lib/teams";
 import { MatchupCard } from "@/components/matchup-card";
-import { Card, EmptyState, Pill, TeamAvatar } from "@/components/ui";
-import type { Matchup, MatchupSide, TeamMeta } from "@/lib/types";
+import { Card, EmptyState, TeamAvatar } from "@/components/ui";
+import type { Matchup, TeamMeta } from "@/lib/types";
 
 export const revalidate = 120;
 
@@ -44,31 +44,20 @@ export default async function MatchupsPage({
         ))}
       </div>
 
-      <FixturePicker selectedTeam={selectedFixtureTeam} fixture={fixture} week={week} />
+      <FixturePicker selectedTeam={selectedFixtureTeam} week={week} />
 
-      <div className="space-y-3">
-        {matchups.length ? (
-          matchups.map((m) => (
-            <MatchupCard
-              key={m.id}
-              matchup={m}
-              title={m.id === PRIMETIME_MATCHUP_ID ? "Primetime" : undefined}
-            />
-          ))
-        ) : (
-          <EmptyState>No 2026 matchup data is available for Week {week} yet.</EmptyState>
-        )}
-      </div>
+      {selectedFixtureTeam ? (
+        <TeamFixture team={selectedFixtureTeam} fixture={fixture} />
+      ) : (
+        <RoundFixture week={week} matchups={matchups} />
+      )}
     </div>
   );
 }
 
 interface FixtureItem {
   week: number;
-  matchup?: Matchup;
-  self?: MatchupSide;
-  opponent?: MatchupSide;
-  homeAway?: "vs" | "@";
+  matchup: Matchup;
 }
 
 function matchupsHref(week: number, selectedTeam?: TeamMeta): string {
@@ -77,28 +66,19 @@ function matchupsHref(week: number, selectedTeam?: TeamMeta): string {
 
 async function getTeamFixture(teamId: number): Promise<FixtureItem[]> {
   const entries = await Promise.all(FIXTURE_WEEKS.map(async (week) => [week, await getMatchups(week)] as const));
-  return entries.map(([week, matchups]) => {
-    const matchup = matchups.find((m) => m.away.team.id === teamId || m.home.team.id === teamId);
-    if (!matchup) return { week };
-
-    const isAway = matchup.away.team.id === teamId;
-    return {
-      week,
-      matchup,
-      self: isAway ? matchup.away : matchup.home,
-      opponent: isAway ? matchup.home : matchup.away,
-      homeAway: isAway ? "@" : "vs",
-    };
-  });
+  return entries
+    .map(([week, matchups]) => {
+      const matchup = matchups.find((m) => m.away.team.id === teamId || m.home.team.id === teamId);
+      return matchup ? { week, matchup } : null;
+    })
+    .filter((item): item is FixtureItem => item !== null);
 }
 
 function FixturePicker({
   selectedTeam,
-  fixture,
   week,
 }: {
   selectedTeam?: TeamMeta;
-  fixture: FixtureItem[];
   week: number;
 }) {
   return (
@@ -155,12 +135,6 @@ function FixturePicker({
                   Clear
                 </Link>
               </div>
-
-              <div className="mt-3 divide-y divide-border overflow-hidden rounded-lg border border-border">
-                {fixture.map((item) => (
-                  <FixtureRow key={item.week} item={item} active={item.week === week} />
-                ))}
-              </div>
             </>
           ) : null}
         </div>
@@ -169,63 +143,42 @@ function FixturePicker({
   );
 }
 
-function FixtureRow({ item, active }: { item: FixtureItem; active: boolean }) {
-  const baseClass = `flex min-h-12 items-center gap-2 px-3 py-2 ${
-    active ? "bg-teal/10" : "bg-card"
-  }`;
-
-  if (!item.matchup || !item.self || !item.opponent || !item.homeAway) {
-    return (
-      <div className={`${baseClass} text-text-muted`}>
-        <span className="w-8 shrink-0 font-cond text-xs font-bold uppercase">W{item.week}</span>
-        <span className="min-w-0 flex-1 truncate text-sm">No matchup posted</span>
-      </div>
-    );
-  }
-
-  const content = (
-    <>
-      <span className="w-8 shrink-0 font-cond text-xs font-bold uppercase text-text-muted">W{item.week}</span>
-      <TeamAvatar team={item.opponent.team} size="sm" />
-      <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-semibold">
-          {item.homeAway} {item.opponent.team.name}
-        </span>
-        <span className="block truncate text-[11px] text-text-muted">
-          {item.opponent.team.manager}
-        </span>
-      </span>
-      <FixtureStatus item={item} />
-    </>
-  );
-
+function RoundFixture({ week, matchups }: { week: number; matchups: Matchup[] }) {
   return (
-    <Link href={`/matchups/${item.matchup.id}`} className={`${baseClass} hover:bg-card-hover`}>
-      {content}
-    </Link>
+    <div className="space-y-3">
+      {matchups.length ? (
+        matchups.map((m) => (
+          <MatchupCard
+            key={m.id}
+            matchup={m}
+            title={m.id === PRIMETIME_MATCHUP_ID ? "Primetime" : undefined}
+          />
+        ))
+      ) : (
+        <EmptyState>No 2026 matchup data is available for Week {week} yet.</EmptyState>
+      )}
+    </div>
   );
 }
 
-function FixtureStatus({ item }: { item: FixtureItem }) {
-  if (!item.matchup || !item.self || !item.opponent) return null;
-
-  if (item.matchup.status === "upcoming") {
-    return <Pill>Upcoming</Pill>;
+function TeamFixture({ team, fixture }: { team: TeamMeta; fixture: FixtureItem[] }) {
+  if (!fixture.length) {
+    return <EmptyState>No 2026 fixture data is available for {team.name} yet.</EmptyState>;
   }
-
-  if (item.matchup.status === "live") {
-    return <Pill tone="live">Live</Pill>;
-  }
-
-  const result = item.self.score > item.opponent.score ? "W" : item.self.score < item.opponent.score ? "L" : "T";
-  const tone = result === "W" ? "win" : result === "L" ? "loss" : "default";
 
   return (
-    <span className="shrink-0 text-right">
-      <Pill tone={tone}>{result}</Pill>
-      <span className="mt-1 block font-cond text-xs font-semibold tabular-nums text-text-muted">
-        {item.self.score.toFixed(1)}-{item.opponent.score.toFixed(1)}
-      </span>
-    </span>
+    <div className="space-y-4">
+      {fixture.map((item) => (
+        <section key={item.matchup.id}>
+          <div className="mb-2 px-1 font-cond text-sm font-semibold uppercase tracking-wide text-text-muted">
+            Week {item.week}
+          </div>
+          <MatchupCard
+            matchup={item.matchup}
+            title={item.matchup.id === PRIMETIME_MATCHUP_ID ? "Primetime" : undefined}
+          />
+        </section>
+      ))}
+    </div>
   );
 }
