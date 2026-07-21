@@ -85,7 +85,7 @@ function FixturePicker({
     <div className="relative z-10 mb-3 px-1">
       <details className="group relative inline-block">
         <summary className="flex h-9 cursor-pointer list-none items-center gap-2 rounded-full border border-border bg-card px-3.5 font-cond text-sm font-bold text-text shadow-sm transition-colors hover:bg-card-hover">
-          <span>{selectedTeam ? `${selectedTeam.name} Fixture` : "Team Fixture"}</span>
+          <span>{selectedTeam ? selectedTeam.name : "Team"}</span>
           <span className="text-xs text-text-muted">v</span>
         </summary>
 
@@ -148,11 +148,21 @@ function TeamFixture({ team, fixture }: { team: TeamMeta; fixture: FixtureItem[]
             Week {item.week}
           </div>
           <MatchupCard
-            matchup={item.matchup}
+            matchup={orientMatchupForTeam(item.matchup, team.id)}
             title={item.matchup.id === PRIMETIME_MATCHUP_ID ? "Primetime" : undefined}
           />
         </section>
       ))}
     </div>
   );
+}
+
+function orientMatchupForTeam(matchup: Matchup, teamId: number): Matchup {
+  if (matchup.away.team.id === teamId) return matchup;
+  if (matchup.home.team.id !== teamId) return matchup;
+  return {
+    ...matchup,
+    away: matchup.home,
+    home: matchup.away,
+  };
 }
