@@ -58,6 +58,51 @@ function key(round: number, slot: number) {
   return `${round}-${slot}`;
 }
 
+function lockedPlayerNames(board: DraftSlot[]) {
+  const names = new Set<string>();
+  for (const slot of board) if (slot.locked) names.add(slot.locked.name);
+  return names;
+}
+
+function normalizeUniquePicks(
+  picks: Picks,
+  board: DraftSlot[],
+  draftableIndexByKey: Map<string, number>,
+  preferredKey?: string
+) {
+  const lockedNames = lockedPlayerNames(board);
+  const winnersByName = new Map<string, { pickKey: string; player: MockPlayer; index: number }>();
+  let changed = false;
+
+  for (const [pickKey, player] of Object.entries(picks)) {
+    if (lockedNames.has(player.name)) {
+      changed = true;
+      continue;
+    }
+
+    const index = draftableIndexByKey.get(pickKey) ?? Number.MAX_SAFE_INTEGER;
+    const existing = winnersByName.get(player.name);
+    if (!existing) {
+      winnersByName.set(player.name, { pickKey, player, index });
+      continue;
+    }
+
+    changed = true;
+    if (pickKey === preferredKey || (existing.pickKey !== preferredKey && index < existing.index)) {
+      winnersByName.set(player.name, { pickKey, player, index });
+    }
+  }
+
+  if (!changed) return picks;
+
+  const winningKeys = new Set([...winnersByName.values()].map((entry) => entry.pickKey));
+  const next: Picks = {};
+  for (const [pickKey, player] of Object.entries(picks)) {
+    if (winningKeys.has(pickKey)) next[pickKey] = player;
+  }
+  return next;
+}
+
 const STARTING_LINEUP: LineupSlot[] = ["QB", "RB", "RB", "WR", "WR", "TE", "RB/WR", "K", "DEF"];
 
 /** Splits a team's current players into keepers (locked slots) and mock-drafted picks. */
@@ -989,7 +1034,12 @@ export function MockDraftBoard({
     /* eslint-disable react-hooks/set-state-in-effect */
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setPicks(JSON.parse(raw));
+      if (raw) {
+        const initialDraftableIndexByKey = new Map(
+          board.filter((s) => s.round <= 11 && !s.locked).map((slot, index) => [key(slot.round, slot.slot), index])
+        );
+        setPicks(normalizeUniquePicks(JSON.parse(raw) as Picks, board, initialDraftableIndexByKey));
+      }
       const team = localStorage.getItem(TEAM_STORAGE_KEY);
       setUserTeamId(team ? Number(team) : teams[0]?.id ?? null);
       const savedView = localStorage.getItem(VIEW_STORAGE_KEY);
@@ -1001,7 +1051,7 @@ export function MockDraftBoard({
     }
     setLoaded(true);
     /* eslint-enable react-hooks/set-state-in-effect */
-  }, [teams]);
+  }, [board, teams]);
 
   useEffect(() => {
     if (!loaded) return;
@@ -1059,6 +1109,8 @@ export function MockDraftBoard({
 
   const makePick = useCallback(
     (round: number, slot: number, player: MockPlayer) => {
+      if (lockedPlayerNames(board).has(player.name)) return;
+
       const k = key(round, slot);
       const targetIndex = draftableIndexByKey.get(k);
       if (targetIndex == null || targetIndex < draftable.length - 1) {
@@ -1066,7 +1118,7 @@ export function MockDraftBoard({
         if (!demaMode) setAnalysisPromptDismissed(false);
       }
       setPicks((prev) => {
-        if (targetIndex == null || demaMode) return { ...prev, [k]: player };
+        if (targetIndex == null || demaMode) return normalizeUniquePicks({ ...prev, [k]: player }, board, draftableIndexByKey, k);
 
         const next: Picks = {};
         for (const [pickKey, picked] of Object.entries(prev)) {
@@ -1074,7 +1126,7 @@ export function MockDraftBoard({
           if (pickIndex != null && pickIndex < targetIndex) next[pickKey] = picked;
         }
         next[k] = player;
-        return next;
+        return normalizeUniquePicks(next, board, draftableIndexByKey, k);
       });
       // Only close the search panel if it was open for this slot — an autopick
       // landing elsewhere shouldn't cancel a search the user is browsing.
@@ -1083,7 +1135,7 @@ export function MockDraftBoard({
         setQuery("");
       }
     },
-    [demaMode, draftable.length, draftableIndexByKey, searchKey]
+    [board, demaMode, draftable.length, draftableIndexByKey, searchKey]
   );
 
   function clearPick(round: number, slot: number) {
@@ -1161,8 +1213,7 @@ export function MockDraftBoard({
 
   const availableForSlot = useCallback(
     (slot: DraftSlot | null) => {
-      const lockedNames = new Set<string>();
-      for (const boardSlot of board) if (boardSlot.locked) lockedNames.add(boardSlot.locked.name);
+      const lockedNames = lockedPlayerNames(board);
       if (demaMode) return players.filter((player) => !lockedNames.has(player.name));
 
       const blocked = new Set(lockedNames);
