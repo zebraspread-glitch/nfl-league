@@ -10,6 +10,7 @@ import type { TeamMeta } from "@/lib/types";
 const STORAGE_KEY = "mgl-mock-draft-2026-v2";
 const TEAM_STORAGE_KEY = "mgl-mock-draft-team-v1";
 const VIEW_STORAGE_KEY = "mgl-mock-draft-view-v1";
+const DEMA_MODE_STORAGE_KEY = "mgl-mock-draft-dema-mode-v1";
 const AUTOPICK_DELAY_MS = 450;
 /** Sentinel "team" for the drafting-as select: autopick is off, the user makes every pick. */
 const MANUAL_TEAM_ID = 0;
@@ -961,6 +962,7 @@ export function MockDraftBoard({
   const [viewTeamId, setViewTeamId] = useState<number | null>(null);
   const [focusTeamId, setFocusTeamId] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<DraftViewMode>("classic");
+  const [demaMode, setDemaMode] = useState(false);
   const [showUnderdogRoster, setShowUnderdogRoster] = useState(true);
   const [underdogPickerPlacement, setUnderdogPickerPlacement] = useState<UnderdogPickerPlacement>("left");
   const [underdogPickerPosition, setUnderdogPickerPosition] = useState<UnderdogPickerPosition>("");
@@ -992,6 +994,8 @@ export function MockDraftBoard({
       setUserTeamId(team ? Number(team) : teams[0]?.id ?? null);
       const savedView = localStorage.getItem(VIEW_STORAGE_KEY);
       if (savedView === "classic" || savedView === "underdog") setViewMode(savedView);
+      const savedDemaMode = localStorage.getItem(DEMA_MODE_STORAGE_KEY);
+      if (savedDemaMode) setDemaMode(savedDemaMode === "1");
     } catch {
       // ignore corrupt storage
     }
@@ -1014,6 +1018,11 @@ export function MockDraftBoard({
     localStorage.setItem(VIEW_STORAGE_KEY, viewMode);
   }, [viewMode, loaded]);
 
+  useEffect(() => {
+    if (!loaded) return;
+    localStorage.setItem(DEMA_MODE_STORAGE_KEY, demaMode ? "1" : "0");
+  }, [demaMode, loaded]);
+
   const taken = useMemo(() => {
     const names = new Set<string>();
     for (const slot of board) if (slot.locked) names.add(slot.locked.name);
@@ -1029,7 +1038,10 @@ export function MockDraftBoard({
   const onTheClockIndex = useMemo(() => draftable.findIndex((s) => !picks[key(s.round, s.slot)]), [draftable, picks]);
   const onTheClock = onTheClockIndex === -1 ? null : draftable[onTheClockIndex];
   const onTheClockKey = onTheClock ? key(onTheClock.round, onTheClock.slot) : null;
-  const picksAway = onTheClockIndex === -1 ? 0 : draftable.length - onTheClockIndex;
+  const picksLeft = useMemo(
+    () => draftable.reduce((total, slot) => total + (picks[key(slot.round, slot.slot)] ? 0 : 1), 0),
+    [draftable, picks]
+  );
   const searchSlot = useMemo(() => (searchKey ? board.find((s) => key(s.round, s.slot) === searchKey) ?? null : null), [board, searchKey]);
   const searchCurrent = searchSlot ? picks[key(searchSlot.round, searchSlot.slot)] : undefined;
   const pickerSlot = searchSlot ?? onTheClock;
@@ -1051,10 +1063,10 @@ export function MockDraftBoard({
       const targetIndex = draftableIndexByKey.get(k);
       if (targetIndex == null || targetIndex < draftable.length - 1) {
         setShowDraftAnalysis(false);
-        setAnalysisPromptDismissed(false);
+        if (!demaMode) setAnalysisPromptDismissed(false);
       }
       setPicks((prev) => {
-        if (targetIndex == null) return { ...prev, [k]: player };
+        if (targetIndex == null || demaMode) return { ...prev, [k]: player };
 
         const next: Picks = {};
         for (const [pickKey, picked] of Object.entries(prev)) {
@@ -1071,7 +1083,7 @@ export function MockDraftBoard({
         setQuery("");
       }
     },
-    [draftable.length, draftableIndexByKey, searchKey]
+    [demaMode, draftable.length, draftableIndexByKey, searchKey]
   );
 
   function clearPick(round: number, slot: number) {
@@ -1081,6 +1093,11 @@ export function MockDraftBoard({
     setAnalysisPromptDismissed(false);
     setPicks((prev) => {
       if (targetIndex == null) {
+        const next = { ...prev };
+        delete next[k];
+        return next;
+      }
+      if (demaMode) {
         const next = { ...prev };
         delete next[k];
         return next;
@@ -1147,8 +1164,13 @@ export function MockDraftBoard({
       const blocked = new Set<string>();
       for (const boardSlot of board) if (boardSlot.locked) blocked.add(boardSlot.locked.name);
 
-      const targetIndex = slot ? draftableIndexByKey.get(key(slot.round, slot.slot)) : undefined;
-      if (targetIndex != null) {
+      const targetKey = slot ? key(slot.round, slot.slot) : null;
+      const targetIndex = targetKey ? draftableIndexByKey.get(targetKey) : undefined;
+      if (demaMode) {
+        for (const [pickKey, picked] of Object.entries(picks)) {
+          if (pickKey !== targetKey) blocked.add(picked.name);
+        }
+      } else if (targetIndex != null) {
         for (const draftSlot of draftable) {
           const pickKey = key(draftSlot.round, draftSlot.slot);
           const pickIndex = draftableIndexByKey.get(pickKey);
@@ -1163,7 +1185,7 @@ export function MockDraftBoard({
 
       return players.filter((player) => !blocked.has(player.name));
     },
-    [board, draftable, draftableIndexByKey, picks, players]
+    [board, demaMode, draftable, draftableIndexByKey, picks, players]
   );
 
   const available = useMemo(
@@ -1388,6 +1410,20 @@ export function MockDraftBoard({
         <span className="text-xs text-text-muted">
           {isManual ? "- you make every pick" : "- every other team autopicks"}
         </span>
+        <label
+          title="Dema mode changes one pick without clearing later picks."
+          className={`inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold shadow-sm ${
+            demaMode ? "border-teal bg-teal/10 text-teal" : "border-border bg-card text-text-muted hover:bg-card-hover hover:text-text"
+          }`}
+        >
+          <input
+            type="checkbox"
+            checked={demaMode}
+            onChange={(e) => setDemaMode(e.target.checked)}
+            className="h-3.5 w-3.5 accent-teal"
+          />
+          <span className="font-cond uppercase">Dema</span>
+        </label>
         <div className="ml-auto inline-flex rounded-lg border border-border bg-card p-0.5 shadow-sm">
           {(["classic", "underdog"] as const).map((mode) => (
             <button
@@ -1428,7 +1464,7 @@ export function MockDraftBoard({
           {onTheClock ? (
             <>
               On the clock: {onTheClock.round}.{onTheClock.slot} ({teamById(onTheClock.teamId)?.name})
-              {isUsersClock ? " - your pick" : " - autopicking..."} - {picksAway} {picksAway === 1 ? "pick" : "picks"} left
+              {isUsersClock ? " - your pick" : " - autopicking..."} - {picksLeft} {picksLeft === 1 ? "pick" : "picks"} left
             </>
           ) : (
             "Mock draft complete!"
