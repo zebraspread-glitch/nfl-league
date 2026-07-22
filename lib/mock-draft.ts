@@ -2,12 +2,11 @@ import { TEAMS } from "./teams";
 import { UNDERDOG_BIG_BOARD } from "./underdog-big-board";
 import type { TeamId } from "./types";
 
-// Static data transcribed from the live 2026 Sleeper draft board: the snake
-// order for rounds 1-11 (by team id, see lib/teams.ts), the 7 real picks
-// already made at the top of round 1, the round 12-15 keeper slots (locked —
-// every team's keepers occupy a fixed late-round slot in Sleeper), and each
-// team's positional needs. None of this is derivable from the live Sleeper
-// API since the league hasn't drafted yet — it's manually maintained here.
+// Static data transcribed from the 2026 Sleeper draft setup: the snake order
+// for rounds 1-11 (by team id, see lib/teams.ts), the round 12-15 keeper slots
+// (locked — every team's keepers occupy a fixed late-round slot in Sleeper),
+// and each team's positional needs. None of this is derivable from the live
+// Sleeper API since the league hasn't drafted yet — it's manually maintained here.
 
 export interface MockPlayer {
   name: string;
@@ -82,16 +81,6 @@ const ROUND_ORDER: TeamId[][] = [
   [T.lucky, T.brownlow, T.ginnivan, T.paho, T.lucky, T.tinkle, T.monke, T.lavar, T.ginnivan, T.lavar, T.cronin, T.dalts],
 ];
 
-const LOCKED_FIRST_ROUND_PICKS: MockPlayer[] = [
-  { name: "Jeremiyah Love", pos: "RB", proTeam: "ARI", bye: 14, rank: 36, adp: 1 },
-  { name: "Carnell Tate", pos: "WR", proTeam: "TEN", bye: 9, rank: 62 },
-  { name: "Garrett Wilson", pos: "WR", proTeam: "NYJ", bye: 13, rank: 29 },
-  { name: "Jordyn Tyson", pos: "WR", proTeam: "NO", bye: 8, rank: 83 },
-  { name: "Jadarian Price", pos: "RB", proTeam: "SEA", bye: 11, rank: 81 },
-  { name: "Drake Maye", pos: "QB", proTeam: "NE", bye: 11, rank: 32 },
-  { name: "Javonte Williams", pos: "RB", proTeam: "DAL", bye: 14, rank: 48 },
-];
-
 // Rounds 12-15 are keeper slots — fixed team order, fixed (already-rostered) player per slot.
 // Names are spelled out in full (not "F. Last") so they match AVAILABLE_PLAYERS exactly and
 // get excluded from the pool — nobody should be able to draft a player someone already kept.
@@ -162,8 +151,7 @@ const KEEPER_ROUNDS: MockPlayer[][] = [
   ],
 ];
 
-/** Full 15-round board: rounds 1-11 are the snake draft (with 1.01-1.07 already locked
- *  from the real live draft), rounds 12-15 are fixed keeper slots. */
+/** Full 15-round board: rounds 1-11 are the editable snake draft, rounds 12-15 are fixed keeper slots. */
 export function buildDraftBoard(): DraftSlot[] {
   const board: DraftSlot[] = [];
 
@@ -171,8 +159,7 @@ export function buildDraftBoard(): DraftSlot[] {
     const round = ri + 1;
     order.forEach((teamId, si) => {
       const slot = si + 1;
-      const locked = round === 1 ? LOCKED_FIRST_ROUND_PICKS[si] : undefined;
-      board.push(locked ? { round, slot, teamId, locked: withUnderdogData(locked) } : { round, slot, teamId });
+      board.push({ round, slot, teamId });
     });
   });
 
