@@ -575,7 +575,7 @@ function UnderdogPickCard({
         <div className="absolute right-1.5 top-1 text-[10px] font-bold text-black/40">#{pickNumber}</div>
         {slot.locked && (
           <div className="absolute right-1.5 top-4 rounded bg-black/20 px-1 font-cond text-[9px] font-bold uppercase text-black/65">
-            Keep
+            {slot.round > 11 ? "Keep" : "Lock"}
           </div>
         )}
         <div className={`relative z-10 flex h-full flex-col justify-between ${pickedTextPad} text-[#111418]`}>
@@ -1120,6 +1120,7 @@ export function MockDraftBoard({
     () => new Map(draftable.map((slot, index) => [key(slot.round, slot.slot), index])),
     [draftable]
   );
+  const columnCount = useMemo(() => Math.max(...board.map((slot) => slot.slot), 1), [board]);
   const onTheClockIndex = useMemo(() => draftable.findIndex((s) => !picks[key(s.round, s.slot)]), [draftable, picks]);
   const onTheClock = onTheClockIndex === -1 ? null : draftable[onTheClockIndex];
   const onTheClockKey = onTheClock ? key(onTheClock.round, onTheClock.slot) : null;
@@ -1227,12 +1228,12 @@ export function MockDraftBoard({
     const next: Picks = { ...picks };
     setShowDraftAnalysis(false);
     setAnalysisPromptDismissed(false);
-    for (const [i, slot] of draftable.entries()) {
+    for (const slot of draftable) {
       const k = key(slot.round, slot.slot);
       if (next[k]) continue;
       const { keepers, drafted } = rosterEntriesFor(board, next, slot.teamId);
       const pick = computeAutopick({
-        overallPick: i + 1,
+        overallPick: overallPick(slot.round, slot.slot, columnCount),
         teamId: slot.teamId,
         available: players.filter((p) => !usedNames.has(p.name)),
         roster: [...keepers, ...drafted],
@@ -1294,7 +1295,7 @@ export function MockDraftBoard({
     if (searchKey && searchKey === key(onTheClock.round, onTheClock.slot)) return;
     const { keepers, drafted } = rosterEntriesFor(board, picks, onTheClock.teamId);
     const pick = computeAutopick({
-      overallPick: onTheClockIndex + 1,
+      overallPick: overallPick(onTheClock.round, onTheClock.slot, columnCount),
       teamId: onTheClock.teamId,
       available: availableForSlot(onTheClock),
       roster: [...keepers, ...drafted],
@@ -1304,7 +1305,7 @@ export function MockDraftBoard({
     if (!pick) return;
     const timeout = setTimeout(() => makePick(onTheClock.round, onTheClock.slot, pick), AUTOPICK_DELAY_MS);
     return () => clearTimeout(timeout);
-  }, [loaded, userTeamId, onTheClock, onTheClockIndex, availableForSlot, board, picks, draftable, searchKey, makePick]);
+  }, [loaded, userTeamId, onTheClock, availableForSlot, board, picks, draftable, searchKey, makePick, columnCount]);
 
   const isManual = userTeamId === MANUAL_TEAM_ID;
   const isUsersClock = !!onTheClock && (isManual || onTheClock.teamId === userTeamId);
@@ -1350,8 +1351,6 @@ export function MockDraftBoard({
   const lineupTeam = teams.find((team) => team.id === lineupTeamId);
   const showUnderdogPicker = viewMode === "underdog" && underdogPickerPlacement !== "hidden";
   const draftAnalysis = useMemo(() => {
-    const columnCount = Math.max(...board.map((slot) => slot.slot), 1);
-
     return teams
       .map((team) => {
         const rows = lineupFor(team.id);
@@ -1409,7 +1408,7 @@ export function MockDraftBoard({
         };
       })
       .sort((a, b) => b.totalScore - a.totalScore || b.projected - a.projected || a.team.name.localeCompare(b.team.name));
-  }, [board, picks, teams, lineupFor]);
+  }, [board, picks, teams, lineupFor, columnCount]);
   const draftAnalysisHighlights = useMemo(() => {
     const bestTeam = draftAnalysis[0];
     if (!bestTeam) return [];
