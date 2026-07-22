@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SleeperPlayerAvatar } from "@/components/sleeper-player-avatar";
 import { TeamAvatar } from "@/components/ui";
 import { sleeperPlayerImage } from "@/lib/player-images";
@@ -12,6 +12,7 @@ const TEAM_STORAGE_KEY = "mgl-mock-draft-team-v1";
 const VIEW_STORAGE_KEY = "mgl-mock-draft-view-v1";
 const DEMA_MODE_STORAGE_KEY = "mgl-mock-draft-dema-mode-v1";
 const AUTOPICK_DELAY_MS = 450;
+const TEAM_HEADER_CLICK_DELAY_MS = 180;
 /** Sentinel "team" for the drafting-as select: autopick is off, the user makes every pick. */
 const MANUAL_TEAM_ID = 0;
 
@@ -668,6 +669,7 @@ function UnderdogDraftBoard({
   compact,
   onTheClockKey,
   onFocusTeamChange,
+  onRosterTeamChange,
   openSearch,
 }: {
   board: DraftSlot[];
@@ -680,8 +682,10 @@ function UnderdogDraftBoard({
   compact: boolean;
   onTheClockKey: string | null;
   onFocusTeamChange: (teamId: number) => void;
+  onRosterTeamChange: (teamId: number) => void;
   openSearch: (slot: DraftSlot) => void;
 }) {
+  const headerClickTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const columnCount = Math.max(...board.map((slot) => slot.slot));
   const gridStyle = { gridTemplateColumns: compact ? `repeat(${columnCount}, minmax(0, 1fr))` : `repeat(${columnCount}, 8.75rem)` };
   const gridClass = compact ? "grid w-full min-w-0 gap-1" : "grid min-w-max gap-1.5";
@@ -691,6 +695,29 @@ function UnderdogDraftBoard({
     for (const slot of slots) cells[columnForSlot(slot, columnCount) - 1] = slot;
     return { round, cells };
   });
+  const clearHeaderClickTimeout = useCallback(() => {
+    if (!headerClickTimeout.current) return;
+    clearTimeout(headerClickTimeout.current);
+    headerClickTimeout.current = null;
+  }, []);
+  const focusHeaderTeam = useCallback(
+    (teamId: number) => {
+      clearHeaderClickTimeout();
+      headerClickTimeout.current = setTimeout(() => {
+        onFocusTeamChange(teamId);
+        headerClickTimeout.current = null;
+      }, TEAM_HEADER_CLICK_DELAY_MS);
+    },
+    [clearHeaderClickTimeout, onFocusTeamChange]
+  );
+  const showRosterTeam = useCallback(
+    (teamId: number) => {
+      clearHeaderClickTimeout();
+      onRosterTeamChange(teamId);
+    },
+    [clearHeaderClickTimeout, onRosterTeamChange]
+  );
+  useEffect(() => clearHeaderClickTimeout, [clearHeaderClickTimeout]);
 
   return (
     <div className="overflow-x-auto rounded-xl bg-[#101010] p-1.5 shadow-sm">
@@ -704,7 +731,8 @@ function UnderdogDraftBoard({
               type="button"
               aria-pressed={focusedTeamId === team.id}
               title={focusedTeamId === team.id ? "Show all teams" : `Focus ${team.name}`}
-              onClick={() => onFocusTeamChange(team.id)}
+              onClick={() => focusHeaderTeam(team.id)}
+              onDoubleClick={() => showRosterTeam(team.id)}
               className={`h-[7.35rem] rounded-md border bg-[#171717] p-2 text-white transition hover:border-white/45 focus:outline-none focus:ring-2 focus:ring-white/60 ${
                 focusedTeamId === team.id ? "border-[#f5d15f]" : "border-[#2b2b2b]"
               } ${isFocusedHeader ? "opacity-100" : "opacity-25 hover:opacity-75"
@@ -1430,6 +1458,11 @@ export function MockDraftBoard({
   const toggleFocusTeam = useCallback((teamId: number) => {
     setFocusTeamId((current) => (current === teamId ? null : teamId));
   }, []);
+  const showRosterTeam = useCallback((teamId: number) => {
+    setViewTeamId(teamId);
+    setFocusTeamId(teamId);
+    setShowUnderdogRoster(true);
+  }, []);
   const boardFocusTeamId = viewMode === "underdog" ? focusTeamId : null;
   const renderUnderdogPickerPanel = (className = "") =>
     showUnderdogPicker ? (
@@ -1679,6 +1712,7 @@ export function MockDraftBoard({
                 compact={showUnderdogRoster || (showUnderdogPicker && underdogPickerPlacement === "left")}
                 onTheClockKey={onTheClockKey}
                 onFocusTeamChange={toggleFocusTeam}
+                onRosterTeamChange={showRosterTeam}
                 openSearch={openSearch}
               />
             </div>
