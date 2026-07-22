@@ -667,6 +667,7 @@ function UnderdogDraftBoard({
   isManual,
   compact,
   onTheClockKey,
+  onFocusTeamChange,
   openSearch,
 }: {
   board: DraftSlot[];
@@ -678,6 +679,7 @@ function UnderdogDraftBoard({
   isManual: boolean;
   compact: boolean;
   onTheClockKey: string | null;
+  onFocusTeamChange: (teamId: number) => void;
   openSearch: (slot: DraftSlot) => void;
 }) {
   const columnCount = Math.max(...board.map((slot) => slot.slot));
@@ -697,10 +699,15 @@ function UnderdogDraftBoard({
           const counts = positionCountsFor(board, picks, team.id);
           const isFocusedHeader = focusedTeamId == null || team.id === focusedTeamId;
           return (
-            <div
+            <button
               key={team.id}
-              className={`h-[7.35rem] rounded-md border border-[#2b2b2b] bg-[#171717] p-2 text-white transition-opacity ${
-                isFocusedHeader ? "opacity-100" : "opacity-25"
+              type="button"
+              aria-pressed={focusedTeamId === team.id}
+              title={focusedTeamId === team.id ? "Show all teams" : `Focus ${team.name}`}
+              onClick={() => onFocusTeamChange(team.id)}
+              className={`h-[7.35rem] rounded-md border bg-[#171717] p-2 text-white transition hover:border-white/45 focus:outline-none focus:ring-2 focus:ring-white/60 ${
+                focusedTeamId === team.id ? "border-[#f5d15f]" : "border-[#2b2b2b]"
+              } ${isFocusedHeader ? "opacity-100" : "opacity-25 hover:opacity-75"
               }`}
             >
               <div className="flex h-full flex-col items-center justify-between gap-1 text-center">
@@ -720,7 +727,7 @@ function UnderdogDraftBoard({
                   ))}
                 </div>
               </div>
-            </div>
+            </button>
           );
         })}
 
@@ -1420,6 +1427,10 @@ export function MockDraftBoard({
     setShowDraftAnalysis(false);
     setAnalysisPromptDismissed(true);
   }, []);
+  const toggleFocusTeam = useCallback((teamId: number) => {
+    setFocusTeamId((current) => (current === teamId ? null : teamId));
+  }, []);
+  const boardFocusTeamId = viewMode === "underdog" ? focusTeamId : null;
   const renderUnderdogPickerPanel = (className = "") =>
     showUnderdogPicker ? (
       <UnderdogPlayerPickerPanel
@@ -1488,19 +1499,6 @@ export function MockDraftBoard({
             </button>
           ))}
         </div>
-        <label className="text-xs font-semibold text-text-muted">Board focus:</label>
-        <select
-          value={focusTeamId ?? ""}
-          onChange={(e) => setFocusTeamId(e.target.value ? Number(e.target.value) : null)}
-          className="rounded-md border border-border bg-card px-2 py-1 text-sm font-medium"
-        >
-          <option value="">All teams</option>
-          {teams.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name}
-            </option>
-          ))}
-        </select>
         <button
           onClick={autodraftRest}
           className="shrink-0 rounded-lg bg-text px-2.5 py-1 font-cond text-xs font-semibold text-white hover:opacity-90"
@@ -1676,10 +1674,11 @@ export function MockDraftBoard({
                 teams={teams}
                 picks={picks}
                 userTeamId={userTeamId}
-                focusedTeamId={focusTeamId}
+                focusedTeamId={boardFocusTeamId}
                 isManual={isManual}
                 compact={showUnderdogRoster || (showUnderdogPicker && underdogPickerPlacement === "left")}
                 onTheClockKey={onTheClockKey}
+                onFocusTeamChange={toggleFocusTeam}
                 openSearch={openSearch}
               />
             </div>
@@ -1713,7 +1712,7 @@ export function MockDraftBoard({
                   const picked = slot.locked ?? picks[k];
                   const isOnClock = k === onTheClockKey;
                   const isUserSlot = isManual || slot.teamId === userTeamId;
-                  const isFocusedSlot = focusTeamId == null || slot.teamId === focusTeamId;
+                  const isFocusedSlot = boardFocusTeamId == null || slot.teamId === boardFocusTeamId;
                   const canEdit = slot.round <= 11 && !slot.locked;
 
                   return (
