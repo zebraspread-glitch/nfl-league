@@ -1161,16 +1161,14 @@ export function MockDraftBoard({
 
   const availableForSlot = useCallback(
     (slot: DraftSlot | null) => {
+      if (demaMode) return players;
+
       const blocked = new Set<string>();
       for (const boardSlot of board) if (boardSlot.locked) blocked.add(boardSlot.locked.name);
 
       const targetKey = slot ? key(slot.round, slot.slot) : null;
       const targetIndex = targetKey ? draftableIndexByKey.get(targetKey) : undefined;
-      if (demaMode) {
-        for (const [pickKey, picked] of Object.entries(picks)) {
-          if (pickKey !== targetKey) blocked.add(picked.name);
-        }
-      } else if (targetIndex != null) {
+      if (targetIndex != null) {
         for (const draftSlot of draftable) {
           const pickKey = key(draftSlot.round, draftSlot.slot);
           const pickIndex = draftableIndexByKey.get(pickKey);
