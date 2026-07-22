@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SleeperPlayerAvatar } from "@/components/sleeper-player-avatar";
 import { TeamAvatar } from "@/components/ui";
+import { draftPickKey as key, lockedPlayerNames, normalizeUniquePicks, setUniquePick, type Picks } from "@/lib/mock-draft-state";
 import { sleeperPlayerImage } from "@/lib/player-images";
 import { TEAM_NEEDS, computeAutopick, draftValue, teamById, type DraftSlot, type MockPlayer } from "@/lib/mock-draft";
 import type { TeamMeta } from "@/lib/types";
@@ -16,7 +17,6 @@ const TEAM_HEADER_CLICK_DELAY_MS = 180;
 /** Sentinel "team" for the drafting-as select: autopick is off, the user makes every pick. */
 const MANUAL_TEAM_ID = 0;
 
-type Picks = Record<string, MockPlayer>;
 type DraftViewMode = "classic" | "underdog";
 type UnderdogPickerPlacement = "left" | "above" | "below" | "hidden";
 type UnderdogHeaderPosition = "QB" | "RB" | "WR" | "TE";
@@ -53,55 +53,6 @@ interface DraftAnalysisHighlight {
   title: string;
   value: string;
   detail: string;
-}
-
-function key(round: number, slot: number) {
-  return `${round}-${slot}`;
-}
-
-function lockedPlayerNames(board: DraftSlot[]) {
-  const names = new Set<string>();
-  for (const slot of board) if (slot.locked) names.add(slot.locked.name);
-  return names;
-}
-
-function normalizeUniquePicks(
-  picks: Picks,
-  board: DraftSlot[],
-  draftableIndexByKey: Map<string, number>,
-  preferredKey?: string
-) {
-  const lockedNames = lockedPlayerNames(board);
-  const winnersByName = new Map<string, { pickKey: string; player: MockPlayer; index: number }>();
-  let changed = false;
-
-  for (const [pickKey, player] of Object.entries(picks)) {
-    if (lockedNames.has(player.name)) {
-      changed = true;
-      continue;
-    }
-
-    const index = draftableIndexByKey.get(pickKey) ?? Number.MAX_SAFE_INTEGER;
-    const existing = winnersByName.get(player.name);
-    if (!existing) {
-      winnersByName.set(player.name, { pickKey, player, index });
-      continue;
-    }
-
-    changed = true;
-    if (pickKey === preferredKey || (existing.pickKey !== preferredKey && index < existing.index)) {
-      winnersByName.set(player.name, { pickKey, player, index });
-    }
-  }
-
-  if (!changed) return picks;
-
-  const winningKeys = new Set([...winnersByName.values()].map((entry) => entry.pickKey));
-  const next: Picks = {};
-  for (const [pickKey, player] of Object.entries(picks)) {
-    if (winningKeys.has(pickKey)) next[pickKey] = player;
-  }
-  return next;
 }
 
 const STARTING_LINEUP: LineupSlot[] = ["QB", "RB", "RB", "WR", "WR", "TE", "RB/WR", "K", "DEF"];
@@ -1149,12 +1100,13 @@ export function MockDraftBoard({
 
       const k = key(round, slot);
       const targetIndex = draftableIndexByKey.get(k);
-      if (targetIndex == null || targetIndex < draftable.length - 1) {
+      if (targetIndex == null) return;
+      if (targetIndex < draftable.length - 1) {
         setShowDraftAnalysis(false);
         if (!demaMode) setAnalysisPromptDismissed(false);
       }
       setPicks((prev) => {
-        if (targetIndex == null || demaMode) return normalizeUniquePicks({ ...prev, [k]: player }, board, draftableIndexByKey, k);
+        if (demaMode) return setUniquePick(prev, board, draftableIndexByKey, k, player, { swapExisting: true });
 
         const next: Picks = {};
         for (const [pickKey, picked] of Object.entries(prev)) {
