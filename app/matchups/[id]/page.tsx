@@ -1,16 +1,14 @@
 import { Fragment } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getMatchups, getRoster, getWeekKickoff } from "@/lib/sleeper";
-import { Card, TeamAvatar, Score, SectionTitle, EmptyState } from "@/components/ui";
+import { getMatchups, getRoster, getStandings, getWeekKickoff } from "@/lib/sleeper";
+import { Card, TeamAvatar, Score, SectionTitle, EmptyState, Pill } from "@/components/ui";
 import { SleeperPlayerAvatar } from "@/components/sleeper-player-avatar";
 import { MatchupTabs } from "@/components/matchup-tabs";
 import { MatchupCountdown } from "@/components/matchup-countdown";
-import { proTeamLogoUrl, resolvePlayerImage, POS_COLOR } from "@/lib/player-images";
-import { getFranchiseGames, getHeadToHead, shortWeek, type FranchiseGame } from "@/lib/games";
-import { getAllTimeRecords } from "@/lib/league-data";
-import { getFranchiseTopPlayers, type FranchiseTopPlayer } from "@/lib/players";
-import type { MatchupSide, Roster, RosterEntry, RosterSlot, TeamMeta } from "@/lib/types";
+import { proTeamLogoUrl } from "@/lib/player-images";
+import { getHeadToHead, shortWeek } from "@/lib/games";
+import type { MatchupSide, Roster, RosterEntry, RosterSlot, Standing, TeamMeta } from "@/lib/types";
 
 export const revalidate = 60;
 
@@ -40,16 +38,12 @@ export default async function MatchupPage({ params }: { params: Promise<{ id: st
 
   const awayId = matchup.away.team.id;
   const homeId = matchup.home.team.id;
-  const [h2h, awayGames, homeGames, awayTop, homeTop] = await Promise.all([
+  const [h2h, standings] = await Promise.all([
     getHeadToHead(awayId, homeId),
-    getFranchiseGames(awayId),
-    getFranchiseGames(homeId),
-    getFranchiseTopPlayers(awayId, 5),
-    getFranchiseTopPlayers(homeId, 5),
+    getStandings(),
   ]);
-  const allTime = getAllTimeRecords();
-  const awaySnap = franchiseSnapshot(awayId, awayGames, allTime);
-  const homeSnap = franchiseSnapshot(homeId, homeGames, allTime);
+  const awayStanding = standings.find((standing) => standing.team.id === awayId);
+  const homeStanding = standings.find((standing) => standing.team.id === homeId);
 
   const teamsPanel = hasLineup ? (
     <>
@@ -67,14 +61,18 @@ export default async function MatchupPage({ params }: { params: Promise<{ id: st
     <MatchupPreview
       away={matchup.away.team}
       home={matchup.home.team}
+      awaySide={matchup.away}
+      homeSide={matchup.home}
+      awayRoster={awayRoster}
+      homeRoster={homeRoster}
+      awayProjected={awayProj}
+      homeProjected={homeProj}
+      awayStanding={awayStanding}
+      homeStanding={homeStanding}
+      week={week}
+      status={matchup.status}
       kickoff={kickoff}
       h2h={h2h}
-      awaySnap={awaySnap}
-      homeSnap={homeSnap}
-      awayForm={awayGames.slice(0, 5)}
-      homeForm={homeGames.slice(0, 5)}
-      awayTop={awayTop}
-      homeTop={homeTop}
     />
   );
 
@@ -125,162 +123,317 @@ export default async function MatchupPage({ params }: { params: Promise<{ id: st
 
 // --- Preview tab -------------------------------------------------------------
 
-interface Snapshot {
-  seasons: number;
-  wins: number;
-  losses: number;
-  ties: number;
-  winPct: number;
-  avgPF: number;
-  championships: number;
-  bestFinish: number;
-}
-
-function franchiseSnapshot(
-  teamId: number,
-  games: FranchiseGame[],
-  allTime: ReturnType<typeof getAllTimeRecords>,
-): Snapshot {
-  const record = allTime.find((r) => r.team.id === teamId);
-  const wins = games.filter((g) => g.result === "W").length;
-  const losses = games.filter((g) => g.result === "L").length;
-  const ties = games.filter((g) => g.result === "T").length;
-  const played = games.length;
-  const pf = games.reduce((sum, g) => sum + g.self.total, 0);
-  return {
-    seasons: record?.seasons ?? 0,
-    wins,
-    losses,
-    ties,
-    winPct: played ? Math.round((wins / played) * 1000) / 1000 : 0,
-    avgPF: played ? Math.round((pf / played) * 10) / 10 : 0,
-    championships: record?.championships ?? 0,
-    bestFinish: record?.bestFinish ?? 0,
-  };
-}
-
 function MatchupPreview({
   away,
   home,
+  awaySide,
+  homeSide,
+  awayRoster,
+  homeRoster,
+  awayProjected,
+  homeProjected,
+  awayStanding,
+  homeStanding,
+  week,
+  status,
   kickoff,
   h2h,
-  awaySnap,
-  homeSnap,
-  awayForm,
-  homeForm,
-  awayTop,
-  homeTop,
 }: {
   away: TeamMeta;
   home: TeamMeta;
+  awaySide: MatchupSide;
+  homeSide: MatchupSide;
+  awayRoster: Roster | null;
+  homeRoster: Roster | null;
+  awayProjected: number;
+  homeProjected: number;
+  awayStanding?: Standing;
+  homeStanding?: Standing;
+  week: number;
+  status: "upcoming" | "live" | "final";
   kickoff: Awaited<ReturnType<typeof getWeekKickoff>>;
   h2h: Awaited<ReturnType<typeof getHeadToHead>>;
-  awaySnap: Snapshot;
-  homeSnap: Snapshot;
-  awayForm: FranchiseGame[];
-  homeForm: FranchiseGame[];
-  awayTop: FranchiseTopPlayer[];
-  homeTop: FranchiseTopPlayer[];
 }) {
-  const lastMeeting = h2h.meetings[0];
-  const noHistory = awaySnap.seasons === 0 && homeSnap.seasons === 0;
-
   return (
     <div className="mt-3 space-y-3">
       {kickoff ? <MatchupCountdown kickoffIso={kickoff.iso} week={kickoff.week} /> : null}
-      {noHistory ? (
-        <EmptyState>No prior MGL history for these franchises yet — this is fresh ground.</EmptyState>
-      ) : (
-        <>
-          <Card className="p-4">
-            <div className="text-center font-cond text-sm font-semibold uppercase tracking-wide text-text-muted">
-              All-Time Series
-            </div>
-            <div className="mt-2 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-              <div className="text-center">
-                <div className="score text-3xl text-text">{h2h.aWins}</div>
-                <div className="truncate font-cond text-xs text-text-muted">{away.abbrev}</div>
-              </div>
-              <div className="text-center font-cond text-xs font-bold text-text-dim">
-                {h2h.meetings.length} {h2h.meetings.length === 1 ? "game" : "games"}
-                {h2h.ties ? <div className="mt-0.5">{h2h.ties} tie{h2h.ties > 1 ? "s" : ""}</div> : null}
-              </div>
-              <div className="text-center">
-                <div className="score text-3xl text-text">{h2h.bWins}</div>
-                <div className="truncate font-cond text-xs text-text-muted">{home.abbrev}</div>
-              </div>
-            </div>
-            {lastMeeting ? (
-              <div className="mt-3 border-t border-border pt-2 text-center text-xs text-text-muted">
-                Last met {lastMeeting.season} {shortWeek(lastMeeting.week)} —{" "}
-                <span className="font-semibold text-text">
-                  {away.abbrev} {lastMeeting.aScore.toFixed(1)}–{lastMeeting.bScore.toFixed(1)} {home.abbrev}
-                </span>
-              </div>
-            ) : (
-              <div className="mt-3 border-t border-border pt-2 text-center text-xs text-text-muted">
-                First-ever meeting.
-              </div>
-            )}
-          </Card>
+      <CurrentMatchupCard
+        away={away}
+        home={home}
+        awaySide={awaySide}
+        homeSide={homeSide}
+        awayRoster={awayRoster}
+        homeRoster={homeRoster}
+        awayProjected={awayProjected}
+        homeProjected={homeProjected}
+        awayStanding={awayStanding}
+        homeStanding={homeStanding}
+        week={week}
+        status={status}
+      />
+      <SeriesCard away={away} home={home} h2h={h2h} />
+      <PlayersToWatch away={away} home={home} awayRoster={awayRoster} homeRoster={homeRoster} />
+    </div>
+  );
+}
 
-          <Card className="p-4">
-            <div className="mb-2 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-              <TeamAvatar team={away} size="sm" />
-              <span className="font-cond text-xs font-bold uppercase text-text-dim">Compare</span>
-              <div className="flex justify-end">
-                <TeamAvatar team={home} size="sm" />
-              </div>
-            </div>
-            <CompareRow label="Record" away={`${awaySnap.wins}-${awaySnap.losses}`} home={`${homeSnap.wins}-${homeSnap.losses}`} awayBetter={awaySnap.winPct > homeSnap.winPct} homeBetter={homeSnap.winPct > awaySnap.winPct} />
-            <CompareRow label="Win %" away={pct(awaySnap.winPct)} home={pct(homeSnap.winPct)} awayBetter={awaySnap.winPct > homeSnap.winPct} homeBetter={homeSnap.winPct > awaySnap.winPct} />
-            <CompareRow label="Avg PF" away={awaySnap.avgPF.toFixed(1)} home={homeSnap.avgPF.toFixed(1)} awayBetter={awaySnap.avgPF > homeSnap.avgPF} homeBetter={homeSnap.avgPF > awaySnap.avgPF} />
-            <CompareRow label="Titles" away={`${awaySnap.championships}`} home={`${homeSnap.championships}`} awayBetter={awaySnap.championships > homeSnap.championships} homeBetter={homeSnap.championships > awaySnap.championships} />
-            <CompareRow
-              label="Best finish"
-              away={awaySnap.bestFinish ? `#${awaySnap.bestFinish}` : "—"}
-              home={homeSnap.bestFinish ? `#${homeSnap.bestFinish}` : "—"}
-              awayBetter={!!awaySnap.bestFinish && (!homeSnap.bestFinish || awaySnap.bestFinish < homeSnap.bestFinish)}
-              homeBetter={!!homeSnap.bestFinish && (!awaySnap.bestFinish || homeSnap.bestFinish < awaySnap.bestFinish)}
-            />
-          </Card>
+function CurrentMatchupCard({
+  away,
+  home,
+  awaySide,
+  homeSide,
+  awayRoster,
+  homeRoster,
+  awayProjected,
+  homeProjected,
+  awayStanding,
+  homeStanding,
+  week,
+  status,
+}: {
+  away: TeamMeta;
+  home: TeamMeta;
+  awaySide: MatchupSide;
+  homeSide: MatchupSide;
+  awayRoster: Roster | null;
+  homeRoster: Roster | null;
+  awayProjected: number;
+  homeProjected: number;
+  awayStanding?: Standing;
+  homeStanding?: Standing;
+  week: number;
+  status: "upcoming" | "live" | "final";
+}) {
+  const showScore = status !== "upcoming" && (awaySide.score > 0 || homeSide.score > 0);
+  const awayValue = showScore ? awaySide.score : awayProjected;
+  const homeValue = showScore ? homeSide.score : homeProjected;
+  const hasValue = awayValue > 0 || homeValue > 0;
+  const leader =
+    hasValue && awayValue !== homeValue
+      ? awayValue > homeValue
+        ? away
+        : home
+      : null;
+  const edge = hasValue ? Math.abs(awayValue - homeValue) : 0;
+  const awayRecord = awaySide.record ?? standingRecord(awayStanding);
+  const homeRecord = homeSide.record ?? standingRecord(homeStanding);
+  const awayLineup = lineupSummary(awayRoster);
+  const homeLineup = lineupSummary(homeRoster);
+  const awayInjuries = injuryCount(awayRoster);
+  const homeInjuries = injuryCount(homeRoster);
 
-          <Card className="p-4">
-            <div className="mb-2 text-center font-cond text-sm font-semibold uppercase tracking-wide text-text-muted">
-              Recent Form
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <FormColumn team={away} form={awayForm} align="left" />
-              <FormColumn team={home} form={homeForm} align="right" />
-            </div>
-          </Card>
+  return (
+    <Card className="p-4">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <TeamMini team={away} standing={awayStanding} record={awayRecord} align="left" />
+        <div className="shrink-0 text-center">
+          <Pill tone={status === "live" ? "live" : status === "final" ? "default" : "gold"}>{statusLabel(status)}</Pill>
+          <div className="mt-1 font-cond text-[11px] font-bold uppercase tracking-wide text-text-dim">Week {week}</div>
+        </div>
+        <TeamMini team={home} standing={homeStanding} record={homeRecord} align="right" />
+      </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <TopPlayers team={away} players={awayTop} />
-            <TopPlayers team={home} players={homeTop} />
+      <div className="rounded-lg bg-section px-3 py-3">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+          <ValueBlock value={awayValue} hasValue={hasValue} leading={!!leader && leader.id === away.id} align="right" />
+          <div className="text-center">
+            <div className="font-cond text-[11px] font-bold uppercase tracking-wide text-text-dim">
+              {showScore ? "Score" : "Projected"}
+            </div>
+            <div className="mt-1 h-px w-10 bg-border" />
           </div>
-        </>
+          <ValueBlock value={homeValue} hasValue={hasValue} leading={!!leader && leader.id === home.id} align="left" />
+        </div>
+        <div className="mt-2 text-center font-cond text-sm font-semibold text-text-muted">
+          {leader ? `${leader.abbrev} by ${edge.toFixed(1)}` : hasValue ? "Even matchup" : "Lineup data pending"}
+        </div>
+      </div>
+
+      <div className="mt-3">
+        <PreviewMetricRow label="Record" away={formatRecord(awayRecord)} home={formatRecord(homeRecord)} />
+        <PreviewMetricRow
+          label="Rank"
+          away={awayStanding ? `#${awayStanding.rank}` : "-"}
+          home={homeStanding ? `#${homeStanding.rank}` : "-"}
+          awayBetter={rankBetter(awayStanding, homeStanding)}
+          homeBetter={rankBetter(homeStanding, awayStanding)}
+        />
+        <PreviewMetricRow
+          label="PF"
+          away={awayStanding ? awayStanding.pointsFor.toFixed(1) : "-"}
+          home={homeStanding ? homeStanding.pointsFor.toFixed(1) : "-"}
+          awayBetter={pointsBetter(awayStanding, homeStanding)}
+          homeBetter={pointsBetter(homeStanding, awayStanding)}
+        />
+        <PreviewMetricRow
+          label="Lineup"
+          away={awayLineup}
+          home={homeLineup}
+          awayBetter={lineupFilled(awayRoster) > lineupFilled(homeRoster)}
+          homeBetter={lineupFilled(homeRoster) > lineupFilled(awayRoster)}
+        />
+        <PreviewMetricRow
+          label="Injuries"
+          away={awayInjuries == null ? "-" : `${awayInjuries}`}
+          home={homeInjuries == null ? "-" : `${homeInjuries}`}
+          awayBetter={awayInjuries != null && homeInjuries != null && awayInjuries < homeInjuries}
+          homeBetter={awayInjuries != null && homeInjuries != null && homeInjuries < awayInjuries}
+        />
+      </div>
+    </Card>
+  );
+}
+
+function SeriesCard({
+  away,
+  home,
+  h2h,
+}: {
+  away: TeamMeta;
+  home: TeamMeta;
+  h2h: Awaited<ReturnType<typeof getHeadToHead>>;
+}) {
+  const lastMeeting = h2h.meetings[0];
+  const totalGames = h2h.meetings.length;
+  const awayShare = totalGames ? Math.max(8, (h2h.aWins / totalGames) * 100) : 50;
+  const homeShare = totalGames ? Math.max(8, (h2h.bWins / totalGames) * 100) : 50;
+  const tieShare = totalGames && h2h.ties ? Math.max(6, (h2h.ties / totalGames) * 100) : 0;
+
+  return (
+    <Card className="p-4">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <TeamAvatar team={away} size="sm" />
+          <div className="min-w-0">
+            <div className="truncate font-cond text-sm font-semibold">{away.abbrev}</div>
+            <div className="score text-2xl leading-none text-text">{h2h.aWins}</div>
+          </div>
+        </div>
+        <div className="text-center">
+          <div className="font-cond text-sm font-bold uppercase tracking-wide text-text-muted">All-Time H2H</div>
+          <div className="font-cond text-xs text-text-dim">
+            {totalGames} {totalGames === 1 ? "game" : "games"}
+            {h2h.ties ? `, ${h2h.ties} tie${h2h.ties > 1 ? "s" : ""}` : ""}
+          </div>
+        </div>
+        <div className="flex min-w-0 flex-row-reverse items-center gap-2 text-right">
+          <TeamAvatar team={home} size="sm" />
+          <div className="min-w-0">
+            <div className="truncate font-cond text-sm font-semibold">{home.abbrev}</div>
+            <div className="score text-2xl leading-none text-text">{h2h.bWins}</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex h-2 overflow-hidden rounded-full bg-section">
+        <span style={{ width: `${awayShare}%`, background: away.primary }} />
+        <span className="bg-border" style={{ width: `${tieShare}%` }} />
+        <span style={{ width: `${homeShare}%`, background: home.primary }} />
+      </div>
+
+      <div className="mt-3 border-t border-border pt-2 text-center text-xs text-text-muted">
+        {lastMeeting ? (
+          <>
+            Last met {lastMeeting.season} {shortWeek(lastMeeting.week)} -{" "}
+            <Link href={`/games/${lastMeeting.gameId}`} className="font-semibold text-text hover:text-teal">
+              {away.abbrev} {lastMeeting.aScore.toFixed(1)}-{lastMeeting.bScore.toFixed(1)} {home.abbrev}
+            </Link>
+          </>
+        ) : (
+          "First-ever meeting."
+        )}
+      </div>
+    </Card>
+  );
+}
+
+function PlayersToWatch({
+  away,
+  home,
+  awayRoster,
+  homeRoster,
+}: {
+  away: TeamMeta;
+  home: TeamMeta;
+  awayRoster: Roster | null;
+  homeRoster: Roster | null;
+}) {
+  const awayPlayers = topProjectedStarters(awayRoster);
+  const homePlayers = topProjectedStarters(homeRoster);
+
+  return (
+    <Card className="p-4">
+      <div className="mb-3 text-center font-cond text-sm font-semibold uppercase tracking-wide text-text-muted">
+        Starter Watch
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <WatchColumn team={away} players={awayPlayers} align="left" />
+        <WatchColumn team={home} players={homePlayers} align="right" />
+      </div>
+    </Card>
+  );
+}
+
+function TeamMini({
+  team,
+  standing,
+  record,
+  align,
+}: {
+  team: TeamMeta;
+  standing?: Standing;
+  record?: MatchupSide["record"];
+  align: "left" | "right";
+}) {
+  const right = align === "right";
+  return (
+    <div className={`flex min-w-0 flex-1 items-center gap-2 ${right ? "flex-row-reverse text-right" : ""}`}>
+      <TeamAvatar team={team} size="sm" />
+      <div className="min-w-0">
+        <div className="truncate font-cond text-sm font-semibold leading-tight">{team.name}</div>
+        <div className="truncate text-xs text-text-muted">
+          {formatRecord(record)}
+          {standing ? ` | #${standing.rank}` : ""}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ValueBlock({
+  value,
+  hasValue,
+  leading,
+  align,
+}: {
+  value: number;
+  hasValue: boolean;
+  leading: boolean;
+  align: "left" | "right";
+}) {
+  return (
+    <div className={align === "right" ? "text-right" : "text-left"}>
+      {hasValue ? (
+        <Score value={value} className={`text-3xl ${leading ? "text-teal" : ""}`} dim={!leading} />
+      ) : (
+        <span className="score text-3xl text-text-dim">-</span>
       )}
     </div>
   );
 }
 
-function pct(value: number): string {
-  return value.toFixed(3).replace(/^0/, "");
-}
-
-function CompareRow({
+function PreviewMetricRow({
   label,
   away,
   home,
-  awayBetter,
-  homeBetter,
+  awayBetter = false,
+  homeBetter = false,
 }: {
   label: string;
   away: string;
   home: string;
-  awayBetter: boolean;
-  homeBetter: boolean;
+  awayBetter?: boolean;
+  homeBetter?: boolean;
 }) {
   return (
     <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 border-t border-border py-1.5">
@@ -291,82 +444,108 @@ function CompareRow({
   );
 }
 
-function FormColumn({ team, form, align }: { team: TeamMeta; form: FranchiseGame[]; align: "left" | "right" }) {
-  const ordered = [...form].reverse(); // oldest → newest, left to right
+function WatchColumn({
+  team,
+  players,
+  align,
+}: {
+  team: TeamMeta;
+  players: RosterEntry[];
+  align: "left" | "right";
+}) {
   const right = align === "right";
   return (
     <div className={right ? "text-right" : "text-left"}>
-      <div className={`mb-1.5 flex items-center gap-1.5 ${right ? "flex-row-reverse" : ""}`}>
+      <div className={`mb-2 flex items-center gap-1.5 ${right ? "flex-row-reverse" : ""}`}>
         <TeamAvatar team={team} size="sm" />
         <span className="truncate font-cond text-sm font-semibold">{team.abbrev}</span>
       </div>
-      {ordered.length ? (
-        <div className={`flex flex-wrap gap-1 ${right ? "justify-end" : ""}`}>
-          {ordered.map((g) => {
-            const tone = g.result === "W" ? "bg-up text-white" : g.result === "L" ? "bg-down text-white" : "bg-section text-text-muted";
-            return (
-              <span
-                key={g.game.id}
-                className={`grid h-6 w-6 place-items-center rounded font-cond text-xs font-bold ${tone}`}
-                title={`${g.game.season} ${shortWeek(g.game.week)} vs ${g.opp.name}: ${g.self.total.toFixed(1)}–${g.opp.total.toFixed(1)}`}
-              >
-                {g.result}
-              </span>
-            );
-          })}
+      {players.length ? (
+        <div className="space-y-2">
+          {players.map((entry) => (
+            <WatchPlayer key={`${entry.slot}-${entry.playerId}`} entry={entry} align={align} />
+          ))}
         </div>
       ) : (
-        <div className="text-xs text-text-dim">No games yet.</div>
+        <div className="rounded-lg bg-section px-3 py-4 text-xs text-text-dim">Lineup pending.</div>
       )}
     </div>
   );
 }
 
-function TopPlayers({ team, players }: { team: TeamMeta; players: FranchiseTopPlayer[] }) {
-  return (
-    <Card>
-      <div className="flex items-center gap-2 bg-section px-3 py-2">
-        <TeamAvatar team={team} size="sm" />
-        <span className="truncate font-cond text-sm font-semibold uppercase tracking-wide">{team.abbrev} Legends</span>
+function WatchPlayer({ entry, align }: { entry: RosterEntry; align: "left" | "right" }) {
+  const right = align === "right";
+  const content = (
+    <div className={`flex items-center gap-2 rounded-lg bg-section px-2 py-2 ${right ? "flex-row-reverse" : ""}`}>
+      <SleeperPlayerAvatar sleeperId={entry.sleeperId ?? ""} pos={entry.position} name={entry.name} size="sm" />
+      <div className="min-w-0 flex-1">
+        <div className={`truncate font-cond text-sm font-semibold leading-tight ${right ? "text-right" : ""}`}>{entry.name}</div>
+        <div className={`truncate font-cond text-[11px] text-text-muted ${right ? "text-right" : ""}`}>
+          {entry.position}
+          {entry.proTeam ? ` | ${entry.proTeam}` : ""}
+          {entry.injuryStatus ? ` | ${entry.injuryStatus}` : ""}
+        </div>
       </div>
-      {players.length ? (
-        players.map((p, i) => {
-          const img = resolvePlayerImage(p.playerId, p.pos, p.name);
-          return (
-            <Link
-              key={p.playerId}
-              href={`/players/${p.playerId}`}
-              className={`flex items-center gap-2 px-3 py-2 ${i % 2 ? "bg-card" : "bg-row"} hover:bg-card-hover`}
-            >
-              <span className="w-4 text-right font-cond text-xs font-bold text-text-dim">{i + 1}</span>
-              {img.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={img.imageUrl}
-                  alt={p.name}
-                  className={`h-8 w-8 shrink-0 rounded-full bg-section ${img.isLogo ? "object-contain p-0.5" : "object-cover"}`}
-                  suppressHydrationWarning
-                />
-              ) : (
-                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full font-cond text-[10px] font-bold text-white" style={{ background: POS_COLOR[p.pos] ?? "#9aa1ad" }}>
-                  {p.pos}
-                </span>
-              )}
-              <div className="min-w-0 flex-1">
-                <div className="truncate font-cond text-sm font-semibold leading-tight">{p.name}</div>
-                <div className="font-cond text-[11px] text-text-muted leading-tight">
-                  {p.pos} · {p.games} G
-                </div>
-              </div>
-              <span className="font-cond text-base font-bold tabular-nums">{p.points.toFixed(0)}</span>
-            </Link>
-          );
-        })
-      ) : (
-        <div className="px-3 py-3 text-sm text-text-dim">No history yet.</div>
-      )}
-    </Card>
+      <div className={`shrink-0 font-cond text-base font-bold tabular-nums ${entry.injuryStatus ? "text-down" : "text-text"}`}>
+        {entry.projected != null ? entry.projected.toFixed(1) : "-"}
+      </div>
+    </div>
   );
+
+  if (!entry.sleeperId) return content;
+
+  return (
+    <Link href={`/players/${encodeURIComponent(entry.sleeperId)}?season=2026`} className="block hover:opacity-85">
+      {content}
+    </Link>
+  );
+}
+
+function standingRecord(standing?: Standing): MatchupSide["record"] | undefined {
+  if (!standing) return undefined;
+  return { wins: standing.wins, losses: standing.losses, ties: standing.ties };
+}
+
+function statusLabel(status: "upcoming" | "live" | "final"): string {
+  if (status === "live") return "Live";
+  if (status === "final") return "Final";
+  return "Upcoming";
+}
+
+function formatRecord(record?: MatchupSide["record"]): string {
+  if (!record) return "-";
+  return `${record.wins}-${record.losses}${record.ties ? `-${record.ties}` : ""}`;
+}
+
+function rankBetter(a?: Standing, b?: Standing): boolean {
+  return !!a && !!b && a.rank < b.rank;
+}
+
+function pointsBetter(a?: Standing, b?: Standing): boolean {
+  return !!a && !!b && a.pointsFor > b.pointsFor;
+}
+
+function lineupFilled(roster: Roster | null): number {
+  return roster?.starters.filter((slot) => Boolean(slot.entry)).length ?? 0;
+}
+
+function lineupSummary(roster: Roster | null): string {
+  if (!roster?.starters.length) return "-";
+  return `${lineupFilled(roster)}/${roster.starters.length}`;
+}
+
+function injuryCount(roster: Roster | null): number | null {
+  if (!roster) return null;
+  return roster.entries.filter((entry) => Boolean(entry.injuryStatus)).length;
+}
+
+function topProjectedStarters(roster: Roster | null): RosterEntry[] {
+  if (!roster) return [];
+  return roster.starters
+    .map((slot) => slot.entry)
+    .filter((entry): entry is RosterEntry => Boolean(entry))
+    .sort((a, b) => (b.projected ?? 0) - (a.projected ?? 0) || a.name.localeCompare(b.name))
+    .slice(0, 3);
 }
 
 interface SlotPair {
