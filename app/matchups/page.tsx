@@ -149,7 +149,7 @@ function SeasonPicker({
   selectedTeam?: TeamMeta;
 }) {
   return (
-    <details className="group relative inline-block">
+    <details name="matchup-picker" className="group relative inline-block">
       <summary className="flex h-9 cursor-pointer list-none items-center rounded-full border border-border bg-card px-3.5 font-cond text-sm font-bold text-text shadow-sm transition-colors hover:bg-card-hover">
         <span>{selectedSeason}</span>
       </summary>
@@ -181,7 +181,7 @@ function FixturePicker({
   week: number;
 }) {
   return (
-    <details className="group relative inline-block">
+    <details name="matchup-picker" className="group relative inline-block">
       <summary className="flex h-9 cursor-pointer list-none items-center rounded-full border border-border bg-card px-3.5 font-cond text-sm font-bold text-text shadow-sm transition-colors hover:bg-card-hover">
         <span>{selectedTeam ? selectedTeam.name : "Team"}</span>
       </summary>
