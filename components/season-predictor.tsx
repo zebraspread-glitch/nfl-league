@@ -16,6 +16,7 @@ import {
   REGULAR_SEASON_WEEKS,
   resolveFinalsPick,
   type FinalsGame,
+  type FinalsSlotId,
   type LadderRow,
   type Pick,
   type PickMap,
@@ -249,15 +250,14 @@ export function SeasonPredictor({
           />
         ) : null}
 
-        {seasonDone ? (
-          <FinalsView games={finals.games} byes={finals.byes} picks={picks} onPick={(id, p) => commit((prev) => ({ ...prev, [id]: p }))} champion={champion} />
-        ) : (
+        <FinalsView games={finals.games} picks={picks} onPick={(id, p) => commit((prev) => ({ ...prev, [id]: p }))} champion={champion} />
+        {!seasonDone ? (
           <Card>
             <div className="px-4 py-3 text-sm text-text-muted">
-              Untipped games use the model tip in the ladder. Override any game, or hit AutoTip to fill the rest.
+              Untipped regular-season games use the model tip. Override any game or hit AutoTip to fill the fixture.
             </div>
           </Card>
-        )}
+        ) : null}
       </div>
 
       <div className="space-y-2">
@@ -389,11 +389,11 @@ function Ladder({ rows, highlight }: { rows: LadderRow[]; highlight: Set<number>
               <tr
                 key={row.team.id}
                 className={`${highlight.has(row.team.id) ? "bg-teal/10" : row.seed % 2 === 0 ? "bg-row" : ""} ${
-                  row.seed === 6 ? "border-b-2 border-teal" : "border-b border-border"
+                  row.seed === 8 ? "border-b-2 border-teal" : "border-b border-border"
                 }`}
               >
                 <td className="px-2 py-1.5">
-                  <Hexagon value={row.seed} tone={row.seed <= 6 ? rankBadgeTone(row.seed) : "grey"} size="sm" />
+                  <Hexagon value={row.seed} tone={row.seed <= 8 ? rankBadgeTone(row.seed) : "grey"} size="sm" />
                 </td>
                 <td className="min-w-0 px-2 py-1.5">
                   <span className="flex items-center gap-2">
@@ -415,57 +415,53 @@ function Ladder({ rows, highlight }: { rows: LadderRow[]; highlight: Set<number>
           </tbody>
         </table>
       </div>
-      <p className="px-3 py-2 text-xs text-text-muted">Top six make the finals. Tiebreak is points for.</p>
+      <p className="px-3 py-2 text-xs text-text-muted">Top eight make the finals. Tiebreak is points for.</p>
     </Card>
   );
 }
 
 function FinalsView({
   games,
-  byes,
   picks,
   onPick,
   champion,
 }: {
   games: FinalsGame[];
-  byes: { team: TeamMeta; seed: number }[];
   picks: PickMap;
   onPick: (id: string, pick: Pick) => void;
   champion?: TeamMeta;
 }) {
   if (!games.length) return null;
 
-  const rounds = [
-    { title: "Quarterfinals — Week 15", games: games.filter((g) => g.round === "Quarterfinal") },
-    { title: "Semifinals — Week 16", games: games.filter((g) => g.round === "Semifinal") },
-    { title: "Final — Week 17", games: games.filter((g) => g.round === "Final") },
+  const byId = new Map(games.map((game) => [game.id, game]));
+  const bracket: { id: FinalsSlotId; label: string; className: string }[] = [
+    { id: "qf-1", label: "QF1", className: "col-start-1 row-start-1" },
+    { id: "qf-2", label: "QF2", className: "col-start-2 row-start-1" },
+    { id: "qf-3", label: "QF3", className: "col-start-3 row-start-1" },
+    { id: "qf-4", label: "QF4", className: "col-start-4 row-start-1" },
+    { id: "sf-1", label: "SF1", className: "col-start-1 col-span-2 row-start-2 px-14" },
+    { id: "sf-2", label: "SF2", className: "col-start-3 col-span-2 row-start-2 px-14" },
+    { id: "final", label: "GF", className: "col-start-2 col-span-2 row-start-3 px-16" },
   ];
 
   return (
     <div className="space-y-3">
       <Card>
-        <SectionHeader>First-round byes</SectionHeader>
-        <div className="grid grid-cols-2 gap-2 p-3">
-          {byes.map((b) => (
-            <div key={b.team.id} className="flex items-center gap-2 rounded-lg border border-border bg-row px-3 py-2">
-              <Hexagon value={b.seed} tone={rankBadgeTone(b.seed)} size="sm" />
-              <TeamAvatar team={b.team} size="sm" />
-              <span className="truncate font-cond text-sm font-semibold">{b.team.name}</span>
-            </div>
-          ))}
+        <SectionHeader>Top 8 Finals Bracket</SectionHeader>
+        <div className="overflow-x-auto">
+          <div className="grid min-w-[760px] grid-cols-4 grid-rows-[auto_auto_auto] gap-x-3 gap-y-5 p-3">
+            {bracket.map((slot) => {
+              const game = byId.get(slot.id);
+              if (!game) return null;
+              return (
+                <div key={slot.id} className={slot.className}>
+                  <FinalsGameBox label={slot.label} game={game} picks={picks} onPick={onPick} />
+                </div>
+              );
+            })}
+          </div>
         </div>
       </Card>
-
-      {rounds.map((round) => (
-        <Card key={round.title}>
-          <SectionHeader>{round.title}</SectionHeader>
-          <div className="space-y-2 p-3">
-            {round.games.map((game) => (
-              <FinalsGameRow key={game.id} game={game} picks={picks} onPick={onPick} />
-            ))}
-          </div>
-        </Card>
-      ))}
 
       {champion ? (
         <Card>
@@ -483,47 +479,69 @@ function FinalsView({
   );
 }
 
-function FinalsGameRow({
+function FinalsGameBox({
+  label,
   game,
   picks,
   onPick,
 }: {
+  label: string;
   game: FinalsGame;
   picks: PickMap;
   onPick: (id: string, pick: Pick) => void;
 }) {
   const pick = resolveFinalsPick(game, picks) ?? { winnerId: 0, margin: DEFAULT_FINALS_MARGIN };
   if (!game.a || !game.b) {
-    return <div className="rounded-lg border border-border bg-row px-3 py-3 text-sm text-text-muted">To be decided</div>;
+    return (
+      <div>
+        <BracketLabel>{label}</BracketLabel>
+        <div className="grid h-[104px] place-items-center rounded-lg border border-border bg-row px-3 text-sm text-text-muted">
+          To be decided
+        </div>
+      </div>
+    );
   }
 
   const aWins = pick.winnerId === game.a.team.id;
 
   return (
-    <div className="rounded-lg border border-border p-2">
-      <div className="grid grid-cols-[1fr_auto_1fr] items-stretch gap-2">
-        <SeededPick entry={game.a} selected={aWins} onSelect={(id) => onPick(game.id, { winnerId: id, margin: pick.margin })} />
-        <div className="flex flex-col items-center justify-center px-1">
-          <span className="font-cond text-[10px] uppercase tracking-wide text-text-dim">by</span>
-          <span className="font-cond text-xl font-semibold tabular-nums leading-none">{pick.margin}</span>
+    <div>
+      <BracketLabel>{label}</BracketLabel>
+      <div className="rounded-lg border border-border bg-card p-2 shadow-sm">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-stretch gap-2">
+          <SeededPick entry={game.a} selected={aWins} onSelect={(id) => onPick(game.id, { winnerId: id, margin: pick.margin })} />
+          <div className="flex flex-col items-center justify-center px-1">
+            <span className="grid h-6 w-6 place-items-center rounded-full bg-section font-cond text-xs font-bold text-text-muted">
+              v
+            </span>
+            <span className="mt-1 font-cond text-xs font-semibold tabular-nums text-text-muted">{pick.margin}</span>
+          </div>
+          <SeededPick
+            entry={game.b}
+            selected={!aWins}
+            align="right"
+            onSelect={(id) => onPick(game.id, { winnerId: id, margin: pick.margin })}
+          />
         </div>
-        <SeededPick
-          entry={game.b}
-          selected={!aWins}
-          align="right"
-          onSelect={(id) => onPick(game.id, { winnerId: id, margin: pick.margin })}
+        <input
+          type="range"
+          min={1}
+          max={MAX_MARGIN}
+          step={1}
+          value={pick.margin}
+          onChange={(e) => onPick(game.id, { winnerId: pick.winnerId, margin: clampMargin(Number(e.target.value)) })}
+          aria-label={`Winning margin for ${game.a.team.name} versus ${game.b.team.name}`}
+          className="mt-2 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-border accent-teal"
         />
       </div>
-      <input
-        type="range"
-        min={1}
-        max={MAX_MARGIN}
-        step={1}
-        value={pick.margin}
-        onChange={(e) => onPick(game.id, { winnerId: pick.winnerId, margin: clampMargin(Number(e.target.value)) })}
-        aria-label={`Winning margin for ${game.a.team.name} versus ${game.b.team.name}`}
-        className="mt-2 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-border accent-teal"
-      />
+    </div>
+  );
+}
+
+function BracketLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mx-auto -mb-1 w-fit rounded-t-md bg-teal px-4 py-0.5 font-cond text-xs font-semibold uppercase tracking-wide text-white">
+      {children}
     </div>
   );
 }

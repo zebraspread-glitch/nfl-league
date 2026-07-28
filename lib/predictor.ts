@@ -3,7 +3,7 @@ import type { Matchup, TeamMeta } from "./types";
 
 // ---------------------------------------------------------------------------
 // Season predictor: pick a winner and a margin for all 84 regular-season games,
-// see the ladder it produces, then play out the six-team finals bracket.
+// see the ladder it produces, then play out the top-eight finals bracket.
 //
 // Pure and client-safe — no data imports. Untipped games fall back to a model
 // pick derived from the same simulated line the odds strip shows, so you can
@@ -11,7 +11,7 @@ import type { Matchup, TeamMeta } from "./types";
 // ---------------------------------------------------------------------------
 
 export const REGULAR_SEASON_WEEKS = 14;
-export const FINALS_TEAMS = 6;
+export const FINALS_TEAMS = 8;
 export const MAX_MARGIN = 60;
 
 export interface Pick {
@@ -184,7 +184,7 @@ export function clampMargin(margin: number): number {
   return Math.min(MAX_MARGIN, Math.max(1, margin));
 }
 
-export type FinalsSlotId = "qf-1" | "qf-2" | "sf-1" | "sf-2" | "final";
+export type FinalsSlotId = "qf-1" | "qf-2" | "qf-3" | "qf-4" | "sf-1" | "sf-2" | "final";
 
 export interface FinalsGame {
   id: FinalsSlotId;
@@ -213,28 +213,27 @@ export function ladderText(rows: LadderRow[], season: number): string {
   return [`MGL ${season} predicted ladder`, "", ...lines].join("\n");
 }
 
-/** Six-team bracket: seeds 1-2 get a bye, 3v6 and 4v5 in the quarterfinals,
- *  then the semifinals reseed so the top seed draws the lowest survivor. */
+/** Three-week top-eight bracket: 1v8, 4v5, 2v7 and 3v6 in the quarterfinals,
+ *  then two semifinals and a grand final. */
 export function buildFinals(ladder: LadderRow[], picks: PickMap): Finals {
   const seedOf = (row: LadderRow) => ({ team: row.team, seed: row.seed });
   const top = ladder.slice(0, FINALS_TEAMS).map(seedOf);
   if (top.length < FINALS_TEAMS) return { byes: [], games: [] };
 
-  const [one, two, three, four, five, six] = top;
+  const [one, two, three, four, five, six, seven, eight] = top;
 
-  const qf1: FinalsGame = { id: "qf-1", round: "Quarterfinal", week: 15, a: three, b: six };
+  const qf1: FinalsGame = { id: "qf-1", round: "Quarterfinal", week: 15, a: one, b: eight };
   const qf2: FinalsGame = { id: "qf-2", round: "Quarterfinal", week: 15, a: four, b: five };
+  const qf3: FinalsGame = { id: "qf-3", round: "Quarterfinal", week: 15, a: two, b: seven };
+  const qf4: FinalsGame = { id: "qf-4", round: "Quarterfinal", week: 15, a: three, b: six };
 
   const qf1Winner = resolve(qf1, picks);
   const qf2Winner = resolve(qf2, picks);
+  const qf3Winner = resolve(qf3, picks);
+  const qf4Winner = resolve(qf4, picks);
 
-  // Reseed: the best remaining seed plays the worst remaining seed.
-  const survivors = [qf1Winner, qf2Winner].filter(Boolean) as { team: TeamMeta; seed: number }[];
-  survivors.sort((a, b) => a.seed - b.seed);
-  const [betterSurvivor, worseSurvivor] = survivors;
-
-  const sf1: FinalsGame = { id: "sf-1", round: "Semifinal", week: 16, a: one, b: worseSurvivor };
-  const sf2: FinalsGame = { id: "sf-2", round: "Semifinal", week: 16, a: two, b: betterSurvivor };
+  const sf1: FinalsGame = { id: "sf-1", round: "Semifinal", week: 16, a: qf1Winner, b: qf2Winner };
+  const sf2: FinalsGame = { id: "sf-2", round: "Semifinal", week: 16, a: qf3Winner, b: qf4Winner };
 
   const sf1Winner = resolve(sf1, picks);
   const sf2Winner = resolve(sf2, picks);
@@ -245,8 +244,8 @@ export function buildFinals(ladder: LadderRow[], picks: PickMap): Finals {
   const champion = resolve(final, picks);
 
   return {
-    byes: [one, two],
-    games: [qf1, qf2, sf1, sf2, final],
+    byes: [],
+    games: [qf1, qf2, qf3, qf4, sf1, sf2, final],
     championId: champion?.team.id,
   };
 }
