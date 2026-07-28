@@ -250,13 +250,12 @@ export function buildFinals(ladder: LadderRow[], picks: PickMap): Finals {
   };
 }
 
-/** Who wins a finals game — the stored pick if it is still a participant,
- *  otherwise the higher seed. Reseeding can invalidate an older pick. */
+/** Who wins a finals game — only an explicit stored pick advances. */
 export function resolveFinalsPick(game: FinalsGame, picks: PickMap): Pick | undefined {
   if (!game.a || !game.b) return undefined;
   const stored = picks[game.id];
   const valid = stored && (stored.winnerId === game.a.team.id || stored.winnerId === game.b.team.id);
-  return valid ? stored : { winnerId: game.a.team.id, margin: DEFAULT_FINALS_MARGIN };
+  return valid ? stored : undefined;
 }
 
 export const DEFAULT_FINALS_MARGIN = 8;

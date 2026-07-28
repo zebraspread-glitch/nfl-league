@@ -24,6 +24,15 @@ import {
 import type { Matchup, TeamMeta } from "@/lib/types";
 
 const STORAGE_KEY = "mgl_predictor_2026";
+const FINALS_PICK_IDS: FinalsSlotId[] = ["qf-1", "qf-2", "qf-3", "qf-4", "sf-1", "sf-2", "final"];
+
+function withoutFinalsPicks(picks: PickMap): PickMap {
+  const next = { ...picks };
+  FINALS_PICK_IDS.forEach((id) => {
+    delete next[id];
+  });
+  return next;
+}
 
 export function SeasonPredictor({
   matchups,
@@ -108,7 +117,7 @@ export function SeasonPredictor({
   };
 
   const runAutoTip = () => {
-    commit((prev) => autoTip(matchups, prev, Date.now()));
+    commit((prev) => autoTip(matchups, withoutFinalsPicks(prev), Date.now()));
     setCursor(matchups.length - 1);
   };
 
@@ -443,33 +452,31 @@ function FinalsView({
     { id: "qf-2", label: "QF2", className: "col-start-2 row-start-1" },
     { id: "qf-3", label: "QF3", className: "col-start-3 row-start-1" },
     { id: "qf-4", label: "QF4", className: "col-start-4 row-start-1" },
-    { id: "sf-1", label: "SF1", className: "col-start-1 col-span-2 row-start-2 px-[5.75rem]" },
-    { id: "sf-2", label: "SF2", className: "col-start-3 col-span-2 row-start-2 px-[5.75rem]" },
-    { id: "final", label: "GF", className: "col-start-2 col-span-2 row-start-3 px-28" },
+    { id: "sf-1", label: "SF1", className: "col-start-1 col-span-2 row-start-2 px-[18%]" },
+    { id: "sf-2", label: "SF2", className: "col-start-3 col-span-2 row-start-2 px-[18%]" },
+    { id: "final", label: "GF", className: "col-start-2 col-span-2 row-start-3 px-[24%]" },
   ];
 
   return (
     <div className="space-y-3">
       <Card>
         <SectionHeader>Top 8 Finals Bracket</SectionHeader>
-        <div className="overflow-x-auto">
-          <div className="relative grid min-w-[820px] grid-cols-4 grid-rows-[auto_auto_auto] gap-x-3 gap-y-7 bg-[#f8fafc] p-4">
-            <BracketLine className="left-[12.5%] top-[100px] h-[42px]" />
-            <BracketLine className="left-[37.5%] top-[100px] h-[42px]" />
-            <BracketLine className="left-[62.5%] top-[100px] h-[42px]" />
-            <BracketLine className="left-[87.5%] top-[100px] h-[42px]" />
-            <BracketLine className="left-1/4 top-[226px] h-[42px]" />
-            <BracketLine className="left-3/4 top-[226px] h-[42px]" />
-            {bracket.map((slot) => {
-              const game = byId.get(slot.id);
-              if (!game) return null;
-              return (
-                <div key={slot.id} className={slot.className}>
-                  <FinalsGameBox label={slot.label} game={game} picks={picks} onPick={onPick} />
-                </div>
-              );
-            })}
-          </div>
+        <div className="relative grid grid-cols-4 grid-rows-[auto_auto_auto] gap-x-2 gap-y-6 bg-[#f8fafc] p-3">
+          <BracketLine className="left-[12.5%] top-[86px] h-[34px]" />
+          <BracketLine className="left-[37.5%] top-[86px] h-[34px]" />
+          <BracketLine className="left-[62.5%] top-[86px] h-[34px]" />
+          <BracketLine className="left-[87.5%] top-[86px] h-[34px]" />
+          <BracketLine className="left-1/4 top-[194px] h-[34px]" />
+          <BracketLine className="left-3/4 top-[194px] h-[34px]" />
+          {bracket.map((slot) => {
+            const game = byId.get(slot.id);
+            if (!game) return null;
+            return (
+              <div key={slot.id} className={slot.className}>
+                <FinalsGameBox label={slot.label} game={game} picks={picks} onPick={onPick} />
+              </div>
+            );
+          })}
         </div>
       </Card>
 
@@ -500,14 +507,14 @@ function FinalsGameBox({
   picks: PickMap;
   onPick: (id: string, pick: Pick) => void;
 }) {
-  const pick = resolveFinalsPick(game, picks) ?? { winnerId: 0, margin: DEFAULT_FINALS_MARGIN };
+  const pick = resolveFinalsPick(game, picks);
   if (!game.a || !game.b) {
     return (
       <div>
         <BracketLabel>{label}</BracketLabel>
-        <div className="relative h-[86px] overflow-hidden rounded-lg border border-[#45484d] bg-[radial-gradient(circle_at_center,#cdd2d7_0%,#777d84_42%,#303238_100%)] shadow-sm">
+        <div className="relative h-16 overflow-hidden rounded-md border border-[#45484d] bg-[radial-gradient(circle_at_center,#cdd2d7_0%,#777d84_42%,#303238_100%)] shadow-sm">
           <div className="absolute left-1/2 top-0 h-full w-px bg-black/35" />
-          <div className="absolute left-1/2 top-1/2 grid h-7 w-7 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-[#3f4449] font-cond text-sm font-bold text-white shadow">
+          <div className="absolute left-1/2 top-1/2 grid h-6 w-6 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-[#3f4449] font-cond text-xs font-bold text-white shadow">
             v
           </div>
         </div>
@@ -515,18 +522,29 @@ function FinalsGameBox({
     );
   }
 
-  const aWins = pick.winnerId === game.a.team.id;
+  const pickedWinnerId = pick?.winnerId;
 
   return (
     <div>
       <BracketLabel>{label}</BracketLabel>
-      <div className="relative h-[86px] overflow-hidden rounded-lg border border-[#45484d] bg-[#2d3035] shadow-sm">
+      <div className="relative h-16 overflow-hidden rounded-md border border-[#45484d] bg-[#2d3035] shadow-sm">
         <div className="grid h-full grid-cols-2">
-          <BracketTeam entry={game.a} selected={aWins} onSelect={(id) => onPick(game.id, { winnerId: id, margin: DEFAULT_FINALS_MARGIN })} />
-          <BracketTeam entry={game.b} selected={!aWins} align="right" onSelect={(id) => onPick(game.id, { winnerId: id, margin: DEFAULT_FINALS_MARGIN })} />
+          <BracketTeam
+            entry={game.a}
+            selected={pickedWinnerId === game.a.team.id}
+            hasPick={!!pick}
+            onSelect={(id) => onPick(game.id, { winnerId: id, margin: DEFAULT_FINALS_MARGIN })}
+          />
+          <BracketTeam
+            entry={game.b}
+            selected={pickedWinnerId === game.b.team.id}
+            hasPick={!!pick}
+            align="right"
+            onSelect={(id) => onPick(game.id, { winnerId: id, margin: DEFAULT_FINALS_MARGIN })}
+          />
         </div>
         <div className="absolute left-1/2 top-0 h-full w-px bg-black/35" />
-        <div className="absolute left-1/2 top-1/2 grid h-7 w-7 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-[#3f4449] font-cond text-sm font-bold text-white shadow">
+        <div className="absolute left-1/2 top-1/2 grid h-6 w-6 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-[#3f4449] font-cond text-xs font-bold text-white shadow">
           v
         </div>
       </div>
@@ -536,7 +554,7 @@ function FinalsGameBox({
 
 function BracketLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mx-auto -mb-1 w-fit rounded-t-md bg-teal px-4 py-0.5 font-cond text-xs font-semibold uppercase tracking-wide text-white">
+    <div className="mx-auto -mb-1 w-fit rounded-t-md bg-teal px-3 py-0.5 font-cond text-[11px] font-semibold uppercase tracking-wide text-white">
       {children}
     </div>
   );
@@ -549,24 +567,27 @@ function BracketLine({ className }: { className: string }) {
 function BracketTeam({
   entry,
   selected,
+  hasPick,
   onSelect,
   align = "left",
 }: {
   entry: { team: TeamMeta; seed: number };
   selected: boolean;
+  hasPick: boolean;
   onSelect: (teamId: number) => void;
   align?: "left" | "right";
 }) {
-  const logoOpacity = selected ? 0.34 : 0.18;
+  const logoOpacity = selected ? 0.34 : 0.2;
+  const dimClass = hasPick ? (selected ? "opacity-100" : "opacity-52 grayscale") : "opacity-92";
 
   return (
     <button
       type="button"
       onClick={() => onSelect(entry.team.id)}
       aria-pressed={selected}
-      className={`group relative min-w-0 overflow-hidden px-2 text-left text-white transition-[filter,opacity] ${
-        selected ? "opacity-100" : "opacity-60 grayscale hover:opacity-85"
-      } ${align === "right" ? "text-right" : ""}`}
+      className={`group relative min-w-0 overflow-hidden px-1.5 text-left text-white transition-[filter,opacity] hover:opacity-100 ${dimClass} ${
+        align === "right" ? "text-right" : ""
+      }`}
       style={{
         background: `linear-gradient(135deg, ${entry.team.primary}, ${entry.team.secondary})`,
       }}
@@ -577,7 +598,7 @@ function BracketTeam({
         <img
           src={entry.team.logo}
           alt=""
-          className={`absolute top-1/2 h-20 w-20 -translate-y-1/2 object-contain ${
+          className={`absolute top-1/2 h-14 w-14 -translate-y-1/2 object-contain ${
             align === "right" ? "right-1" : "left-1"
           }`}
           style={{ opacity: logoOpacity }}
@@ -585,13 +606,13 @@ function BracketTeam({
       ) : null}
       <div
         className={`relative flex h-full min-w-0 flex-col justify-center gap-1 ${
-          align === "right" ? "items-end pl-5" : "items-start pr-5"
+          align === "right" ? "items-end pl-3" : "items-start pr-3"
         }`}
       >
-        <span className="rounded bg-black/35 px-1.5 py-0.5 font-cond text-[10px] font-semibold uppercase tracking-wide text-white/80">
-          Seed {entry.seed}
+        <span className="rounded bg-black/35 px-1 py-0.5 font-cond text-[8px] font-semibold uppercase tracking-wide text-white/80">
+          S{entry.seed}
         </span>
-        <span className="max-w-full truncate font-cond text-base font-semibold leading-none drop-shadow">
+        <span className="max-w-full truncate font-cond text-sm font-semibold leading-none drop-shadow">
           {entry.team.abbrev}
         </span>
       </div>
