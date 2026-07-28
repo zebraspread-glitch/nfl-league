@@ -14,6 +14,7 @@ const FEATURED_LINKS = [
 ];
 
 const OTHER_LINKS = [
+  { href: "/predictor", label: "Season Predictor", desc: "Pick a margin on all 84 games, then play out the finals", icon: "PRD" },
   { href: "/playoff-simulator", label: "Playoff Simulator", desc: "Project the 2026 ladder by picking every remaining game", icon: "SIM" },
   { href: "/newspaper", label: "League Newspaper", desc: "MGL Gazette headlines, matchup wire and league gossip", icon: "NEWS" },
   { href: "/games", label: "Every Game", desc: "445 games with full player boxscores", icon: "GM" },
