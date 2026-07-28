@@ -5,7 +5,17 @@ import { PowerRankingsUnreadDot } from "@/components/power-rankings-seen";
 
 export const metadata = { title: "More - MGL Fantasy" };
 
-const FEATURED_LINKS = [
+type MoreLink = {
+  href: string;
+  label: string;
+  desc: string;
+  icon: string;
+  badge?: string;
+  unreadVersion?: string;
+};
+
+const FEATURED_LINKS: MoreLink[] = [
+  { href: "/predictor", label: "Season Predictor", desc: "Pick a margin on all 84 games, then play out the finals", icon: "PRD", badge: "NEW" },
   { href: "/power-rankings", label: "Power Rankings", desc: "TP's personal ranking of every team", icon: "🏆" },
   { href: "/keepers", label: "Keepers Board", desc: "Every team's kept players for 2026", icon: "🔒" },
   { href: "/mock-draft", label: "Mock Draft", desc: "Simulate the 2026 draft board pick by pick", icon: "MD" },
@@ -13,8 +23,7 @@ const FEATURED_LINKS = [
   { href: "/head-to-head", label: "Head to Head", desc: "Compare any two franchises", icon: "HH" },
 ];
 
-const OTHER_LINKS = [
-  { href: "/predictor", label: "Season Predictor", desc: "Pick a margin on all 84 games, then play out the finals", icon: "PRD" },
+const OTHER_LINKS: MoreLink[] = [
   { href: "/playoff-simulator", label: "Playoff Simulator", desc: "Project the 2026 ladder by picking every remaining game", icon: "SIM" },
   { href: "/newspaper", label: "League Newspaper", desc: "MGL Gazette headlines, matchup wire and league gossip", icon: "NEWS" },
   { href: "/games", label: "Every Game", desc: "445 games with full player boxscores", icon: "GM" },
@@ -33,14 +42,6 @@ const OTHER_LINKS = [
   { href: "/settings", label: "Settings", desc: "Theme (light/dark) and your team", icon: "⚙" },
 ];
 
-type MoreLink = {
-  href: string;
-  label: string;
-  desc: string;
-  icon: string;
-  unreadVersion?: string;
-};
-
 function LinkList({ links }: { links: MoreLink[] }) {
   return (
     <Card>
@@ -54,8 +55,15 @@ function LinkList({ links }: { links: MoreLink[] }) {
             {l.icon}
             {l.unreadVersion && <PowerRankingsUnreadDot version={l.unreadVersion} className="absolute -right-0.5 -top-0.5" />}
           </span>
-          <div className="flex-1">
-            <div className="font-cond text-lg font-semibold leading-tight">{l.label}</div>
+          <div className="min-w-0 flex-1">
+            <div className="flex min-w-0 items-center gap-2 font-cond text-lg font-semibold leading-tight">
+              <span className="truncate">{l.label}</span>
+              {l.badge ? (
+                <span className="shrink-0 rounded bg-[#ef4444] px-1.5 py-0.5 font-cond text-[10px] font-bold uppercase leading-none tracking-wide text-white shadow-sm">
+                  {l.badge}
+                </span>
+              ) : null}
+            </div>
             <div className="text-xs text-text-muted">{l.desc}</div>
           </div>
           <span className="text-text-dim">&gt;</span>
