@@ -7,6 +7,7 @@ import { TopBar } from "@/components/top-bar";
 import { BottomNav } from "@/components/bottom-nav";
 import { SettingsProvider } from "@/components/settings-provider";
 import { NavigationProgress } from "@/components/navigation-progress";
+import { getPowerRankings } from "@/lib/power-rankings";
 
 // Runs before paint to apply the saved theme, preventing a flash of light mode
 // on load. Keep in sync with SettingsProvider's THEME_KEY.
@@ -52,6 +53,8 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const powerRankingsVersion = getPowerRankings().version;
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -70,7 +73,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             >
               {children}
             </main>
-            <BottomNav />
+            <BottomNav powerRankingsVersion={powerRankingsVersion} />
           </div>
         </SettingsProvider>
       </body>

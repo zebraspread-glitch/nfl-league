@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Card, PageIntro, SectionTitle } from "@/components/ui";
+import { getPowerRankings } from "@/lib/power-rankings";
+import { PowerRankingsUnreadDot } from "@/components/power-rankings-seen";
 
 export const metadata = { title: "More - MGL Fantasy" };
 
@@ -35,6 +37,7 @@ type MoreLink = {
   label: string;
   desc: string;
   icon: string;
+  unreadVersion?: string;
 };
 
 function LinkList({ links }: { links: MoreLink[] }) {
@@ -46,8 +49,9 @@ function LinkList({ links }: { links: MoreLink[] }) {
           href={l.href}
           className={`flex items-center gap-3 px-4 py-3.5 ${i % 2 ? "bg-card" : "bg-row"} hover:bg-card-hover`}
         >
-          <span className="grid h-9 w-9 place-items-center rounded-lg bg-section font-cond text-sm font-bold text-text-muted">
+          <span className="relative grid h-9 w-9 place-items-center rounded-lg bg-section font-cond text-sm font-bold text-text-muted">
             {l.icon}
+            {l.unreadVersion && <PowerRankingsUnreadDot version={l.unreadVersion} className="absolute -right-0.5 -top-0.5" />}
           </span>
           <div className="flex-1">
             <div className="font-cond text-lg font-semibold leading-tight">{l.label}</div>
@@ -61,12 +65,17 @@ function LinkList({ links }: { links: MoreLink[] }) {
 }
 
 export default function MorePage() {
+  const powerRankingsVersion = getPowerRankings().version;
+  const featuredLinks = FEATURED_LINKS.map((link) =>
+    link.href === "/power-rankings" ? { ...link, unreadVersion: powerRankingsVersion } : link
+  );
+
   return (
     <div>
       <PageIntro title="More" subtitle="League info and history" />
 
       <SectionTitle>Featured</SectionTitle>
-      <LinkList links={FEATURED_LINKS} />
+      <LinkList links={featuredLinks} />
 
       <div className="mt-5">
         <SectionTitle>Other</SectionTitle>

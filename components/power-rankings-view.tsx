@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { PowerRankings } from "@/lib/power-rankings";
 import { Card, Hexagon, SectionHeader, TeamAvatar, TeamLink, rankBadgeTone } from "@/components/ui";
+import { usePowerRankingPreviousRanks } from "@/components/power-rankings-seen";
 
 type Mode = "tp" | "ai";
 
@@ -15,6 +16,7 @@ export default function PowerRankingsView({
 }) {
   const [mode, setMode] = useState<Mode>("tp");
   const active = mode === "tp" ? tp : ai;
+  const previousRanks = usePowerRankingPreviousRanks(mode, active.version, active.entries);
 
   const updatedLabel = new Date(active.updated + "T00:00:00").toLocaleDateString("en-AU", {
     day: "numeric",
@@ -63,7 +65,10 @@ export default function PowerRankingsView({
                   key={e.team.id}
                   className={`flex items-center gap-3 px-3 py-3 ${i % 2 ? "bg-card" : "bg-row"}`}
                 >
-                  <Hexagon value={e.rank} tone={rankBadgeTone(e.rank)} />
+                  <div className="flex w-14 shrink-0 items-center gap-1">
+                    <Hexagon value={e.rank} tone={rankBadgeTone(e.rank)} />
+                    <RankMovement rank={e.rank} previousRank={previousRanks[String(e.team.id)]} />
+                  </div>
                   <TeamAvatar team={e.team} size="md" />
                   <div className="min-w-0 flex-1">
                     {e.team.id > 0 ? (
@@ -89,5 +94,36 @@ export default function PowerRankingsView({
           : "AI ranking for the 2026 season, based on kept players and recent form. TP has no hand in this one."}
       </p>
     </div>
+  );
+}
+
+function RankMovement({ rank, previousRank }: { rank: number; previousRank?: number }) {
+  if (!previousRank || previousRank === rank) return <span className="w-5" aria-hidden="true" />;
+
+  const movedUp = previousRank > rank;
+  const spots = Math.abs(previousRank - rank);
+
+  return (
+    <span
+      title={`${movedUp ? "Up" : "Down"} ${spots} from #${previousRank}`}
+      className={`inline-flex w-5 items-center justify-center gap-0.5 font-cond text-xs font-bold ${
+        movedUp ? "text-up" : "text-down"
+      }`}
+    >
+      <svg
+        aria-hidden="true"
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        {movedUp ? <path d="M12 19V5M5 12l7-7 7 7" /> : <path d="M12 5v14M5 12l7 7 7-7" />}
+      </svg>
+      <span>{spots}</span>
+    </span>
   );
 }

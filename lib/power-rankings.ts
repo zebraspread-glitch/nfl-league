@@ -20,6 +20,7 @@ export type PowerRankEntry = {
 
 export type PowerRankings = {
   updated: string;
+  version: string;
   intro: string;
   entries: PowerRankEntry[];
 };
@@ -39,7 +40,21 @@ function build(raw: RawRankings): PowerRankings {
     })
     .filter((e): e is PowerRankEntry => e !== null);
 
-  return { updated: raw.updated, intro: raw.intro, entries };
+  return { updated: raw.updated, version: versionFor(raw), intro: raw.intro, entries };
+}
+
+function versionFor(raw: RawRankings): string {
+  const source = JSON.stringify({
+    updated: raw.updated,
+    intro: raw.intro,
+    ranking: raw.ranking,
+  });
+  let hash = 2166136261;
+  for (let i = 0; i < source.length; i++) {
+    hash ^= source.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `${raw.updated}-${(hash >>> 0).toString(36)}`;
 }
 
 export function getPowerRankings(): PowerRankings {

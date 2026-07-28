@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { PowerRankingsUnreadDot } from "@/components/power-rankings-seen";
 
 type TabIcon = "team" | "matchup" | "ladder" | "players" | "more";
 type Tab = { href: string; label: string; match: (p: string) => boolean; icon: TabIcon };
@@ -57,11 +58,11 @@ const TABS: Tab[] = [
   },
 ];
 
-function NavIcon({ icon, active }: { icon: TabIcon; active: boolean }) {
+function NavIcon({ icon, active, unreadVersion }: { icon: TabIcon; active: boolean; unreadVersion?: string }) {
   return (
     <span
       aria-hidden="true"
-      className={`grid h-7 w-9 place-items-center rounded-full transition-all ${
+      className={`relative grid h-7 w-9 place-items-center rounded-full transition-all ${
         active
           ? "bg-teal/10 text-teal shadow-[inset_0_0_0_1px_rgba(22,167,198,0.18)]"
           : "text-text-dim group-hover:bg-section group-hover:text-text-muted"
@@ -80,6 +81,7 @@ function NavIcon({ icon, active }: { icon: TabIcon; active: boolean }) {
       >
         <IconPaths icon={icon} />
       </svg>
+      {unreadVersion && <PowerRankingsUnreadDot version={unreadVersion} className="absolute right-0 top-0" />}
     </span>
   );
 }
@@ -152,7 +154,7 @@ function IconPaths({ icon }: { icon: TabIcon }) {
   }
 }
 
-export function BottomNav() {
+export function BottomNav({ powerRankingsVersion }: { powerRankingsVersion: string }) {
   const pathname = usePathname();
 
   if (pathname.startsWith("/mock-draft")) return null;
@@ -162,6 +164,7 @@ export function BottomNav() {
       <div className="grid grid-cols-5">
         {TABS.map((t) => {
           const active = t.match(pathname);
+          const unreadVersion = t.icon === "more" ? powerRankingsVersion : undefined;
           return (
             <Link
               key={t.href}
@@ -170,7 +173,7 @@ export function BottomNav() {
                 active ? "text-teal" : "text-text-dim hover:text-text-muted"
               }`}
             >
-              <NavIcon icon={t.icon} active={active} />
+              <NavIcon icon={t.icon} active={active} unreadVersion={unreadVersion} />
               <span className="font-cond uppercase">{t.label}</span>
             </Link>
           );
