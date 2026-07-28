@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getMatchups, getSnapshot } from "@/lib/sleeper";
 import { getTeam, getTeamByName, TEAMS } from "@/lib/teams";
-import { HISTORY_SEASONS } from "@/lib/league-data";
+import { CURRENT_SEASON_FIXTURE_WEEKS, HISTORY_SEASONS } from "@/lib/league-data";
 import { getSeasonGames, weekLabel, type Game, type GameSide } from "@/lib/games";
 import { MatchupCard } from "@/components/matchup-card";
 import { EmptyState } from "@/components/ui";
@@ -10,9 +10,9 @@ import type { Matchup, TeamMeta } from "@/lib/types";
 export const revalidate = 120;
 
 const TOTAL_WEEKS = 14;
-const CURRENT_AVAILABLE_WEEKS = [1, 14];
+const CURRENT_AVAILABLE_WEEKS = CURRENT_SEASON_FIXTURE_WEEKS;
 const FIXTURE_WEEKS = Array.from({ length: TOTAL_WEEKS }, (_, i) => i + 1);
-const PRIMETIME_MATCHUP_ID = "1-primetime";
+const isPrimetime = (matchupId: string) => matchupId.endsWith("-primetime");
 
 export default async function MatchupsPage({
   searchParams,
@@ -222,7 +222,7 @@ function RoundFixture({ season, week, fixture }: { season: number; week: number;
             key={item.matchup.id}
             matchup={item.matchup}
             href={item.href}
-            title={item.matchup.id === PRIMETIME_MATCHUP_ID ? "Primetime" : undefined}
+            title={isPrimetime(item.matchup.id) ? "Primetime" : undefined}
           />
         ))
       ) : (
@@ -247,7 +247,7 @@ function TeamFixture({ season, team, fixture }: { season: number; team: TeamMeta
           <MatchupCard
             matchup={orientMatchupForTeam(item.matchup, team.id)}
             href={item.href}
-            title={item.matchup.id === PRIMETIME_MATCHUP_ID ? "Primetime" : undefined}
+            title={isPrimetime(item.matchup.id) ? "Primetime" : undefined}
           />
         </section>
       ))}

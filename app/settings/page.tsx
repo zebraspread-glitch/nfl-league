@@ -6,7 +6,8 @@ import { Card, SectionHeader, PageIntro, TeamAvatar } from "@/components/ui";
 import { useSettings, type DesktopLayout, type Theme } from "@/components/settings-provider";
 
 export default function SettingsPage() {
-  const { ready, theme, setTheme, desktopLayout, setDesktopLayout, teamId, setTeamId } = useSettings();
+  const { ready, theme, setTheme, desktopLayout, setDesktopLayout, showOdds, setShowOdds, teamId, setTeamId } =
+    useSettings();
   const router = useRouter();
 
   // Team is stored in a cookie the server reads for the My Team home page, so
@@ -43,6 +44,29 @@ export default function SettingsPage() {
           </div>
           <p className="mt-2 px-1 text-xs text-text-muted">
             Choose how wide the app feels on desktop. Mobile keeps the standard layout.
+          </p>
+        </div>
+      </Card>
+
+      <Card>
+        <SectionHeader>Betting Odds</SectionHeader>
+        <div className="p-3">
+          <button
+            type="button"
+            role="switch"
+            aria-checked={ready && showOdds}
+            onClick={() => setShowOdds(!showOdds)}
+            className="flex w-full items-center gap-3 rounded-xl border border-border bg-row px-3 py-2.5 text-left hover:bg-card-hover"
+          >
+            <div className="min-w-0 flex-1">
+              <div className="font-cond text-sm font-semibold leading-tight">Show odds on matchups</div>
+              <div className="text-[11px] text-text-muted">Spread, total and moneyline on every upcoming game</div>
+            </div>
+            <Toggle on={ready && showOdds} />
+          </button>
+          <p className="mt-2 px-1 text-xs text-text-muted">
+            Made-up lines for bragging rights only — no real bookmaker, no real money. Priced off each
+            franchise&apos;s all-time scoring, so the numbers move week to week.
           </p>
         </div>
       </Card>
@@ -89,6 +113,22 @@ export default function SettingsPage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+function Toggle({ on }: { on: boolean }) {
+  return (
+    <span
+      className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
+        on ? "bg-teal" : "bg-border-strong"
+      }`}
+    >
+      <span
+        className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+          on ? "translate-x-[1.375rem]" : "translate-x-0.5"
+        }`}
+      />
+    </span>
   );
 }
 

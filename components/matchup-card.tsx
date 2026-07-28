@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Matchup, MatchupSide } from "@/lib/types";
 import { Card, TeamAvatar, Score, Pill } from "./ui";
+import { MatchupOddsStrip } from "./matchup-odds";
 
 function MatchupAvatar({ side }: { side: MatchupSide }) {
   return (
@@ -97,6 +98,8 @@ export function MatchupCard({
           </div>
         </div>
       </Link>
+      {/* Sits outside the Link so tapping a price does not open the matchup. */}
+      <MatchupOddsStrip matchup={matchup} />
     </Card>
   );
 }

@@ -7,6 +7,7 @@ export type DesktopLayout = "default" | "half" | "full";
 
 const THEME_KEY = "mgl_theme";
 const DESKTOP_LAYOUT_KEY = "mgl_desktop_layout";
+const ODDS_KEY = "mgl_odds";
 // The selected team is stored in a cookie (not localStorage) so the server can
 // read it and render the My Team home page without a client round-trip.
 const TEAM_COOKIE = "mgl_team";
@@ -34,6 +35,9 @@ interface Settings {
   setTheme: (t: Theme) => void;
   desktopLayout: DesktopLayout;
   setDesktopLayout: (layout: DesktopLayout) => void;
+  /** Show the novelty (fake) betting lines on upcoming matchups. Off by default. */
+  showOdds: boolean;
+  setShowOdds: (show: boolean) => void;
   teamId: number | null;
   setTeamId: (id: number | null) => void;
 }
@@ -57,6 +61,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   const [theme, setThemeState] = useState<Theme>("light");
   const [desktopLayout, setDesktopLayoutState] = useState<DesktopLayout>("default");
+  const [showOdds, setShowOddsState] = useState(false);
   const [teamId, setTeamIdState] = useState<number | null>(null);
 
   // One-time hydration load from localStorage on the client.
@@ -84,6 +89,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             : "default",
         );
       }
+      setShowOddsState(localStorage.getItem(ODDS_KEY) === "on");
       setTeamIdState(readTeamCookie());
     } catch {
       // ignore unavailable/corrupt storage
@@ -108,13 +114,22 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   };
 
+  const setShowOdds = (show: boolean) => {
+    setShowOddsState(show);
+    try {
+      localStorage.setItem(ODDS_KEY, show ? "on" : "off");
+    } catch {}
+  };
+
   const setTeamId = (id: number | null) => {
     setTeamIdState(id);
     writeTeamCookie(id);
   };
 
   return (
-    <SettingsContext.Provider value={{ ready, theme, setTheme, desktopLayout, setDesktopLayout, teamId, setTeamId }}>
+    <SettingsContext.Provider
+      value={{ ready, theme, setTheme, desktopLayout, setDesktopLayout, showOdds, setShowOdds, teamId, setTeamId }}
+    >
       {children}
     </SettingsContext.Provider>
   );
