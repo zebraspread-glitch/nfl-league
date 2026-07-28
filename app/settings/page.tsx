@@ -3,11 +3,22 @@
 import { useRouter } from "next/navigation";
 import { TEAMS } from "@/lib/teams";
 import { Card, SectionHeader, PageIntro, TeamAvatar } from "@/components/ui";
-import { useSettings, type DesktopLayout, type Theme } from "@/components/settings-provider";
+import { useSettings, type DesktopLayout, type OddsTheme, type Theme } from "@/components/settings-provider";
 
 export default function SettingsPage() {
-  const { ready, theme, setTheme, desktopLayout, setDesktopLayout, showOdds, setShowOdds, teamId, setTeamId } =
-    useSettings();
+  const {
+    ready,
+    theme,
+    setTheme,
+    desktopLayout,
+    setDesktopLayout,
+    showOdds,
+    setShowOdds,
+    oddsTheme,
+    setOddsTheme,
+    teamId,
+    setTeamId,
+  } = useSettings();
   const router = useRouter();
 
   // Team is stored in a cookie the server reads for the My Team home page, so
@@ -64,9 +75,15 @@ export default function SettingsPage() {
             </div>
             <Toggle on={ready && showOdds} />
           </button>
+          <div className="mt-3 grid grid-cols-3 gap-1 rounded-lg bg-section p-1">
+            <OddsThemeOption label="Default" value="default" current={oddsTheme} onSelect={setOddsTheme} />
+            <OddsThemeOption label="Sportsbet" value="sportsbet" current={oddsTheme} onSelect={setOddsTheme} />
+            <OddsThemeOption label="PointsBet" value="pointsbet" current={oddsTheme} onSelect={setOddsTheme} />
+          </div>
           <p className="mt-2 px-1 text-xs text-text-muted">
             Made-up lines for bragging rights only — no real bookmaker, no real money. Priced off each
-            franchise&apos;s all-time scoring, so the numbers move week to week.
+            franchise&apos;s all-time scoring, so the numbers move week to week. The style only changes how the
+            odds look — the prices are the same either way.
           </p>
         </div>
       </Card>
@@ -113,6 +130,31 @@ export default function SettingsPage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+function OddsThemeOption({
+  label,
+  value,
+  current,
+  onSelect,
+}: {
+  label: string;
+  value: OddsTheme;
+  current: OddsTheme;
+  onSelect: (theme: OddsTheme) => void;
+}) {
+  const active = current === value;
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(value)}
+      className={`rounded-md py-2 text-center font-cond text-sm font-semibold uppercase tracking-wide transition-colors ${
+        active ? "bg-card text-text shadow-sm" : "text-text-muted hover:text-text"
+      }`}
+    >
+      {label}
+    </button>
   );
 }
 

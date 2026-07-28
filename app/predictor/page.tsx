@@ -15,9 +15,9 @@ export default function PredictorPage() {
     <div>
       <PageIntro
         title="Season Predictor"
-        subtitle={`Pick every ${CURRENT_SEASON} margin and play out the finals`}
+        subtitle={`Tip every ${CURRENT_SEASON} game and play out the finals`}
       />
-      <SeasonPredictor matchups={matchups} teams={TEAMS} />
+      <SeasonPredictor matchups={matchups} teams={TEAMS} season={CURRENT_SEASON} />
     </div>
   );
 }

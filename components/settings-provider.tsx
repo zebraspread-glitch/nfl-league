@@ -4,10 +4,16 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 export type Theme = "light" | "dark";
 export type DesktopLayout = "default" | "half" | "full";
+/** Which book the odds strip is dressed up as. Appearance only — the prices
+ *  themselves are identical across all three. */
+export type OddsTheme = "default" | "sportsbet" | "pointsbet";
+
+const ODDS_THEMES: OddsTheme[] = ["default", "sportsbet", "pointsbet"];
 
 const THEME_KEY = "mgl_theme";
 const DESKTOP_LAYOUT_KEY = "mgl_desktop_layout";
 const ODDS_KEY = "mgl_odds";
+const ODDS_THEME_KEY = "mgl_odds_theme";
 // The selected team is stored in a cookie (not localStorage) so the server can
 // read it and render the My Team home page without a client round-trip.
 const TEAM_COOKIE = "mgl_team";
@@ -38,6 +44,8 @@ interface Settings {
   /** Show the novelty (fake) betting lines on upcoming matchups. Off by default. */
   showOdds: boolean;
   setShowOdds: (show: boolean) => void;
+  oddsTheme: OddsTheme;
+  setOddsTheme: (theme: OddsTheme) => void;
   teamId: number | null;
   setTeamId: (id: number | null) => void;
 }
@@ -62,6 +70,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light");
   const [desktopLayout, setDesktopLayoutState] = useState<DesktopLayout>("default");
   const [showOdds, setShowOddsState] = useState(false);
+  const [oddsTheme, setOddsThemeState] = useState<OddsTheme>("default");
   const [teamId, setTeamIdState] = useState<number | null>(null);
 
   // One-time hydration load from localStorage on the client.
@@ -90,6 +99,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         );
       }
       setShowOddsState(localStorage.getItem(ODDS_KEY) === "on");
+      const storedOddsTheme = localStorage.getItem(ODDS_THEME_KEY) as OddsTheme | null;
+      if (storedOddsTheme && ODDS_THEMES.includes(storedOddsTheme)) setOddsThemeState(storedOddsTheme);
       setTeamIdState(readTeamCookie());
     } catch {
       // ignore unavailable/corrupt storage
@@ -121,6 +132,13 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   };
 
+  const setOddsTheme = (next: OddsTheme) => {
+    setOddsThemeState(next);
+    try {
+      localStorage.setItem(ODDS_THEME_KEY, next);
+    } catch {}
+  };
+
   const setTeamId = (id: number | null) => {
     setTeamIdState(id);
     writeTeamCookie(id);
@@ -128,7 +146,19 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <SettingsContext.Provider
-      value={{ ready, theme, setTheme, desktopLayout, setDesktopLayout, showOdds, setShowOdds, teamId, setTeamId }}
+      value={{
+        ready,
+        theme,
+        setTheme,
+        desktopLayout,
+        setDesktopLayout,
+        showOdds,
+        setShowOdds,
+        oddsTheme,
+        setOddsTheme,
+        teamId,
+        setTeamId,
+      }}
     >
       {children}
     </SettingsContext.Provider>

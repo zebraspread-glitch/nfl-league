@@ -2,15 +2,18 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Card, Hexagon, SectionHeader, TeamAvatar, rankBadgeTone } from "./ui";
+import { TipBar } from "./tip-bar";
 import {
+  autoTip,
   buildFinals,
   buildLadder,
+  clampMargin,
   DEFAULT_FINALS_MARGIN,
+  ladderText,
   MAX_MARGIN,
-  pickFor,
+  modelLine,
   REGULAR_SEASON_WEEKS,
   resolveFinalsPick,
-  scoresFor,
   type FinalsGame,
   type LadderRow,
   type Pick,
@@ -20,211 +23,342 @@ import type { Matchup, TeamMeta } from "@/lib/types";
 
 const STORAGE_KEY = "mgl_predictor_2026";
 
-type Tab = number | "finals";
-
-export function SeasonPredictor({ matchups, teams }: { matchups: Matchup[]; teams: TeamMeta[] }) {
+export function SeasonPredictor({
+  matchups,
+  teams,
+  season,
+}: {
+  matchups: Matchup[];
+  teams: TeamMeta[];
+  season: number;
+}) {
   const [picks, setPicks] = useState<PickMap>({});
   const [ready, setReady] = useState(false);
-  const [tab, setTab] = useState<Tab>(1);
+  const [cursor, setCursor] = useState(0);
+  const [manual, setManual] = useState(false);
+  const [showFixture, setShowFixture] = useState(false);
+  const [teamFilter, setTeamFilter] = useState<number | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect */
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setPicks(JSON.parse(raw) as PickMap);
+      if (raw) {
+        const stored = JSON.parse(raw) as PickMap;
+        setPicks(stored);
+        const firstOpen = matchups.findIndex((m) => !stored[m.id]);
+        setCursor(firstOpen === -1 ? matchups.length - 1 : firstOpen);
+      }
     } catch {}
     setReady(true);
     /* eslint-enable react-hooks/set-state-in-effect */
-  }, []);
+  }, [matchups]);
 
-  // Functional update: a click and a slider drag can land before React
-  // re-renders, and reading `picks` from the closure would drop the first one.
-  const setPick = (id: string, pick: Pick) =>
+  const commit = (updater: (prev: PickMap) => PickMap) =>
     setPicks((prev) => {
-      const next = { ...prev, [id]: pick };
+      const next = updater(prev);
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       } catch {}
       return next;
     });
 
-  const clearAll = () => {
+  const ladder = useMemo(() => buildLadder(matchups, picks, teams), [matchups, picks, teams]);
+  const finals = useMemo(() => buildFinals(ladder, picks), [ladder, picks]);
+
+  const tipped = matchups.filter((m) => picks[m.id]).length;
+  const seasonDone = tipped === matchups.length;
+  const game = matchups[Math.min(cursor, matchups.length - 1)];
+  const pick = picks[game.id];
+  const line = modelLine(game);
+
+  /** Tip the current game and slide to the next one still open. */
+  const tip = (homeWins: boolean, margin: number) => {
+    const winnerId = homeWins ? game.home.team.id : game.away.team.id;
+    commit((prev) => ({ ...prev, [game.id]: { winnerId, margin } }));
+    advance();
+  };
+
+  const advance = () => {
+    const pool = filtered();
+    const at = pool.findIndex((m) => m.id === game.id);
+    const nextGame = pool.slice(at + 1).find((m) => !picks[m.id]) ?? pool[at + 1];
+    if (nextGame) setCursor(matchups.indexOf(nextGame));
+  };
+
+  const filtered = () =>
+    teamFilter == null
+      ? matchups
+      : matchups.filter((m) => m.away.team.id === teamFilter || m.home.team.id === teamFilter);
+
+  const prev = () => {
+    const pool = filtered();
+    const at = pool.findIndex((m) => m.id === game.id);
+    if (at > 0) setCursor(matchups.indexOf(pool[at - 1]));
+  };
+
+  const runAutoTip = () => commit((prev) => autoTip(matchups, prev, Date.now()));
+
+  const reset = () => {
     setPicks({});
+    setCursor(0);
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch {}
   };
 
-  const ladder = useMemo(() => buildLadder(matchups, picks, teams), [matchups, picks, teams]);
-  const finals = useMemo(() => buildFinals(ladder, picks), [ladder, picks]);
+  const copyLadder = async () => {
+    try {
+      await navigator.clipboard.writeText(ladderText(ladder, season));
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {}
+  };
 
-  const weekGames = useMemo(
-    () => (tab === "finals" ? [] : matchups.filter((m) => m.week === tab)),
-    [matchups, tab],
-  );
-
-  const madeCount = matchups.filter((m) => picks[m.id]).length;
   const champion = finals.championId ? teams.find((t) => t.id === finals.championId) : undefined;
+  const highlight = new Set([game.away.team.id, game.home.team.id]);
 
   return (
+    // The app renders in a narrow centred column (~576px on desktop), so this
+    // stacks rather than putting the ladder in a side rail — a second column
+    // squeezes the tipping bar down to nothing.
     <div className="space-y-3">
-      <div className="flex gap-1.5 overflow-x-auto px-1 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {Array.from({ length: REGULAR_SEASON_WEEKS }, (_, i) => i + 1).map((w) => (
-          <button
-            key={w}
-            type="button"
-            onClick={() => setTab(w)}
-            className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg font-cond text-base font-semibold transition-colors ${
-              tab === w ? "bg-teal text-white" : "bg-card text-text-muted hover:bg-card-hover"
-            }`}
-          >
-            {w}
-          </button>
-        ))}
-        <button
-          type="button"
-          onClick={() => setTab("finals")}
-          className={`grid h-9 shrink-0 place-items-center rounded-lg px-3 font-cond text-sm font-semibold uppercase tracking-wide transition-colors ${
-            tab === "finals" ? "bg-teal text-white" : "bg-card text-text-muted hover:bg-card-hover"
-          }`}
-        >
-          Finals
-        </button>
-      </div>
+      <div className="space-y-3">
+        <Card>
+          <div className="px-4 pb-3 pt-4 text-center">
+            <div className="font-cond text-xs uppercase tracking-widest text-text-muted">
+              Week {game.week}, {season}
+            </div>
+            <div className="font-cond text-xl font-semibold uppercase tracking-wide">
+              {game.away.team.name} v {game.home.team.name}
+            </div>
+            <div className="text-xs text-text-muted">
+              {game.id.endsWith("-primetime") ? "Primetime" : `Game ${cursor + 1} of ${matchups.length}`}
+            </div>
+          </div>
 
-      <div className="flex items-center justify-between px-1">
-        <span className="font-cond text-xs uppercase tracking-wide text-text-muted">
-          {ready ? `${madeCount} of ${matchups.length} games picked` : " "}
-        </span>
-        <button
-          type="button"
-          onClick={clearAll}
-          className="rounded-lg border border-border px-3 py-1.5 font-cond text-xs font-semibold uppercase tracking-wide text-text-muted hover:bg-card-hover"
-        >
-          Reset to tips
-        </button>
-      </div>
+          {/* Avatars sit above the bar so the bar gets the full card width —
+              it needs the room to be tappable to the point. */}
+          <div className="flex items-center justify-between px-3 pb-2">
+            <span className="flex items-center gap-2">
+              <TeamAvatar team={game.away.team} size="md" />
+              <span className="font-cond text-sm font-semibold">{game.away.team.abbrev}</span>
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="font-cond text-sm font-semibold">{game.home.team.abbrev}</span>
+              <TeamAvatar team={game.home.team} size="md" />
+            </span>
+          </div>
 
-      {tab === "finals" ? (
-        <FinalsView games={finals.games} byes={finals.byes} picks={picks} onPick={setPick} champion={champion} />
-      ) : (
-        <div className="space-y-2">
-          {weekGames.map((m) => (
-            <GameRow
-              key={m.id}
-              matchup={m}
-              pick={pickFor(m, picks)}
-              isTip={!picks[m.id]}
-              onPick={(p) => setPick(m.id, p)}
+          <div className="px-3 pb-3">
+            <TipBar
+              mean={line.mean}
+              sd={line.sd}
+              margin={pick?.margin}
+              homeWins={pick ? pick.winnerId === game.home.team.id : undefined}
+              awayName={game.away.team.name}
+              homeName={game.home.team.name}
+              onTip={tip}
             />
-          ))}
+          </div>
+
+          <div className="flex items-center justify-between gap-2 px-4 pb-4">
+            <button
+              type="button"
+              onClick={() => setManual((m) => !m)}
+              className={`rounded-lg border px-3 py-1.5 font-cond text-xs font-semibold uppercase tracking-wide ${
+                manual ? "border-teal bg-teal/10 text-teal" : "border-border text-text-muted hover:bg-card-hover"
+              }`}
+            >
+              Manual
+            </button>
+            {manual ? (
+              <div className="flex items-center gap-2">
+                <select
+                  value={pick ? (pick.winnerId === game.home.team.id ? "home" : "away") : "away"}
+                  onChange={(e) =>
+                    tip(e.target.value === "home", pick?.margin ?? Math.max(1, Math.round(Math.abs(line.mean))))
+                  }
+                  className="rounded-lg border border-border bg-card px-2 py-1.5 font-cond text-xs"
+                >
+                  <option value="away">{game.away.team.abbrev}</option>
+                  <option value="home">{game.home.team.abbrev}</option>
+                </select>
+                <span className="font-cond text-xs uppercase text-text-muted">by</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={MAX_MARGIN}
+                  value={pick?.margin ?? ""}
+                  placeholder="0"
+                  onChange={(e) =>
+                    tip(pick ? pick.winnerId === game.home.team.id : false, clampMargin(Number(e.target.value)))
+                  }
+                  className="w-16 rounded-lg border border-border bg-card px-2 py-1.5 text-center font-cond text-sm tabular-nums"
+                />
+              </div>
+            ) : (
+              <span className="font-cond text-sm text-text-muted">
+                {pick
+                  ? `${pick.winnerId === game.home.team.id ? game.home.team.abbrev : game.away.team.abbrev} by ${pick.margin}`
+                  : "Not tipped"}
+              </span>
+            )}
+          </div>
+        </Card>
+
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <ControlButton onClick={prev}>Prev game</ControlButton>
+          <ControlButton onClick={runAutoTip}>AutoTip</ControlButton>
+          <ControlButton onClick={reset}>Reset</ControlButton>
+          <ControlButton onClick={() => setShowFixture((s) => !s)}>
+            <span className="block">Fixture</span>
+            <span className="block text-[11px] font-normal normal-case text-text-muted">
+              {ready ? `${tipped} / ${matchups.length} tipped` : " "}
+            </span>
+          </ControlButton>
         </div>
-      )}
 
-      <Ladder rows={ladder} />
+        {showFixture ? (
+          <FixturePanel
+            matchups={matchups}
+            picks={picks}
+            teams={teams}
+            teamFilter={teamFilter}
+            onFilter={setTeamFilter}
+            onJump={(m) => {
+              setCursor(matchups.indexOf(m));
+              setShowFixture(false);
+            }}
+            currentId={game.id}
+          />
+        ) : null}
 
-      <p className="px-1 pb-2 text-xs text-text-muted">
-        Every game starts on a tip from the simulated line. Change a pick and it becomes yours — the ladder and
-        finals update as you go. Your picks are saved on this device.
-      </p>
+        {seasonDone ? (
+          <FinalsView games={finals.games} byes={finals.byes} picks={picks} onPick={(id, p) => commit((prev) => ({ ...prev, [id]: p }))} champion={champion} />
+        ) : (
+          <Card>
+            <div className="px-4 py-3 text-sm text-text-muted">
+              Tip all {matchups.length} games — or hit AutoTip — to reach the finals.
+            </div>
+          </Card>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Ladder rows={ladder} highlight={highlight} />
+        <button
+          type="button"
+          onClick={copyLadder}
+          className="w-full rounded-xl bg-card py-2.5 font-cond text-sm font-semibold uppercase tracking-wide text-text-muted shadow-sm hover:bg-card-hover"
+        >
+          {copied ? "Copied" : "Copy ladder"}
+        </button>
+        <p className="px-1 text-xs text-text-muted">
+          Tap the bar to tip a winner — the further from the middle, the bigger the margin. AutoTip simulates the
+          remaining games thousands of times and keeps a typical season, so favourites do not go undefeated. Picks
+          are saved on this device.
+        </p>
+      </div>
     </div>
   );
 }
 
-function GameRow({
-  matchup,
-  pick,
-  isTip,
-  onPick,
-}: {
-  matchup: Matchup;
-  pick: Pick;
-  isTip: boolean;
-  onPick: (pick: Pick) => void;
-}) {
-  const { away, home } = matchup;
-  const scores = scoresFor(matchup, pick);
-  const awayWins = pick.winnerId === away.team.id;
+function ControlButton({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-xl bg-card px-3 py-2.5 text-center font-cond text-sm font-semibold uppercase tracking-wide shadow-sm hover:bg-card-hover"
+    >
+      {children}
+    </button>
+  );
+}
 
-  const choose = (teamId: number) => onPick({ winnerId: teamId, margin: pick.margin });
-  const setMargin = (margin: number) =>
-    onPick({ winnerId: pick.winnerId, margin: Math.min(MAX_MARGIN, Math.max(1, margin)) });
+function FixturePanel({
+  matchups,
+  picks,
+  teams,
+  teamFilter,
+  onFilter,
+  onJump,
+  currentId,
+}: {
+  matchups: Matchup[];
+  picks: PickMap;
+  teams: TeamMeta[];
+  teamFilter: number | null;
+  onFilter: (id: number | null) => void;
+  onJump: (m: Matchup) => void;
+  currentId: string;
+}) {
+  const list =
+    teamFilter == null
+      ? matchups
+      : matchups.filter((m) => m.away.team.id === teamFilter || m.home.team.id === teamFilter);
 
   return (
     <Card>
-      <div className="px-3 py-3">
-        <div className="grid grid-cols-[1fr_auto_1fr] items-stretch gap-2">
-          <TeamPick side={away.team} selected={awayWins} score={awayWins ? scores.winner : scores.loser} onSelect={choose} />
-          <div className="flex flex-col items-center justify-center px-1">
-            <span className="font-cond text-[10px] uppercase tracking-wide text-text-dim">by</span>
-            <span className="font-cond text-2xl font-semibold tabular-nums leading-none">{pick.margin}</span>
-          </div>
-          <TeamPick side={home.team} selected={!awayWins} score={awayWins ? scores.loser : scores.winner} onSelect={choose} align="right" />
-        </div>
-
-        <div className="mt-2.5 flex items-center gap-2">
-          <input
-            type="range"
-            min={1}
-            max={MAX_MARGIN}
-            step={1}
-            value={pick.margin}
-            onChange={(e) => setMargin(Number(e.target.value))}
-            aria-label={`Winning margin for ${away.team.name} versus ${home.team.name}`}
-            className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-border accent-teal"
-          />
-          <span
-            className={`shrink-0 rounded px-1.5 py-0.5 font-cond text-[10px] font-semibold uppercase tracking-wide ${
-              isTip ? "bg-section text-text-dim" : "bg-teal/15 text-teal"
+      <SectionHeader>Fixture</SectionHeader>
+      <div className="flex flex-wrap gap-1 border-b border-border p-2">
+        <button
+          type="button"
+          onClick={() => onFilter(null)}
+          className={`rounded-lg px-2 py-1 font-cond text-xs font-semibold uppercase ${
+            teamFilter == null ? "bg-teal text-white" : "bg-row text-text-muted hover:bg-card-hover"
+          }`}
+        >
+          All
+        </button>
+        {teams.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => onFilter(teamFilter === t.id ? null : t.id)}
+            className={`rounded-lg px-2 py-1 font-cond text-xs font-semibold uppercase ${
+              teamFilter === t.id ? "bg-teal text-white" : "bg-row text-text-muted hover:bg-card-hover"
             }`}
           >
-            {isTip ? "Tip" : "Yours"}
-          </span>
-        </div>
+            {t.abbrev}
+          </button>
+        ))}
+      </div>
+      <div className="max-h-80 overflow-y-auto">
+        {list.map((m) => {
+          const p = picks[m.id];
+          const winner = p ? (p.winnerId === m.home.team.id ? m.home.team : m.away.team) : null;
+          return (
+            <button
+              key={m.id}
+              type="button"
+              onClick={() => onJump(m)}
+              className={`flex w-full items-center gap-2 border-b border-border px-3 py-2 text-left text-sm hover:bg-card-hover ${
+                m.id === currentId ? "bg-teal/10" : ""
+              }`}
+            >
+              <span className="w-8 shrink-0 font-cond text-xs text-text-muted">W{m.week}</span>
+              <span className="min-w-0 flex-1 truncate font-cond">
+                {m.away.team.abbrev} v {m.home.team.abbrev}
+              </span>
+              <span className={`shrink-0 font-cond text-xs ${winner ? "text-teal" : "text-text-dim"}`}>
+                {winner ? `${winner.abbrev} by ${p!.margin}` : "Not tipped"}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </Card>
   );
 }
 
-function TeamPick({
-  side,
-  selected,
-  score,
-  onSelect,
-  align = "left",
-}: {
-  side: TeamMeta;
-  selected: boolean;
-  score: number;
-  onSelect: (teamId: number) => void;
-  align?: "left" | "right";
-}) {
-  return (
-    <button
-      type="button"
-      onClick={() => onSelect(side.id)}
-      aria-pressed={selected}
-      className={`flex min-w-0 items-center gap-2 rounded-lg border px-2 py-2 text-left transition-colors ${
-        align === "right" ? "flex-row-reverse text-right" : ""
-      } ${selected ? "border-teal bg-teal/10" : "border-border bg-row hover:bg-card-hover"}`}
-    >
-      <TeamAvatar team={side} size="sm" />
-      <span className="min-w-0 flex-1">
-        <span className="block truncate font-cond text-sm font-semibold leading-tight">{side.name}</span>
-        <span className={`block font-cond text-xs tabular-nums ${selected ? "text-teal" : "text-text-muted"}`}>
-          {score.toFixed(1)}
-        </span>
-      </span>
-    </button>
-  );
-}
-
-function Ladder({ rows }: { rows: LadderRow[] }) {
+function Ladder({ rows, highlight }: { rows: LadderRow[]; highlight: Set<number> }) {
   return (
     <Card>
-      <SectionHeader>Projected Ladder</SectionHeader>
+      <SectionHeader>Predicted Ladder</SectionHeader>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[380px] text-sm">
+        <table className="w-full min-w-[320px] text-sm">
           <thead>
             <tr className="bg-section font-cond text-[11px] uppercase tracking-wide text-text-muted">
               <th className="px-2 py-1.5 text-left">#</th>
@@ -239,7 +373,7 @@ function Ladder({ rows }: { rows: LadderRow[] }) {
             {rows.map((row) => (
               <tr
                 key={row.team.id}
-                className={`${row.seed % 2 === 0 ? "bg-row" : ""} ${
+                className={`${highlight.has(row.team.id) ? "bg-teal/10" : row.seed % 2 === 0 ? "bg-row" : ""} ${
                   row.seed === 6 ? "border-b-2 border-teal" : "border-b border-border"
                 }`}
               >
@@ -323,7 +457,7 @@ function FinalsView({
           <div className="flex items-center gap-3 bg-teal px-4 py-4 text-white">
             <TeamAvatar team={champion} size="lg" />
             <div className="min-w-0">
-              <div className="font-cond text-xs uppercase tracking-widest text-white/80">2026 Champion</div>
+              <div className="font-cond text-xs uppercase tracking-widest text-white/80">Champion</div>
               <div className="truncate font-cond text-2xl font-semibold">{champion.name}</div>
               <div className="truncate text-sm text-white/80">{champion.manager}</div>
             </div>
@@ -349,19 +483,21 @@ function FinalsGameRow({
   }
 
   const aWins = pick.winnerId === game.a.team.id;
-  const choose = (teamId: number) => onPick(game.id, { winnerId: teamId, margin: pick.margin });
-  const setMargin = (margin: number) =>
-    onPick(game.id, { winnerId: pick.winnerId, margin: Math.min(MAX_MARGIN, Math.max(1, margin)) });
 
   return (
     <div className="rounded-lg border border-border p-2">
       <div className="grid grid-cols-[1fr_auto_1fr] items-stretch gap-2">
-        <SeededPick entry={game.a} selected={aWins} onSelect={choose} />
+        <SeededPick entry={game.a} selected={aWins} onSelect={(id) => onPick(game.id, { winnerId: id, margin: pick.margin })} />
         <div className="flex flex-col items-center justify-center px-1">
           <span className="font-cond text-[10px] uppercase tracking-wide text-text-dim">by</span>
           <span className="font-cond text-xl font-semibold tabular-nums leading-none">{pick.margin}</span>
         </div>
-        <SeededPick entry={game.b} selected={!aWins} onSelect={choose} align="right" />
+        <SeededPick
+          entry={game.b}
+          selected={!aWins}
+          align="right"
+          onSelect={(id) => onPick(game.id, { winnerId: id, margin: pick.margin })}
+        />
       </div>
       <input
         type="range"
@@ -369,7 +505,7 @@ function FinalsGameRow({
         max={MAX_MARGIN}
         step={1}
         value={pick.margin}
-        onChange={(e) => setMargin(Number(e.target.value))}
+        onChange={(e) => onPick(game.id, { winnerId: pick.winnerId, margin: clampMargin(Number(e.target.value)) })}
         aria-label={`Winning margin for ${game.a.team.name} versus ${game.b.team.name}`}
         className="mt-2 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-border accent-teal"
       />
@@ -405,3 +541,5 @@ function SeededPick({
     </button>
   );
 }
+
+export { REGULAR_SEASON_WEEKS };

@@ -44,14 +44,15 @@ const MARGIN_SD = 34;
  *  the same hold a real book takes on a two-way market. */
 const VIG = 0.045;
 
-/** Standard price on either side of the spread and the total. */
-export const STANDARD_JUICE = -110;
+/** The price either side of a line or a total — books post these at a flat
+ *  1.91 (the decimal equivalent of -110). Only the book skins display it. */
+export const STANDARD_LINE_PRICE = 1.91;
 
 export interface SideOdds {
   /** Spread from this team's perspective, e.g. -6.5 for a favourite. */
   spread: number;
-  /** American moneyline, e.g. -240 or +195. */
-  moneyline: number;
+  /** Decimal (European) price, e.g. 1.42 or 2.95 — total return per $1 staked. */
+  decimal: number;
   /** Implied (vig-free) chance of winning, 0-1. */
   winProbability: number;
   /** Projected score used to build the line. */
@@ -103,12 +104,10 @@ function normalCdf(z: number): number {
   return 0.5 * (1 + sign * y);
 }
 
-/** Convert a win probability into an American moneyline, rounded like a book. */
-function toMoneyline(probability: number): number {
+/** Convert a win probability into a decimal price, rounded like a book. */
+function toDecimal(probability: number): number {
   const p = Math.min(Math.max(probability, 0.02), 0.98);
-  const raw = p >= 0.5 ? -(100 * p) / (1 - p) : (100 * (1 - p)) / p;
-  const rounded = Math.round(raw / 5) * 5;
-  return Math.max(-2500, Math.min(2500, rounded));
+  return Math.min(26, Math.round((1 / p) * 100) / 100);
 }
 
 const toHalfPoint = (n: number) => Math.round(n * 2) / 2;
@@ -130,13 +129,13 @@ export function getMatchupOdds(matchup: Matchup): MatchupOdds {
   return {
     away: {
       spread: homeMargin,
-      moneyline: toMoneyline(awayWinProbability + VIG / 2),
+      decimal: toDecimal(awayWinProbability + VIG / 2),
       winProbability: awayWinProbability,
       projected: Math.round(awayProjected * 10) / 10,
     },
     home: {
       spread: -homeMargin,
-      moneyline: toMoneyline(homeWinProbability + VIG / 2),
+      decimal: toDecimal(homeWinProbability + VIG / 2),
       winProbability: homeWinProbability,
       projected: Math.round(homeProjected * 10) / 10,
     },
@@ -151,7 +150,7 @@ export function formatSpread(spread: number): string {
   return `${spread > 0 ? "+" : "-"}${Math.abs(spread).toFixed(1)}`;
 }
 
-/** "-240" / "+195" — American odds always carry their sign. */
-export function formatMoneyline(moneyline: number): string {
-  return `${moneyline > 0 ? "+" : "-"}${Math.abs(moneyline)}`;
+/** "1.42" / "2.95" — decimal odds always carry two places. */
+export function formatDecimal(decimal: number): string {
+  return decimal.toFixed(2);
 }
