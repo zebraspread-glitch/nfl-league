@@ -263,14 +263,15 @@ export function SeasonPredictor({
           />
         ) : null}
 
-        <FinalsView games={finals.games} picks={picks} onPick={(id, p) => commit((prev) => ({ ...prev, [id]: p }))} champion={champion} />
-        {!seasonDone ? (
+        {seasonDone ? (
+          <FinalsView games={finals.games} picks={picks} onPick={(id, p) => commit((prev) => ({ ...prev, [id]: p }))} champion={champion} />
+        ) : (
           <Card>
             <div className="px-4 py-3 text-sm text-text-muted">
               Untipped regular-season games use the model tip. Override any game or hit AutoTip to fill the fixture.
             </div>
           </Card>
-        ) : null}
+        )}
       </div>
 
       <div className="space-y-2">
