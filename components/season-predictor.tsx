@@ -173,6 +173,10 @@ export function SeasonPredictor({
               homeName={game.home.team.name}
               awayLabel={game.away.team.abbrev}
               homeLabel={game.home.team.abbrev}
+              awayPrimary={game.away.team.primary}
+              awaySecondary={game.away.team.secondary}
+              homePrimary={game.home.team.primary}
+              homeSecondary={game.home.team.secondary}
               status={pick ? "user" : "model"}
               onTip={tip}
             />
