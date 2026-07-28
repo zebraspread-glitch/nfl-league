@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { clampMargin, MAX_MARGIN } from "@/lib/predictor";
 
 const W = 600;
@@ -18,6 +18,9 @@ export function TipBar({
   homeWins,
   awayName,
   homeName,
+  awayLabel,
+  homeLabel,
+  status,
   onTip,
 }: {
   mean: number;
@@ -26,20 +29,27 @@ export function TipBar({
   homeWins?: boolean;
   awayName: string;
   homeName: string;
+  awayLabel: string;
+  homeLabel: string;
+  status: "model" | "user";
   onTip: (homeWins: boolean, margin: number) => void;
 }) {
   const ref = useRef<SVGSVGElement>(null);
+  const [drag, setDrag] = useState<{ homeWins: boolean; margin: number } | null>(null);
 
-  const handle = (clientX: number) => {
+  const pickFromClientX = (clientX: number) => {
     const box = ref.current?.getBoundingClientRect();
-    if (!box) return;
+    if (!box) return null;
     const x = ((clientX - box.left) / box.width) * W;
     const points = (x - MID) / PX_PER_POINT;
-    onTip(points >= 0, clampMargin(Math.round(Math.abs(points))));
+    return { homeWins: points >= 0, margin: clampMargin(Math.round(Math.abs(points))) };
   };
 
-  const tipped = margin !== undefined && homeWins !== undefined;
-  const markerX = tipped ? MID + (homeWins ? 1 : -1) * margin * PX_PER_POINT : null;
+  const active = drag ?? (margin !== undefined && homeWins !== undefined ? { homeWins, margin } : null);
+  const markerX = active ? MID + (active.homeWins ? 1 : -1) * active.margin * PX_PER_POINT : null;
+  const winnerLabel = active ? (active.homeWins ? homeLabel : awayLabel) : "";
+  const resultTone = status === "user" ? "fill-text" : "fill-text-muted";
+  const markerTone = status === "user" ? "stroke-teal fill-teal" : "stroke-text-dim fill-text-dim";
 
   return (
     <div className="select-none">
@@ -52,12 +62,28 @@ export function TipBar({
         aria-label={`Tip ${awayName} versus ${homeName}`}
         aria-valuemin={MAX_MARGIN * -1}
         aria-valuemax={MAX_MARGIN}
-        aria-valuenow={tipped ? (homeWins ? margin : -margin) : 0}
-        onClick={(e) => handle(e.clientX)}
+        aria-valuenow={active ? (active.homeWins ? active.margin : -active.margin) : 0}
+        onPointerDown={(e) => {
+          const next = pickFromClientX(e.clientX);
+          if (!next) return;
+          ref.current?.setPointerCapture(e.pointerId);
+          setDrag(next);
+        }}
+        onPointerMove={(e) => {
+          if (!drag) return;
+          const next = pickFromClientX(e.clientX);
+          if (next) setDrag(next);
+        }}
+        onPointerUp={(e) => {
+          const next = pickFromClientX(e.clientX) ?? drag;
+          setDrag(null);
+          if (next) onTip(next.homeWins, next.margin);
+        }}
+        onPointerCancel={() => setDrag(null)}
         onKeyDown={(e) => {
           if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
           e.preventDefault();
-          const current = tipped ? (homeWins ? margin : -margin) : 0;
+          const current = active ? (active.homeWins ? active.margin : -active.margin) : 0;
           const moved = current + (e.key === "ArrowRight" ? 1 : -1);
           onTip(moved >= 0, clampMargin(Math.abs(moved) || 1));
         }}
@@ -77,14 +103,23 @@ export function TipBar({
 
         {markerX !== null ? (
           <g>
-            <line x1={markerX} y1="0" x2={markerX} y2={H} className="stroke-teal" strokeWidth="2" />
-            <path d={`M ${markerX - 8} 0 L ${markerX + 8} 0 L ${markerX} 12 Z`} className="fill-teal" />
+            <line x1={markerX} y1="0" x2={markerX} y2={H} className={markerTone} strokeWidth="2" />
+            <path d={`M ${markerX - 8} 0 L ${markerX + 8} 0 L ${markerX} 12 Z`} className={markerTone} />
           </g>
         ) : (
           <text x={MID} y={H / 2} textAnchor="middle" className="fill-text-muted text-[22px] font-semibold">
             Tap to tip
           </text>
         )}
+
+        {active ? (
+          <text x={MID} y="34" textAnchor="middle" className={`${resultTone} text-[22px] font-semibold`}>
+            <tspan>{winnerLabel}</tspan>
+            <tspan className="fill-text-muted"> by </tspan>
+            <tspan>{active.margin}</tspan>
+            <tspan className="fill-text-muted"> pts</tspan>
+          </text>
+        ) : null}
       </svg>
     </div>
   );

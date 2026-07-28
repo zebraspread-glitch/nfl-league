@@ -15,7 +15,7 @@ export default function PredictorPage() {
     <div>
       <PageIntro
         title="Season Predictor"
-        subtitle={`Tip every ${CURRENT_SEASON} game and play out the finals`}
+        subtitle={`Tip any ${CURRENT_SEASON} games and let the model fill the rest`}
       />
       <SeasonPredictor matchups={matchups} teams={TEAMS} season={CURRENT_SEASON} />
     </div>

@@ -5,9 +5,9 @@ import type { Matchup, TeamMeta } from "./types";
 // Season predictor: pick a winner and a margin for all 84 regular-season games,
 // see the ladder it produces, then play out the six-team finals bracket.
 //
-// Pure and client-safe — no data imports, no randomness. Every game starts with
-// a default pick derived from the same simulated line the odds strip shows, so
-// the ladder and bracket are complete before the user has touched anything.
+// Pure and client-safe — no data imports. Untipped games fall back to a model
+// pick derived from the same simulated line the odds strip shows, so you can
+// tip as many or as few games as you like and still get a complete ladder.
 // ---------------------------------------------------------------------------
 
 export const REGULAR_SEASON_WEEKS = 14;
@@ -41,6 +41,20 @@ export function modelLine(matchup: Matchup): { mean: number; sd: number; homeWin
 /** Spread of a single game's margin, used to sample AutoTip results. */
 const MARGIN_SD = 34;
 
+/** The model's pick for a game. A user pick overrides this, but untipped games
+ *  still contribute to the ladder using this baseline. */
+export function modelPick(matchup: Matchup): Pick {
+  const line = modelLine(matchup);
+  return {
+    winnerId: line.mean >= 0 ? matchup.home.team.id : matchup.away.team.id,
+    margin: clampMargin(Math.round(Math.abs(line.mean)) || 1),
+  };
+}
+
+export function effectivePick(matchup: Matchup, picks: PickMap): Pick {
+  return picks[matchup.id] ?? modelPick(matchup);
+}
+
 /** Split a projected total into the two scores a margin implies. */
 export function scoresFor(matchup: Matchup, pick: Pick): { winner: number; loser: number } {
   const { total } = getMatchupOdds(matchup);
@@ -57,10 +71,7 @@ export function buildLadder(matchups: Matchup[], picks: PickMap, teams: TeamMeta
   );
 
   for (const matchup of matchups) {
-    // Untipped games contribute nothing — the ladder only reflects results the
-    // user (or AutoTip) has actually called, the way Squiggle's does.
-    const pick = picks[matchup.id];
-    if (!pick) continue;
+    const pick = effectivePick(matchup, picks);
     const { winner: winnerScore, loser: loserScore } = scoresFor(matchup, pick);
     const winnerId = pick.winnerId;
     const loserId = winnerId === matchup.home.team.id ? matchup.away.team.id : matchup.home.team.id;

@@ -12,6 +12,7 @@ import {
   ladderText,
   MAX_MARGIN,
   modelLine,
+  modelPick,
   REGULAR_SEASON_WEEKS,
   resolveFinalsPick,
   type FinalsGame,
@@ -71,19 +72,26 @@ export function SeasonPredictor({
   const seasonDone = tipped === matchups.length;
   const game = matchups[Math.min(cursor, matchups.length - 1)];
   const pick = picks[game.id];
+  const activePick = pick ?? modelPick(game);
   const line = modelLine(game);
 
   /** Tip the current game and slide to the next one still open. */
   const tip = (homeWins: boolean, margin: number) => {
-    const winnerId = homeWins ? game.home.team.id : game.away.team.id;
-    commit((prev) => ({ ...prev, [game.id]: { winnerId, margin } }));
-    advance();
+    const nextPick = { winnerId: homeWins ? game.home.team.id : game.away.team.id, margin };
+    const nextPicks = { ...picks, [game.id]: nextPick };
+    commit(() => nextPicks);
+    advance(nextPicks);
   };
 
-  const advance = () => {
+  const setCurrentPick = (homeWins: boolean, margin: number) => {
+    const nextPick = { winnerId: homeWins ? game.home.team.id : game.away.team.id, margin };
+    commit((prev) => ({ ...prev, [game.id]: nextPick }));
+  };
+
+  const advance = (nextPicks = picks) => {
     const pool = filtered();
     const at = pool.findIndex((m) => m.id === game.id);
-    const nextGame = pool.slice(at + 1).find((m) => !picks[m.id]) ?? pool[at + 1];
+    const nextGame = pool.slice(at + 1).find((m) => !nextPicks[m.id]) ?? pool[at + 1];
     if (nextGame) setCursor(matchups.indexOf(nextGame));
   };
 
@@ -98,7 +106,10 @@ export function SeasonPredictor({
     if (at > 0) setCursor(matchups.indexOf(pool[at - 1]));
   };
 
-  const runAutoTip = () => commit((prev) => autoTip(matchups, prev, Date.now()));
+  const runAutoTip = () => {
+    commit((prev) => autoTip(matchups, prev, Date.now()));
+    setCursor(matchups.length - 1);
+  };
 
   const reset = () => {
     setPicks({});
@@ -155,10 +166,13 @@ export function SeasonPredictor({
             <TipBar
               mean={line.mean}
               sd={line.sd}
-              margin={pick?.margin}
-              homeWins={pick ? pick.winnerId === game.home.team.id : undefined}
+              margin={activePick.margin}
+              homeWins={activePick.winnerId === game.home.team.id}
               awayName={game.away.team.name}
               homeName={game.home.team.name}
+              awayLabel={game.away.team.abbrev}
+              homeLabel={game.home.team.abbrev}
+              status={pick ? "user" : "model"}
               onTip={tip}
             />
           </div>
@@ -176,9 +190,9 @@ export function SeasonPredictor({
             {manual ? (
               <div className="flex items-center gap-2">
                 <select
-                  value={pick ? (pick.winnerId === game.home.team.id ? "home" : "away") : "away"}
+                  value={activePick.winnerId === game.home.team.id ? "home" : "away"}
                   onChange={(e) =>
-                    tip(e.target.value === "home", pick?.margin ?? Math.max(1, Math.round(Math.abs(line.mean))))
+                    setCurrentPick(e.target.value === "home", activePick.margin)
                   }
                   className="rounded-lg border border-border bg-card px-2 py-1.5 font-cond text-xs"
                 >
@@ -190,10 +204,10 @@ export function SeasonPredictor({
                   type="number"
                   min={1}
                   max={MAX_MARGIN}
-                  value={pick?.margin ?? ""}
+                  value={activePick.margin}
                   placeholder="0"
                   onChange={(e) =>
-                    tip(pick ? pick.winnerId === game.home.team.id : false, clampMargin(Number(e.target.value)))
+                    setCurrentPick(activePick.winnerId === game.home.team.id, clampMargin(Number(e.target.value)))
                   }
                   className="w-16 rounded-lg border border-border bg-card px-2 py-1.5 text-center font-cond text-sm tabular-nums"
                 />
@@ -202,7 +216,7 @@ export function SeasonPredictor({
               <span className="font-cond text-sm text-text-muted">
                 {pick
                   ? `${pick.winnerId === game.home.team.id ? game.home.team.abbrev : game.away.team.abbrev} by ${pick.margin}`
-                  : "Not tipped"}
+                  : `Model: ${activePick.winnerId === game.home.team.id ? game.home.team.abbrev : game.away.team.abbrev} by ${activePick.margin}`}
               </span>
             )}
           </div>
@@ -240,7 +254,7 @@ export function SeasonPredictor({
         ) : (
           <Card>
             <div className="px-4 py-3 text-sm text-text-muted">
-              Tip all {matchups.length} games — or hit AutoTip — to reach the finals.
+              Untipped games use the model tip in the ladder. Override any game, or hit AutoTip to fill the rest.
             </div>
           </Card>
         )}
@@ -256,7 +270,7 @@ export function SeasonPredictor({
           {copied ? "Copied" : "Copy ladder"}
         </button>
         <p className="px-1 text-xs text-text-muted">
-          Tap the bar to tip a winner — the further from the middle, the bigger the margin. AutoTip simulates the
+          Tap or drag the bar to tip a winner — the further from the middle, the bigger the margin. AutoTip simulates the
           remaining games thousands of times and keeps a typical season, so favourites do not go undefeated. Picks
           are saved on this device.
         </p>
@@ -328,7 +342,8 @@ function FixturePanel({
       <div className="max-h-80 overflow-y-auto">
         {list.map((m) => {
           const p = picks[m.id];
-          const winner = p ? (p.winnerId === m.home.team.id ? m.home.team : m.away.team) : null;
+          const preview = p ?? modelPick(m);
+          const winner = preview.winnerId === m.home.team.id ? m.home.team : m.away.team;
           return (
             <button
               key={m.id}
@@ -342,8 +357,8 @@ function FixturePanel({
               <span className="min-w-0 flex-1 truncate font-cond">
                 {m.away.team.abbrev} v {m.home.team.abbrev}
               </span>
-              <span className={`shrink-0 font-cond text-xs ${winner ? "text-teal" : "text-text-dim"}`}>
-                {winner ? `${winner.abbrev} by ${p!.margin}` : "Not tipped"}
+              <span className={`shrink-0 font-cond text-xs ${p ? "text-teal" : "text-text-dim"}`}>
+                {p ? `${winner.abbrev} by ${p.margin}` : `Model ${winner.abbrev} by ${preview.margin}`}
               </span>
             </button>
           );
