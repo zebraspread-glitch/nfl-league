@@ -462,18 +462,18 @@ function FinalsView({
     <div className="space-y-3">
       <Card>
         <SectionHeader>Top 8 Finals Bracket</SectionHeader>
-        <div className="relative grid grid-cols-4 grid-rows-[auto_auto_auto] gap-x-2 gap-y-6 bg-[#f8fafc] p-3">
-          <BracketLine className="left-[12.5%] top-[86px] h-[34px]" />
-          <BracketLine className="left-[37.5%] top-[86px] h-[34px]" />
-          <BracketLine className="left-[62.5%] top-[86px] h-[34px]" />
-          <BracketLine className="left-[87.5%] top-[86px] h-[34px]" />
-          <BracketLine className="left-1/4 top-[194px] h-[34px]" />
-          <BracketLine className="left-3/4 top-[194px] h-[34px]" />
+        <div className="relative grid grid-cols-4 grid-rows-[auto_auto_auto] gap-x-2 gap-y-7 bg-gradient-to-b from-[#f8fafc] to-white p-3">
+          <BracketLine className="left-[12.5%] top-[94px] h-[40px]" />
+          <BracketLine className="left-[37.5%] top-[94px] h-[40px]" />
+          <BracketLine className="left-[62.5%] top-[94px] h-[40px]" />
+          <BracketLine className="left-[87.5%] top-[94px] h-[40px]" />
+          <BracketLine className="left-1/4 top-[226px] h-[42px]" />
+          <BracketLine className="left-3/4 top-[226px] h-[42px]" />
           {bracket.map((slot) => {
             const game = byId.get(slot.id);
             if (!game) return null;
             return (
-              <div key={slot.id} className={slot.className}>
+              <div key={slot.id} className={`${slot.className} relative z-10`}>
                 <FinalsGameBox label={slot.label} game={game} picks={picks} onPick={onPick} />
               </div>
             );
@@ -513,8 +513,8 @@ function FinalsGameBox({
     return (
       <div>
         <BracketLabel>{label}</BracketLabel>
-        <div className="relative h-16 overflow-hidden rounded-md border border-[#45484d] bg-[radial-gradient(circle_at_center,#cdd2d7_0%,#777d84_42%,#303238_100%)] shadow-sm">
-          <div className="absolute left-1/2 top-0 h-full w-px bg-black/35" />
+        <div className="relative h-[74px] overflow-hidden rounded-lg border border-[#45484d] bg-[radial-gradient(circle_at_center,#d9dee3_0%,#7b838b_44%,#2e3237_100%)] shadow-sm">
+          <div className="absolute left-1/2 top-0 h-full w-px bg-black/30" />
           <div className="absolute left-1/2 top-1/2 grid h-6 w-6 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-[#3f4449] font-cond text-xs font-bold text-white shadow">
             v
           </div>
@@ -528,7 +528,7 @@ function FinalsGameBox({
   return (
     <div>
       <BracketLabel>{label}</BracketLabel>
-      <div className="relative h-16 overflow-hidden rounded-md border border-[#45484d] bg-[#2d3035] shadow-sm">
+      <div className="relative h-[74px] overflow-hidden rounded-lg border border-[#45484d] bg-[#2d3035] shadow-sm ring-1 ring-white/70">
         <div className="grid h-full grid-cols-2">
           <BracketTeam
             entry={game.a}
@@ -544,8 +544,8 @@ function FinalsGameBox({
             onSelect={(id) => onPick(game.id, { winnerId: id, margin: DEFAULT_FINALS_MARGIN })}
           />
         </div>
-        <div className="absolute left-1/2 top-0 h-full w-px bg-black/35" />
-        <div className="absolute left-1/2 top-1/2 grid h-6 w-6 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-[#3f4449] font-cond text-xs font-bold text-white shadow">
+        <div className="absolute left-1/2 top-0 h-full w-px bg-black/30" />
+        <div className="absolute left-1/2 top-1/2 grid h-6 w-6 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/15 bg-[#343a40] font-cond text-xs font-bold text-white shadow">
           v
         </div>
       </div>
@@ -562,7 +562,7 @@ function BracketLabel({ children }: { children: React.ReactNode }) {
 }
 
 function BracketLine({ className }: { className: string }) {
-  return <div aria-hidden="true" className={`absolute w-px bg-[#cfd5dc] ${className}`} />;
+  return <div aria-hidden="true" className={`absolute z-0 w-px bg-[#cfd5dc] ${className}`} />;
 }
 
 function BracketTeam({
@@ -578,7 +578,7 @@ function BracketTeam({
   onSelect: (teamId: number) => void;
   align?: "left" | "right";
 }) {
-  const logoOpacity = selected ? 0.34 : 0.2;
+  const logoOpacity = hasPick ? (selected ? 1 : 0.5) : 0.92;
   const dimClass = hasPick ? (selected ? "opacity-100" : "opacity-52 grayscale") : "opacity-92";
 
   return (
@@ -586,34 +586,32 @@ function BracketTeam({
       type="button"
       onClick={() => onSelect(entry.team.id)}
       aria-pressed={selected}
-      className={`group relative min-w-0 overflow-hidden px-1.5 text-left text-white transition-[filter,opacity] hover:opacity-100 ${dimClass} ${
+      className={`group relative flex min-w-0 items-center justify-center overflow-hidden px-1 py-1.5 text-center text-white transition-[filter,opacity] hover:opacity-100 ${dimClass} ${
         align === "right" ? "text-right" : ""
       }`}
       style={{
         background: `linear-gradient(135deg, ${entry.team.primary}, ${entry.team.secondary})`,
       }}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.42),rgba(0,0,0,0.28)_58%,rgba(0,0,0,0.54))]" />
-      {entry.team.logo ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={entry.team.logo}
-          alt=""
-          className={`absolute top-1/2 h-14 w-14 -translate-y-1/2 object-contain ${
-            align === "right" ? "right-1" : "left-1"
-          }`}
-          style={{ opacity: logoOpacity }}
-        />
-      ) : null}
-      <div
-        className={`relative flex h-full min-w-0 flex-col justify-center gap-1 ${
-          align === "right" ? "items-end pl-3" : "items-start pr-3"
-        }`}
-      >
-        <span className="rounded bg-black/35 px-1 py-0.5 font-cond text-[8px] font-semibold uppercase tracking-wide text-white/80">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.34),rgba(0,0,0,0.18)_54%,rgba(0,0,0,0.42))]" />
+      <div className="relative flex h-full min-w-0 flex-col items-center justify-center gap-0.5">
+        <span className="rounded bg-black/35 px-1 py-[1px] font-cond text-[8px] font-semibold uppercase tracking-wide text-white/80">
           S{entry.seed}
         </span>
-        <span className="max-w-full truncate font-cond text-sm font-semibold leading-none drop-shadow">
+        <span className="grid h-8 w-8 place-items-center rounded-md border border-white/45 bg-white/20 p-0.5 shadow-inner ring-1 ring-black/15">
+          {entry.team.logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={entry.team.logo}
+              alt=""
+              className="h-full w-full object-contain drop-shadow"
+              style={{ opacity: logoOpacity }}
+            />
+          ) : (
+            <span className="font-cond text-xs font-semibold">{entry.team.abbrev}</span>
+          )}
+        </span>
+        <span className="max-w-full truncate font-cond text-[13px] font-semibold leading-none drop-shadow">
           {entry.team.abbrev}
         </span>
       </div>
