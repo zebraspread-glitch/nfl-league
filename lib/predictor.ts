@@ -5,9 +5,9 @@ import type { Matchup, TeamMeta } from "./types";
 // Season predictor: pick a winner and a margin for all 84 regular-season games,
 // see the ladder it produces, then play out the top-eight finals bracket.
 //
-// Pure and client-safe — no data imports. Untipped games fall back to a model
-// pick derived from the same simulated line the odds strip shows, so you can
-// tip as many or as few games as you like and still get a complete ladder.
+// Pure and client-safe — no data imports. The tipping bar can preview a model
+// pick for an untipped game, but the ladder only counts explicit picks so reset
+// returns the table to a true 0-0 starting point.
 // ---------------------------------------------------------------------------
 
 export const REGULAR_SEASON_WEEKS = 14;
@@ -41,8 +41,7 @@ export function modelLine(matchup: Matchup): { mean: number; sd: number; homeWin
 /** Spread of a single game's margin, used to sample AutoTip results. */
 const MARGIN_SD = 34;
 
-/** The model's pick for a game. A user pick overrides this, but untipped games
- *  still contribute to the ladder using this baseline. */
+/** The model's pick for a game. Used as a preview/default before the user tips. */
 export function modelPick(matchup: Matchup): Pick {
   const line = modelLine(matchup);
   return {
@@ -71,7 +70,9 @@ export function buildLadder(matchups: Matchup[], picks: PickMap, teams: TeamMeta
   );
 
   for (const matchup of matchups) {
-    const pick = effectivePick(matchup, picks);
+    const pick = picks[matchup.id];
+    if (!pick) continue;
+
     const { winner: winnerScore, loser: loserScore } = scoresFor(matchup, pick);
     const winnerId = pick.winnerId;
     const loserId = winnerId === matchup.home.team.id ? matchup.away.team.id : matchup.home.team.id;

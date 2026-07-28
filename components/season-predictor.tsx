@@ -268,7 +268,7 @@ export function SeasonPredictor({
         ) : (
           <Card>
             <div className="px-4 py-3 text-sm text-text-muted">
-              Untipped regular-season games use the model tip. Override any game or hit AutoTip to fill the fixture.
+              Untipped games stay out of the ladder. Tip each game or hit AutoTip to fill the regular season.
             </div>
           </Card>
         )}
