@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:dema": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/test-dema-mode.mjs"
+    "test:dema": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/test-dema-mode.mjs",
+    "test:pool": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-pool.mjs"
   },
   "dependencies": {
     "next": "16.1.6",
