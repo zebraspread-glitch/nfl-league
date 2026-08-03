@@ -6,6 +6,9 @@ import { sleeperPlayerImage, POS_COLOR } from "@/lib/player-images";
 const SIZES = {
   sm: { box: "h-8 w-8", text: "text-[10px]", px: 32 },
   md: { box: "h-10 w-10", text: "text-xs", px: 40 },
+  // Matchup lineup cells: sized as a share of the card, so it steps up once the
+  // shell is wide enough for the card to carry it.
+  lg: { box: "h-11 w-11 sm:h-14 sm:w-14", text: "text-xs sm:text-sm", px: 56 },
 } as const;
 
 /** Circular player headshot sourced from Sleeper's own CDN (keyed by Sleeper's
@@ -35,8 +38,7 @@ export function SleeperPlayerAvatar({
         width={s.px}
         height={s.px}
         onError={() => setFailed(true)}
-        className={`${s.box} shrink-0 rounded-full ${isLogo ? "bg-white object-contain p-0.5" : "object-cover"}`}
-        style={isLogo ? undefined : { background: "#b9bec6" }}
+        className={`${s.box} shrink-0 rounded-full ${isLogo ? "bg-white object-contain p-0.5" : "bg-section object-cover"}`}
       />
     );
   }

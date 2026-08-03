@@ -167,8 +167,7 @@ function PlayerRow({ slot, entry, muted }: { slot: string; entry: RosterEntry; m
           <img
             src={logo}
             alt={entry.proTeam}
-            className="h-8 w-8 shrink-0 rounded-full object-contain p-0.5"
-            style={{ background: "#b9bec6" }}
+            className="h-8 w-8 shrink-0 rounded-full bg-section object-contain p-0.5"
           />
         ) : (
           <span className="h-8 w-8 shrink-0" />

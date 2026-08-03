@@ -2,7 +2,7 @@ import { Fragment } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getMatchups, getRoster, getStandings, getWeekKickoff } from "@/lib/sleeper";
-import { Card, TeamAvatar, Score, SectionTitle, EmptyState, Pill } from "@/components/ui";
+import { Card, TeamAvatar, Score, EmptyState, Hexagon, Pill } from "@/components/ui";
 import { SleeperPlayerAvatar } from "@/components/sleeper-player-avatar";
 import { MatchupTabs } from "@/components/matchup-tabs";
 import { MatchupCountdown } from "@/components/matchup-countdown";
@@ -76,40 +76,48 @@ export default async function MatchupPage({ params }: { params: Promise<{ id: st
     />
   );
 
+  // Scores drive the leader once they exist; before kickoff the projections do.
+  const hasScores = matchup.away.score > 0 || matchup.home.score > 0;
+  const awayValue = hasScores ? matchup.away.score : awayProj;
+  const homeValue = hasScores ? matchup.home.score : homeProj;
+  const awayRecord = matchup.away.record ?? standingRecord(awayStanding);
+  const homeRecord = matchup.home.record ?? standingRecord(homeStanding);
+
   return (
     <div>
-      <div
-        className="rounded-xl px-4 pb-4 pt-5 text-white"
-        style={{ background: "linear-gradient(180deg, var(--teal) 0%, var(--teal-deep) 100%)" }}
-      >
+      <div className="-mx-3 bg-card px-4 pb-4 pt-4 shadow-sm">
         <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2">
-          <HeaderAvatar side={matchup.away} />
+          <HeaderAvatar side={matchup.away} rank={awayStanding?.rank} />
 
-          <div className="flex items-stretch justify-center gap-3">
-            <HeaderScore actual={matchup.away.score} projected={awayProj} leading={awayProj >= homeProj} align="right" />
-            <div className="flex flex-col items-center justify-center gap-1">
-              <span className="w-px flex-1 bg-white/20" />
-              <span className="font-cond text-xs font-bold uppercase text-white/70">vs</span>
-              <span className="w-px flex-1 bg-white/20" />
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3">
+            <HeaderScore value={matchup.away.score} leading={awayValue >= homeValue} align="right" />
+            <span className="h-9 w-px bg-border" />
+            <HeaderScore value={matchup.home.score} leading={homeValue >= awayValue} align="left" />
+
+            <div className="text-right font-cond text-base tabular-nums text-text-muted">
+              {awayProj > 0 ? awayProj.toFixed(2) : ""}
             </div>
-            <HeaderScore actual={matchup.home.score} projected={homeProj} leading={homeProj > awayProj} align="left" />
+            <span className="font-cond text-sm font-bold uppercase tracking-wide text-text-dim">vs</span>
+            <div className="text-left font-cond text-base tabular-nums text-text-muted">
+              {homeProj > 0 ? homeProj.toFixed(2) : ""}
+            </div>
           </div>
 
-          <HeaderAvatar side={matchup.home} />
+          <HeaderAvatar side={matchup.home} rank={homeStanding?.rank} />
         </div>
 
-        <div className="mt-2 grid grid-cols-2 gap-2">
+        <div className="mt-3 grid grid-cols-2 gap-3">
           <div className="min-w-0 text-left">
-            <div className="truncate font-cond text-lg font-semibold leading-tight">{matchup.away.team.name}</div>
-            <div className="truncate text-xs text-white/80">
+            <div className="truncate font-cond text-xl font-bold leading-tight sm:text-2xl">{matchup.away.team.name}</div>
+            <div className="truncate font-cond text-sm text-text-muted">
               {matchup.away.team.manager}
-              {matchup.away.record ? ` | ${matchup.away.record.wins}-${matchup.away.record.losses}` : ""}
+              {awayRecord ? ` | ${formatRecord(awayRecord)}` : ""}
             </div>
           </div>
           <div className="min-w-0 text-right">
-            <div className="truncate font-cond text-lg font-semibold leading-tight">{matchup.home.team.name}</div>
-            <div className="truncate text-xs text-white/80">
-              {matchup.home.record ? `${matchup.home.record.wins}-${matchup.home.record.losses} | ` : ""}
+            <div className="truncate font-cond text-xl font-bold leading-tight sm:text-2xl">{matchup.home.team.name}</div>
+            <div className="truncate font-cond text-sm text-text-muted">
+              {homeRecord ? `${formatRecord(homeRecord)} | ` : ""}
               {matchup.home.team.manager}
             </div>
           </div>
@@ -577,10 +585,10 @@ function SlotSection({
   if (!rows.length) return null;
   return (
     <>
-      <div className="-mx-1 mt-3 bg-section px-1 pb-1 pt-3">
-        <SectionTitle>{title}</SectionTitle>
+      <div className="-mx-3 mt-3 bg-section px-4 py-3">
+        <h2 className="font-cond text-xl font-semibold uppercase tracking-[0.12em] text-text-muted">{title}</h2>
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="mt-2 grid grid-cols-2 gap-2">
         {rows.map((row, i) => (
           <Fragment key={i}>
             {row.away ? (
@@ -625,30 +633,25 @@ function projectedTotal(roster: Roster | null): number {
   return Math.round(sum * 100) / 100;
 }
 
-function HeaderAvatar({ side }: { side: MatchupSide }) {
+function HeaderAvatar({ side, rank }: { side: MatchupSide; rank?: number }) {
   return (
     <div className="relative shrink-0">
       <TeamAvatar team={side.team} size="lg" />
+      {rank ? (
+        <span className="absolute -left-1 -top-1">
+          <Hexagon value={rank} tone="teal" size="sm" />
+        </span>
+      ) : null}
     </div>
   );
 }
 
-function HeaderScore({
-  actual,
-  projected,
-  leading,
-  align,
-}: {
-  actual: number;
-  projected: number;
-  leading: boolean;
-  align: "left" | "right";
-}) {
-  const [whole, dec] = actual.toFixed(2).split(".");
+function HeaderScore({ value, leading, align }: { value: number; leading: boolean; align: "left" | "right" }) {
+  const [whole, dec] = value.toFixed(2).split(".");
   return (
     <div className={align === "left" ? "text-left" : "text-right"}>
-      <span className="score text-3xl text-white">
-        {actual > 0 ? (
+      <span className={`score text-4xl ${leading ? "text-text" : "text-text-muted"}`}>
+        {value > 0 ? (
           <>
             {whole}
             <span className="score-dec">.{dec}</span>
@@ -657,19 +660,17 @@ function HeaderScore({
           "—"
         )}
       </span>
-      {projected > 0 && (
-        <div className="font-cond text-sm font-semibold italic tabular-nums" style={{ color: leading ? "#86efac" : "#fca5a5" }}>
-          {projected.toFixed(2)}
-        </div>
-      )}
     </div>
   );
 }
 
+/** Every lineup cell is the same box, filled or not, so rows never collapse. */
+const CELL_BOX = "flex h-full min-h-[140px] flex-col sm:min-h-[148px]";
+
 function EmptyCell({ slot, align, muted = false }: { slot: string; align: "left" | "right"; muted?: boolean }) {
   const left = align === "left";
   return (
-    <Card className={`flex items-center px-3 py-2.5 ${muted ? "bg-section" : ""}`}>
+    <Card className={`${CELL_BOX} justify-center px-3 py-2.5 ${muted ? "bg-section" : ""}`}>
       <div className={`flex w-full items-center gap-2 ${left ? "" : "flex-row-reverse"}`}>
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-card font-cond text-[10px] font-bold text-text-dim">
           {slot}
@@ -701,11 +702,11 @@ function StarterCell({
   const head = (
     <div className={`flex items-center gap-1.5 ${left ? "" : "flex-row-reverse"}`}>
       <div className="relative shrink-0">
-        <SleeperPlayerAvatar sleeperId={entry.sleeperId ?? ""} pos={entry.position} name={entry.name} size="md" />
+        <SleeperPlayerAvatar sleeperId={entry.sleeperId ?? ""} pos={entry.position} name={entry.name} size="lg" />
         {badge && (
           <span
-            className="absolute left-1/2 grid h-3.5 w-3.5 place-items-center rounded-full text-[8px] font-bold text-black"
-            style={{ background: badge.color, bottom: "-7px", marginLeft: "-7px" }}
+            className="absolute -bottom-1 left-0 grid h-4 w-4 place-items-center rounded-full text-[8px] font-bold text-black sm:h-5 sm:w-5 sm:text-[10px]"
+            style={{ background: badge.color }}
           >
             {badge.label}
           </span>
@@ -716,8 +717,7 @@ function StarterCell({
         <img
           src={logo}
           alt={entry.proTeam}
-          className="h-7 w-7 shrink-0 rounded-full object-contain p-0.5"
-          style={{ background: "#b9bec6" }}
+          className="h-8 w-8 shrink-0 rounded-full bg-section object-contain p-1 sm:h-11 sm:w-11"
         />
       )}
     </div>
@@ -726,39 +726,41 @@ function StarterCell({
   const score = (
     <div className={left ? "text-right" : "text-left"}>
       {entry.gameStarted ? (
-        <Score value={entry.points} className="text-2xl" />
+        <Score value={entry.points} className="text-2xl sm:text-3xl" />
       ) : (
-        <span className="score text-2xl text-text">—</span>
+        <span className="score text-2xl text-text sm:text-3xl">—</span>
       )}
       {entry.projected !== undefined && (
-        <div className="font-cond text-xs italic text-text-muted">{entry.projected.toFixed(2)}</div>
+        <div className="font-cond text-sm italic text-text-muted sm:text-base">{entry.projected.toFixed(2)}</div>
       )}
     </div>
   );
 
   const content = (
-    <Card className={`px-3 py-2.5 ${muted ? "bg-section" : ""}`}>
-      <div className={`flex items-center ${left ? "" : "flex-row-reverse"}`}>
-        {head}
-        <div className={`flex-1 ${left ? "pl-2" : "pr-2"}`}>{score}</div>
-      </div>
+    <Card className={`${CELL_BOX} ${muted ? "bg-section" : ""}`}>
+      <div className="px-3 pb-2.5 pt-3">
+        <div className={`flex items-center ${left ? "" : "flex-row-reverse"}`}>
+          {head}
+          <div className={`flex-1 ${left ? "pl-2" : "pr-2"}`}>{score}</div>
+        </div>
 
-      <div className={`mt-1.5 truncate text-sm font-semibold ${left ? "text-left" : "text-right"}`}>
-        {left ? (
-          <>
-            {entry.name} <span className="font-normal text-text-muted">{entry.position}</span>
-          </>
-        ) : (
-          <>
-            <span className="font-normal text-text-muted">{entry.position}</span> {entry.name}
-          </>
-        )}
+        <div className={`mt-2 truncate text-base font-semibold sm:text-lg ${left ? "text-left" : "text-right"}`}>
+          {left ? (
+            <>
+              {entry.name} <span className="text-sm font-normal text-text-muted">{entry.position}</span>
+            </>
+          ) : (
+            <>
+              <span className="text-sm font-normal text-text-muted">{entry.position}</span> {entry.name}
+            </>
+          )}
+        </div>
       </div>
 
       <div
-        className={`mt-1.5 flex items-center justify-between gap-2 border-t border-border pt-1.5 text-[11px] ${
-          left ? "" : "flex-row-reverse"
-        }`}
+        className={`mt-auto flex items-center justify-between gap-2 px-3 py-2 text-[11px] ${
+          muted ? "bg-row" : "bg-section"
+        } ${left ? "" : "flex-row-reverse"}`}
       >
         <span className="truncate text-text-muted">{entry.gameLabel ?? entry.proTeam ?? "—"}</span>
         {when && <span className="shrink-0 font-semibold text-text">{when}</span>}
@@ -769,7 +771,7 @@ function StarterCell({
   if (!entry.sleeperId) return content;
 
   return (
-    <Link href={`/players/${encodeURIComponent(entry.sleeperId)}?season=2026`} className="block">
+    <Link href={`/players/${encodeURIComponent(entry.sleeperId)}?season=2026`} className="block h-full">
       {content}
     </Link>
   );
