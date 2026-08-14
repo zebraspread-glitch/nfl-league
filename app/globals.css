@@ -230,6 +230,47 @@ body {
   .trade-side-right, .trade-asset, .trade-shine { animation: none; }
 }
 
+/* Selection takeover: the full-screen card that lands once a pick's player is
+   named. The team colour sweeps across from the left, the crest settles in
+   behind it, then the pick line, face, name and position stagger in on top and
+   a shine crosses the lot. Every resting value is also set inline on the
+   element, so the reduced-motion block below leaves a correct static card. */
+@keyframes draftTakeoverSweep {
+  0%   { clip-path: inset(0 100% 0 0); }
+  100% { clip-path: inset(0 0 0 0); }
+}
+
+@keyframes draftCrestIn {
+  0%   { transform: translate(14%, -50%) scale(0.82); opacity: 0; }
+  100% { transform: translate(0, -50%) scale(1); opacity: 0.18; }
+}
+
+@keyframes draftTakeoverFace {
+  0%   { transform: scale(0.4); opacity: 0; }
+  60%  { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes draftTakeoverName {
+  0%   { transform: translateX(-8%) scale(1.35); opacity: 0; }
+  55%  { transform: translateX(0) scale(0.97); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.takeover-sweep { animation: draftTakeoverSweep 620ms cubic-bezier(0.2, 0.8, 0.25, 1) both; }
+.takeover-crest { animation: draftCrestIn 900ms 220ms cubic-bezier(0.2, 0.9, 0.3, 1) both; }
+.takeover-label { animation: draftSlideIn 620ms 340ms ease-out both; }
+.takeover-face { animation: draftTakeoverFace 720ms 520ms cubic-bezier(0.2, 1.05, 0.35, 1) both; }
+.takeover-name { animation: draftTakeoverName 760ms 640ms cubic-bezier(0.2, 1.05, 0.35, 1) both; transform-origin: left center; }
+.takeover-meta { animation: draftSlideIn 620ms 900ms ease-out both; }
+.takeover-flash { animation: draftFlash 700ms 380ms ease-out both; }
+.takeover-shine { animation: draftShine 1400ms 1000ms ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .takeover-sweep, .takeover-crest, .takeover-label, .takeover-face,
+  .takeover-name, .takeover-meta, .takeover-flash, .takeover-shine { animation: none; }
+}
+
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 9999px; }
 ::-webkit-scrollbar-track { background: transparent; }

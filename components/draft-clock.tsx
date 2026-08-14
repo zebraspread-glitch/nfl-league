@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import Link from "next/link";
 import {
   applyPickOverrides,
@@ -12,12 +13,27 @@ import {
   type TradePlayer,
 } from "@/lib/draft-clock";
 import { isDark, sampleLogoColor } from "@/lib/draft-colors";
+import { POS_COLOR, proTeamLogoUrl, sleeperPlayerImage } from "@/lib/player-images";
 import { TEAMS } from "@/lib/teams";
+import type { TeamMeta } from "@/lib/types";
+import { DraftPlayerFace } from "@/components/draft-player-face";
 import { DraftTradeAlert } from "@/components/draft-trade-alert";
 import { DraftTradePanel } from "@/components/draft-trade-panel";
 
 const STORAGE_KEY = "mgl-draft-clock-v1";
 const TRADES_KEY = "mgl-draft-trades-v1";
+const PICKED_KEY = "mgl-draft-picked-v1";
+const ANNOUNCEMENT_KEY = "mgl-draft-announcement-v1";
+
+/** Who each pick was spent on, keyed by overall pick number. Keyed that way
+ *  rather than by team so a traded pick keeps its selection. */
+type PickedPlayers = Record<number, string>;
+type PickAnnouncement = {
+  pick: LivePick;
+  player: TradePlayer;
+  background: string;
+  accent: string;
+};
 
 // Palette and proportions are traced from the NFL Network draft ticker this is
 // meant to look like. The reference crop is 419x101, so every size inside the
@@ -93,16 +109,27 @@ export function DraftClock({
   const [tradeStage, setTradeStage] = useState(0);
   const [tradeOpen, setTradeOpen] = useState(false);
 
+  const [picked, setPicked] = useState<PickedPlayers>({});
+  const [announcement, setAnnouncement] = useState<PickAnnouncement | null>(null);
+  const playerByName = useMemo(() => new Map(players.map((p) => [p.name, p])), [players]);
+  const playerSelectLockUntil = useRef(0);
+
   const [state, setState] = useState<ClockState>(() => initialState(basePicks));
   const [now, setNow] = useState(() => Date.now());
   const [loaded, setLoaded] = useState(false);
   const [showControls, setShowControls] = useState(true);
-  // Keyed by source so a team change falls back immediately instead of
-  // briefly painting the banner in the previous team's colour.
-  const [logoBg, setLogoBg] = useState<{ src: string; hex: string } | null>(null);
+  // Keyed by source so a team change falls back immediately instead of briefly
+  // painting in the previous team's colour, and so the banner and the last-pick
+  // strip can be showing two different teams at once.
+  const [logoColors, setLogoColors] = useState<Record<string, string>>({});
   const wakeLock = useRef<WakeLockSentinel | null>(null);
 
   const current = picks[state.index];
+  const selectedPlayerName = current ? picked[current.overall] : undefined;
+  const selectedPlayer = useMemo(
+    () => (selectedPlayerName ? playerByName.get(selectedPlayerName) ?? { name: selectedPlayerName, pos: "NFL" } : undefined),
+    [playerByName, selectedPlayerName]
+  );
   const running = state.startedAt !== null;
   const remaining = current ? remainingOf(state, now) : 0;
   const totalMs = (current?.seconds ?? 1) * 1000;
@@ -120,6 +147,10 @@ export function DraftClock({
       }
       const savedTrades = localStorage.getItem(TRADES_KEY);
       if (savedTrades) setOverrides(JSON.parse(savedTrades) as PickOverrides);
+      const savedPicked = localStorage.getItem(PICKED_KEY);
+      if (savedPicked) setPicked(JSON.parse(savedPicked) as PickedPlayers);
+      const savedAnnouncement = localStorage.getItem(ANNOUNCEMENT_KEY);
+      if (savedAnnouncement) setAnnouncement(JSON.parse(savedAnnouncement) as PickAnnouncement);
     } catch {
       // Ignore corrupt storage.
     }
@@ -138,23 +169,42 @@ export function DraftClock({
   }, [overrides, loaded]);
 
   useEffect(() => {
+    if (!loaded) return;
+    localStorage.setItem(PICKED_KEY, JSON.stringify(picked));
+  }, [picked, loaded]);
+
+  useEffect(() => {
+    if (!loaded) return;
+    if (announcement) localStorage.setItem(ANNOUNCEMENT_KEY, JSON.stringify(announcement));
+    else localStorage.removeItem(ANNOUNCEMENT_KEY);
+  }, [announcement, loaded]);
+
+  useEffect(() => {
     if (!running) return;
     const id = setInterval(() => setNow(Date.now()), 100);
     return () => clearInterval(id);
   }, [running]);
 
-  // Take the banner's colour from the team's own artwork (see sampleLogoColor).
+  // The pick just completed, shown above the banner while the next team is on
+  // the clock. Reads through `picks`, so a traded pick credits its new owner.
+  const lastPick = state.index > 0 ? picks[state.index - 1] : undefined;
+  const lastPlayer = lastPick ? playerByName.get(picked[lastPick.overall] ?? "") : undefined;
+
+  // Take each surface's colour from that team's own artwork (see sampleLogoColor).
   const logoSrc = current?.team.logo;
+  const lastLogoSrc = lastPlayer ? lastPick?.team.logo : undefined;
   useEffect(() => {
-    if (!logoSrc) return;
     let cancelled = false;
-    void sampleLogoColor(logoSrc).then((hex) => {
-      if (!cancelled && hex) setLogoBg({ src: logoSrc, hex });
-    });
+    for (const src of [logoSrc, lastLogoSrc]) {
+      if (!src) continue;
+      void sampleLogoColor(src).then((hex) => {
+        if (!cancelled && hex) setLogoColors((c) => (c[src] === hex ? c : { ...c, [src]: hex }));
+      });
+    }
     return () => {
       cancelled = true;
     };
-  }, [logoSrc]);
+  }, [logoSrc, lastLogoSrc]);
 
   useEffect(() => {
     const previous = document.body.style.overflow;
@@ -223,6 +273,9 @@ export function DraftClock({
   }, [tradeStage]);
 
   const primary = useCallback(() => {
+    if (announcement) return;
+    if (state.phase === "in" && Date.now() < playerSelectLockUntil.current) return;
+    if (state.phase === "in" && selectedPlayer) return;
     // A trade on the board owns the button until it has been walked through.
     if (trade) {
       advanceTrade();
@@ -238,7 +291,7 @@ export function DraftClock({
       return start(s.index + 1);
     });
     setNow(Date.now());
-  }, [picks, start, trade, advanceTrade]);
+  }, [announcement, picks, selectedPlayer, start, state.phase, trade, advanceTrade]);
 
   const togglePause = useCallback(() => {
     setState((s) => {
@@ -270,12 +323,60 @@ export function DraftClock({
   }, [picks]);
 
   const resetDraft = useCallback(() => {
-    if (!window.confirm("Restart the draft from pick 1?")) return;
+    if (!window.confirm("Restart the draft from pick 1? This also clears every player selected so far.")) return;
     setState(initialState(picks));
+    setPicked({});
+    setAnnouncement(null);
     setNow(Date.now());
   }, [picks]);
 
+  /** Records who a pick was spent on. Passing undefined clears it again. */
+  const selectPlayer = useCallback((overall: number, name: string | undefined) => {
+    if (name) playerSelectLockUntil.current = Date.now() + 5000;
+
+    if (!name) {
+      setPicked((p) => {
+        const next = { ...p };
+        delete next[overall];
+        return next;
+      });
+      setAnnouncement((a) => (a?.pick.overall === overall ? null : a));
+      return;
+    }
+
+    if (current?.overall === overall) {
+      const player = playerByName.get(name) ?? { name, pos: "NFL" };
+      const background = (current.team.logo && logoColors[current.team.logo]) || current.team.primary || "#123049";
+      const revealOnDark = isDark(background);
+      const nextAnnouncement: PickAnnouncement = {
+        pick: current,
+        player,
+        background,
+        accent: revealOnDark ? VOLT : INK,
+      };
+
+      flushSync(() => {
+        setPicked((p) => ({ ...p, [overall]: name }));
+        setAnnouncement(nextAnnouncement);
+        setState((s) =>
+          picks[s.index]?.overall === overall
+            ? { ...s, phase: "in", remainingMs: remainingOf(s, Date.now()), startedAt: null }
+            : s
+        );
+      });
+      setNow(Date.now());
+      return;
+    }
+
+    setPicked((p) => ({ ...p, [overall]: name }));
+  }, [current, logoColors, picks, playerByName]);
+
+  const lockPlayerSelect = useCallback(() => {
+    playerSelectLockUntil.current = Date.now() + 1800;
+  }, []);
+
   const back = useCallback(() => {
+    setAnnouncement(null);
     setState((s) => {
       if (s.phase === "in") return { ...s, phase: "clock" };
       const index = Math.max(0, s.index - 1);
@@ -311,6 +412,18 @@ export function DraftClock({
     if (document.fullscreenElement) void document.exitFullscreen();
     else void document.documentElement.requestFullscreen().catch(() => {});
   }, []);
+
+  const nextFromSelectionReveal = useCallback(() => {
+    const announcedOverall = announcement?.pick.overall;
+    setAnnouncement(null);
+    setState((s) => {
+      const currentOverall = picks[s.index]?.overall;
+      if (currentOverall === announcedOverall) return start(s.index + 1);
+      const announcedIndex = picks.findIndex((pick) => pick.overall === announcedOverall);
+      return announcedIndex >= 0 && s.index <= announcedIndex ? start(announcedIndex + 1) : s;
+    });
+    setNow(Date.now());
+  }, [announcement?.pick.overall, picks, start]);
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -394,11 +507,11 @@ export function DraftClock({
 
   // One colour for the whole banner, taken from the logo so the two never differ.
   const tradeCount = Object.keys(overrides).length;
-  const sampled = logoBg && logoBg.src === logoSrc ? logoBg.hex : null;
-  const bannerBg = sampled ?? current?.team.primary ?? "#123049";
+  const bannerBg = (logoSrc && logoColors[logoSrc]) || current?.team.primary || "#123049";
   const onDark = isDark(bannerBg);
   const ink = onDark ? "#ffffff" : INK;
   const accent = onDark ? VOLT : INK;
+  const showSelectionTakeover = Boolean(announcement);
 
   if (!current) {
     return (
@@ -432,60 +545,81 @@ export function DraftClock({
   }
 
   return (
-    <Shell
-      reserveControlSpace={showControls}
-      overlay={
-        <>
-          {tradeOpen && (
-            <DraftTradePanel
-              picks={picks.slice(state.index)}
-              teams={TEAMS}
-              playerNames={playerNames}
-              tradeCount={tradeCount}
-              onAnnounce={announceTrade}
-              onUndo={undoTrades}
-              onClose={() => setTradeOpen(false)}
-            />
-          )}
+    <>
+      <Shell
+        reserveControlSpace={showControls}
+        overlay={
+          <>
+            {tradeOpen && (
+              <DraftTradePanel
+                picks={picks.slice(state.index)}
+                teams={TEAMS}
+                playerNames={playerNames}
+                tradeCount={tradeCount}
+                onAnnounce={announceTrade}
+                onUndo={undoTrades}
+                onClose={() => setTradeOpen(false)}
+              />
+            )}
 
-          {showControls ? (
-            <Controls>
+            {showControls ? (
+              <Controls>
+                <button
+                  onClick={primary}
+                  className="rounded-md px-5 py-2.5 font-cond text-lg font-extrabold uppercase tracking-wider text-black"
+                  style={{ background: VOLT }}
+                >
+                  {primaryLabel}
+                </button>
+                <ControlButton onClick={togglePause} disabled={state.phase !== "clock"}>
+                  {running ? "Pause" : "Start"}
+                </ControlButton>
+                <ControlButton onClick={() => addSeconds(30)}>+30s</ControlButton>
+                <ControlButton onClick={resetClock}>Reset Clock</ControlButton>
+                <ControlButton onClick={back}>Back</ControlButton>
+                <PlayerSearch
+                  team={current.team}
+                  overall={current.overall}
+                  selected={selectedPlayer}
+                  names={playerNames}
+                  onSelect={selectPlayer}
+                  onInteract={lockPlayerSelect}
+                />
+                {selectedPlayer && !showSelectionTakeover && (
+                  <ControlButton onClick={() => selectPlayer(current.overall, undefined)}>Clear Player</ControlButton>
+                )}
+                <ControlButton onClick={() => setTradeOpen((v) => !v)}>
+                  Trade (T){tradeCount > 0 ? ` - ${tradeCount}` : ""}
+                </ControlButton>
+                <ControlButton onClick={resetDraft}>Restart Draft</ControlButton>
+                <ControlButton onClick={toggleFullscreen}>Fullscreen</ControlButton>
+                <ControlButton onClick={() => setShowControls(false)}>Hide Controls</ControlButton>
+                <span className="font-cond text-sm uppercase tracking-widest text-white/35">
+                  {current.team.name} - pick {current.overall} of {picks.length}
+                  {state.phase === "clock" && !running && !expired && (notStarted ? " - ready" : " - paused")}
+                </span>
+                <ExitLink />
+              </Controls>
+            ) : (
               <button
-                onClick={primary}
-                className="rounded-md px-5 py-2.5 font-cond text-lg font-extrabold uppercase tracking-wider text-black"
-                style={{ background: VOLT }}
+                onClick={() => setShowControls(true)}
+                className="absolute bottom-3 right-3 rounded-md border border-white/10 px-2.5 py-1 font-cond text-[10px] uppercase tracking-widest text-white/20"
               >
-                {primaryLabel}
+                Controls
               </button>
-              <ControlButton onClick={togglePause} disabled={state.phase !== "clock"}>
-                {running ? "Pause" : "Start"}
-              </ControlButton>
-              <ControlButton onClick={() => addSeconds(30)}>+30s</ControlButton>
-              <ControlButton onClick={resetClock}>Reset Clock</ControlButton>
-              <ControlButton onClick={back}>Back</ControlButton>
-              <ControlButton onClick={() => setTradeOpen((v) => !v)}>
-                Trade (T){tradeCount > 0 ? ` - ${tradeCount}` : ""}
-              </ControlButton>
-              <ControlButton onClick={resetDraft}>Restart Draft</ControlButton>
-              <ControlButton onClick={toggleFullscreen}>Fullscreen</ControlButton>
-              <ControlButton onClick={() => setShowControls(false)}>Hide Controls</ControlButton>
-              <span className="font-cond text-sm uppercase tracking-widest text-white/35">
-                {current.team.name} - pick {current.overall} of {picks.length}
-                {state.phase === "clock" && !running && !expired && (notStarted ? " - ready" : " - paused")}
-              </span>
-              <ExitLink />
-            </Controls>
-          ) : (
-            <button
-              onClick={() => setShowControls(true)}
-              className="absolute bottom-3 right-3 rounded-md border border-white/10 px-2.5 py-1 font-cond text-[10px] uppercase tracking-widest text-white/20"
-            >
-              Controls
-            </button>
-          )}
-        </>
-      }
-    >
+            )}
+          </>
+        }
+      >
+        {lastPick && lastPlayer && (
+          <LastPickStrip
+            key={lastPick.overall}
+            pick={lastPick}
+            player={lastPlayer}
+            background={(lastLogoSrc && logoColors[lastLogoSrc]) || lastPick.team.primary}
+          />
+        )}
+
       <Banner>
         {/* Upcoming-picks strip: the team on the clock on a dark cell, the rest grey. */}
         <div className="flex h-[21.78%] items-stretch">
@@ -621,7 +755,19 @@ export function DraftClock({
           stage={tradeStage}
         />
       )}
-    </Shell>
+      </Shell>
+
+      {announcement && (
+        <SelectionTakeover
+          key={`selection-${announcement.pick.overall}-${announcement.player.name}`}
+          pick={announcement.pick}
+          player={announcement.player}
+          background={announcement.background}
+          accent={announcement.accent}
+          onNext={nextFromSelectionReveal}
+        />
+      )}
+    </>
   );
 }
 
@@ -712,6 +858,310 @@ function Shell({
   );
 }
 
+/** Round and slot as the board says it, e.g. "1.09". */
+function pickLabel(pick: LivePick) {
+  return `${pick.round}.${String(pick.slot).padStart(2, "0")}`;
+}
+
+/**
+ * The pick that just happened, sitting on top of the banner in the selecting
+ * team's colour while the next team runs down their clock.
+ */
+function LastPickStrip({
+  pick,
+  player,
+  background,
+}: {
+  pick: LivePick;
+  player: TradePlayer;
+  background: string;
+}) {
+  const ink = isDark(background) ? "#ffffff" : INK;
+
+  return (
+    <div
+      className="draft-slide-in flex w-screen items-center overflow-hidden font-cond uppercase"
+      style={{
+        background,
+        color: ink,
+        gap: px(6),
+        paddingLeft: px(9),
+        paddingRight: px(11),
+        paddingTop: px(3),
+        paddingBottom: px(3),
+      }}
+    >
+      {pick.team.logo && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={pick.team.logo}
+          alt=""
+          aria-hidden
+          className="shrink-0 object-contain"
+          style={{ width: px(20), height: px(20) }}
+        />
+      )}
+
+      <span className="shrink-0 font-extrabold" style={{ fontSize: px(15) }}>
+        {pickLabel(pick)}
+      </span>
+      <span className="shrink-0 truncate font-bold" style={{ fontSize: px(11), opacity: 0.75 }}>
+        {pick.team.name}
+      </span>
+
+      <span aria-hidden className="shrink-0" style={{ fontSize: px(11), opacity: 0.4 }}>
+        |
+      </span>
+
+      <DraftPlayerFace player={player} ink={ink} size={px(20)} chipFontSize={px(8)} />
+      <span className="min-w-0 truncate font-extrabold" style={{ fontSize: px(15) }}>
+        {player.name}
+      </span>
+      <span className="shrink-0" style={{ fontSize: px(9), opacity: 0.65 }}>
+        {[player.pos, player.proTeam].filter(Boolean).join(" · ")}
+      </span>
+    </div>
+  );
+}
+
+function SelectionTakeover({
+  pick,
+  player,
+  background,
+  accent,
+  onNext,
+}: {
+  pick: LivePick;
+  player: TradePlayer;
+  background: string;
+  accent: string;
+  onNext: () => void;
+}) {
+  const secondary = pick.team.secondary || background;
+  const playerMeta = [player.pos, player.proTeam].filter(Boolean).join(" - ");
+  const nflLogo = proTeamLogoUrl(player.proTeam);
+  const pickText = pickLabel(pick);
+
+  return (
+    <div
+      className="fixed inset-0 z-[80] overflow-hidden bg-black font-cond uppercase text-white"
+      style={{ position: "fixed", inset: 0, zIndex: 2147483647, background: "#000000" }}
+      onClick={(event) => event.stopPropagation()}
+      onKeyDown={(event) => event.stopPropagation()}
+    >
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `linear-gradient(125deg, ${background} 0%, ${secondary} 37%, #030712 74%, #01030a 100%)`,
+        }}
+      />
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(circle at 18% 12%, rgba(255,255,255,0.24), transparent 23%), radial-gradient(circle at 80% 72%, rgba(210,236,31,0.18), transparent 28%), linear-gradient(115deg, rgba(2,6,23,0.04) 0%, rgba(2,6,23,0.56) 52%, rgba(2,6,23,0.88) 100%)",
+        }}
+      />
+      <div
+        className="takeover-sweep absolute inset-0"
+        style={{
+          background: "linear-gradient(100deg, transparent 0%, rgba(255,255,255,0.24) 46%, transparent 72%)",
+        }}
+      />
+
+      <div aria-hidden className="takeover-flash absolute inset-0 bg-white" />
+
+      <div
+        aria-hidden
+        className="takeover-shine absolute inset-y-0 left-0 w-1/5"
+        style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.72), transparent)" }}
+      />
+
+      {pick.team.logo && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={pick.team.logo}
+          alt=""
+          aria-hidden
+          className="takeover-crest pointer-events-none absolute right-[-4vw] top-1/2 object-contain"
+          style={{ width: "min(50vw, 62vh)", height: "min(50vw, 62vh)", opacity: 0.1 }}
+        />
+      )}
+
+      <div
+        className="relative z-10 grid h-full min-h-0"
+        style={{
+          gridTemplateRows: "auto minmax(0, 1fr) auto",
+          gap: "clamp(16px, 2vh, 28px)",
+          padding: "clamp(24px, 3vw, 54px)",
+          paddingBottom: "clamp(32px, 4vh, 64px)",
+        }}
+      >
+        <div className="takeover-label flex items-center justify-between gap-6 pr-[12vw]">
+          <div className="flex min-w-0 items-center gap-5">
+            <div
+              className="font-extrabold tracking-[0.2em]"
+              style={{ color: accent, fontSize: "clamp(1.25rem, 2vw, 2.6rem)" }}
+            >
+              MGL DRAFT
+            </div>
+            <div className="h-[0.3rem] w-[10vw]" style={{ background: accent }} />
+            <div className="font-extrabold tracking-[0.18em]" style={{ fontSize: "clamp(1.1rem, 1.7vw, 2.2rem)" }}>
+              THE PICK IS IN
+            </div>
+          </div>
+          <div className="shrink-0 bg-black/50 px-5 py-3 font-extrabold tracking-[0.18em]" style={{ fontSize: "clamp(1rem, 1.45vw, 1.8rem)" }}>
+            PICK {pickText}
+          </div>
+        </div>
+
+        <div className="grid min-h-0 grid-cols-[minmax(20rem,38vw)_minmax(0,1fr)] items-center gap-[3.5vw]">
+          <div
+            className="takeover-face relative min-h-0 overflow-hidden border border-white/18 bg-black/35 shadow-[0_2rem_5rem_rgba(0,0,0,0.45)]"
+            style={{ height: "min(66vh, 680px)" }}
+          >
+            <PlayerHeroImage player={player} />
+            <div
+              aria-hidden
+              className="absolute inset-0"
+              style={{ background: "linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.54) 100%)" }}
+            />
+
+            <div className="absolute left-[1.5vw] top-[2vh] flex items-center gap-3">
+              <span className="grid h-16 w-16 place-items-center bg-black/78 font-extrabold" style={{ color: accent, fontSize: "clamp(1.3rem, 2vw, 2.4rem)" }}>
+                {player.pos}
+              </span>
+              {player.proTeam && (
+                <span className="bg-black/62 px-4 py-2 font-extrabold tracking-[0.18em]" style={{ fontSize: "clamp(1rem, 1.5vw, 1.9rem)" }}>
+                  {player.proTeam}
+                </span>
+              )}
+            </div>
+
+            {nflLogo && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={nflLogo}
+                alt=""
+                aria-hidden
+                className="absolute bottom-[2.2vh] right-[1.6vw] object-contain drop-shadow-[0_1rem_1.8rem_rgba(0,0,0,0.55)]"
+                style={{ height: "clamp(78px, 12vh, 140px)", width: "clamp(78px, 12vh, 140px)" }}
+              />
+            )}
+          </div>
+
+          <div className="flex min-h-0 min-w-0 flex-col justify-center">
+            <div className="takeover-meta font-extrabold tracking-[0.16em] text-white/70" style={{ fontSize: "clamp(1rem, 1.5vw, 2rem)" }}>
+              {playerMeta || "Selected Player"}
+            </div>
+
+            <div
+              className="takeover-name mt-[1.8vh] max-w-[55vw] break-words font-extrabold leading-[0.86]"
+              style={{
+                color: "#ffffff",
+                fontSize: "clamp(4rem, 7.2vw, 9.2rem)",
+                textShadow: "0 0.08em 0.24em rgba(0,0,0,0.5)",
+              }}
+            >
+              {player.name}
+            </div>
+
+            <div className="takeover-meta mt-[4vh] grid grid-cols-[auto_minmax(0,1fr)] items-center gap-[2vw]">
+              <div
+                className="grid place-items-center bg-white/95 p-[1.2vh] shadow-[0_1.2rem_3rem_rgba(0,0,0,0.35)]"
+                style={{ height: "clamp(116px, 16vh, 176px)", width: "clamp(116px, 16vh, 176px)" }}
+              >
+                {pick.team.logo ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={pick.team.logo} alt={`${pick.team.name} logo`} className="h-full w-full object-contain" />
+                ) : (
+                  <span className="font-extrabold" style={{ color: background, fontSize: "clamp(2rem, 4vw, 5rem)" }}>
+                    {pick.team.abbrev}
+                  </span>
+                )}
+              </div>
+
+              <div className="min-w-0">
+                <div className="font-bold tracking-[0.22em] text-white/62" style={{ fontSize: "clamp(0.85rem, 1.25vw, 1.6rem)" }}>
+                  DRAFTED TO
+                </div>
+                <div
+                  className="font-extrabold leading-[0.9]"
+                  style={{ color: "#ffffff", fontSize: "clamp(2.5rem, 4.8vw, 6rem)", textShadow: "0 0.08em 0.2em rgba(0,0,0,0.35)" }}
+                >
+                  {pick.team.name}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="takeover-meta flex items-end justify-between gap-6">
+          <div className="flex flex-wrap gap-3">
+            <div className="bg-black/46 px-5 py-3 font-extrabold tracking-[0.18em] text-white" style={{ fontSize: "clamp(1rem, 1.45vw, 1.8rem)" }}>
+              ROUND {pick.round}
+            </div>
+            <div className="bg-black/46 px-5 py-3 font-extrabold tracking-[0.18em] text-white" style={{ fontSize: "clamp(1rem, 1.45vw, 1.8rem)" }}>
+              PICK {pick.slot}
+            </div>
+            <div className="px-5 py-3 font-extrabold tracking-[0.18em] text-black" style={{ background: accent, fontSize: "clamp(1rem, 1.45vw, 1.8rem)" }}>
+              OVERALL {pick.overall}
+            </div>
+          </div>
+
+          {nflLogo && player.proTeam && (
+            <div className="flex items-center gap-4 bg-black/36 px-5 py-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={nflLogo} alt={`${player.proTeam} logo`} className="object-contain" style={{ height: "clamp(42px, 5vh, 64px)", width: "clamp(42px, 5vh, 64px)" }} />
+              <div className="font-extrabold tracking-[0.18em]" style={{ fontSize: "clamp(1rem, 1.45vw, 1.8rem)" }}>
+                NFL TEAM {player.proTeam}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          onNext();
+        }}
+        className="takeover-meta absolute right-8 top-8 z-20 px-7 py-3 font-extrabold uppercase tracking-wider text-black shadow-[0_0_2rem_rgba(0,0,0,0.35)]"
+        style={{ background: VOLT }}
+      >
+        Next Pick
+      </button>
+    </div>
+  );
+}
+
+function PlayerHeroImage({ player }: { player: TradePlayer }) {
+  const [failed, setFailed] = useState(false);
+  const image = player.sleeperId && !failed ? sleeperPlayerImage(player.sleeperId) : null;
+
+  if (image) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={image.url}
+        alt={player.name}
+        onError={() => setFailed(true)}
+        className={image.isLogo ? "relative h-full w-full bg-white/92 object-contain p-[7vh]" : "relative h-full w-full object-cover object-top"}
+      />
+    );
+  }
+
+  return (
+    <div className="relative grid h-full w-full place-items-center" style={{ background: POS_COLOR[player.pos] ?? "#475569" }}>
+      <span className="font-extrabold text-white/86" style={{ fontSize: "clamp(5rem, 12vw, 14rem)" }}>
+        {player.pos}
+      </span>
+    </div>
+  );
+}
+
 function Banner({ children }: { children: React.ReactNode }) {
   return (
     <div
@@ -741,6 +1191,85 @@ function ExitLink() {
     </Link>
   );
 }
+/**
+ * Names the player a pick was spent on. Lives in the control bar rather than on
+ * the banner, so nothing operator-facing ever paints on the TV feed. Committing
+ * is deliberately forgiving — picking from the datalist, typing the full name,
+ * or pressing Enter on a unique prefix all work, since this is being driven in a
+ * hurry with a room watching.
+ */
+function PlayerSearch({
+  team,
+  overall,
+  selected,
+  names,
+  onSelect,
+  onInteract,
+}: {
+  team: TeamMeta;
+  overall: number;
+  selected?: TradePlayer;
+  names: string[];
+  onSelect: (overall: number, name: string | undefined) => void;
+  onInteract: () => void;
+}) {
+  const [draft, setDraft] = useState("");
+
+  const commit = (raw: string) => {
+    const value = raw.trim().toLowerCase();
+    if (!value) return;
+    const match =
+      names.find((n) => n.toLowerCase() === value) ??
+      names.filter((n) => n.toLowerCase().startsWith(value))[0];
+    if (!match) return;
+    onSelect(overall, match);
+    setDraft("");
+  };
+
+  if (selected) {
+    return (
+      <span className="rounded-md border border-white/15 px-3 py-2 font-cond text-sm uppercase tracking-wider text-white/45">
+        {team.abbrev}: {selected.name}
+      </span>
+    );
+  }
+
+  return (
+    <>
+      <input
+        value={draft}
+        list="mgl-clock-player-names"
+        placeholder={`${team.abbrev} selects...`}
+        onFocus={onInteract}
+        onPointerDown={onInteract}
+        onChange={(e) => {
+          onInteract();
+          setDraft(e.target.value);
+          // Choosing from the datalist fires change with the whole name, so the
+          // pick lands on click without needing Enter as well.
+          if (names.some((n) => n.toLowerCase() === e.target.value.trim().toLowerCase())) {
+            commit(e.target.value);
+          }
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            e.stopPropagation();
+            onInteract();
+            commit(draft);
+          }
+        }}
+        className="w-56 rounded-md border border-white/25 bg-black px-3 py-2 font-cond text-sm text-white placeholder:text-white/30"
+      />
+      <datalist id="mgl-clock-player-names">
+        {names.map((name) => (
+          <option key={name} value={name} />
+        ))}
+      </datalist>
+    </>
+  );
+}
+
 function ControlButton({
   children,
   onClick,

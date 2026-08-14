@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { LivePick, LiveTrade, TradePlayer, TradeSide } from "@/lib/draft-clock";
 import { isDark, sampleLogoColor } from "@/lib/draft-colors";
-import { POS_COLOR, sleeperPlayerImage } from "@/lib/player-images";
+import { DraftPlayerFace } from "@/components/draft-player-face";
 import type { TeamMeta } from "@/lib/types";
 
 /** Reference-pixel helper, matching the banner's scale (see draft-clock.tsx). */
@@ -20,36 +20,6 @@ interface Half {
   /** What this team receives — i.e. the other side's assets. */
   picks: LivePick[];
   players: TradePlayer[];
-}
-
-/** Sleeper headshot with a coloured position chip as the fallback, mirroring
- *  SleeperPlayerAvatar but sized in banner units rather than fixed pixels. */
-function PlayerFace({ player, ink }: { player: TradePlayer; ink: string }) {
-  const [failed, setFailed] = useState(false);
-  const size = px(26);
-
-  if (player.sleeperId && !failed) {
-    const { url, isLogo } = sleeperPlayerImage(player.sleeperId);
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={url}
-        alt={player.name}
-        onError={() => setFailed(true)}
-        className={`shrink-0 rounded-full border border-black/20 ${isLogo ? "bg-white object-contain p-1" : "object-cover"}`}
-        style={{ width: size, height: size, background: isLogo ? "#fff" : "rgba(0,0,0,0.15)" }}
-      />
-    );
-  }
-
-  return (
-    <div
-      className="grid shrink-0 place-items-center rounded-full font-cond font-bold text-white"
-      style={{ width: size, height: size, background: POS_COLOR[player.pos] ?? "#9aa1ad", fontSize: px(9), color: ink }}
-    >
-      {player.pos}
-    </div>
-  );
 }
 
 function HalfPanel({
@@ -124,7 +94,9 @@ function HalfPanel({
                 className={revealed ? "trade-asset flex items-center" : "flex items-center"}
                 style={{ gap: px(5), animationDelay: `${assetBaseDelay + i * ASSET_STAGGER_MS}ms` }}
               >
-                {row.player && <PlayerFace player={row.player} ink={ink} />}
+                {row.player && (
+                  <DraftPlayerFace player={row.player} ink={ink} size={px(26)} chipFontSize={px(9)} />
+                )}
                 <div className="min-w-0">
                   <div
                     className="truncate font-cond font-extrabold uppercase leading-tight"
