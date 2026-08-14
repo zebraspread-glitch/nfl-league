@@ -138,6 +138,98 @@ body {
 }
 .live-dot { animation: livePulse 1.3s ease-in-out infinite; }
 
+/* Draft clock: broadcast-style hit when a pick is announced. A light wipe
+   sweeps the banner, the whole board flashes, the team name slides in and
+   "PICK IS IN" slams in from the right. */
+@keyframes draftWipe {
+  0%   { transform: translateX(-160%) skewX(-18deg); opacity: 0; }
+  12%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { transform: translateX(460%) skewX(-18deg); opacity: 0; }
+}
+
+@keyframes draftFlash {
+  0%   { opacity: 0.5; }
+  100% { opacity: 0; }
+}
+
+@keyframes draftSlam {
+  0%   { transform: scale(1.7) translateX(16%); opacity: 0; }
+  50%  { transform: scale(0.92) translateX(0); opacity: 1; }
+  72%  { transform: scale(1.06); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes draftSlideIn {
+  0%   { transform: translateX(-6%); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+/* Durations are staggered so the wipe reads as revealing the announcement:
+   flash first, name just behind it, then "PICK IS IN" lands last. */
+.draft-wipe { animation: draftWipe 1250ms cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+.draft-flash { animation: draftFlash 820ms ease-out both; }
+.draft-slam { animation: draftSlam 1050ms 160ms cubic-bezier(0.2, 1.1, 0.35, 1) both; transform-origin: right center; }
+.draft-slide-in { animation: draftSlideIn 800ms 80ms ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .draft-wipe, .draft-flash, .draft-slam, .draft-slide-in { animation: none; }
+}
+
+/* Trade alert: a staged reveal under the banner. The box drops in, the header
+   lands and starts glowing, each team's half wipes in from its outer edge, then
+   the assets stagger up and a shine sweeps the whole thing. */
+@keyframes draftBoxIn {
+  0%   { transform: translateY(-38%) scaleY(0.15); opacity: 0; }
+  55%  { transform: translateY(0) scaleY(1.05); opacity: 1; }
+  100% { transform: translateY(0) scaleY(1); opacity: 1; }
+}
+
+@keyframes draftHeaderIn {
+  0%   { transform: scale(1.6); opacity: 0; letter-spacing: 0.7em; }
+  100% { transform: scale(1); opacity: 1; letter-spacing: 0.25em; }
+}
+
+@keyframes draftAlertPulse {
+  0%, 100% { filter: drop-shadow(0 0 0 currentColor); }
+  50%      { filter: drop-shadow(0 0 0.5vw currentColor); }
+}
+
+@keyframes draftSideInLeft {
+  0%   { clip-path: inset(0 100% 0 0); }
+  100% { clip-path: inset(0 0 0 0); }
+}
+
+@keyframes draftSideInRight {
+  0%   { clip-path: inset(0 0 0 100%); }
+  100% { clip-path: inset(0 0 0 0); }
+}
+
+@keyframes draftAssetIn {
+  0%   { transform: translateY(60%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes draftShine {
+  0%   { transform: translateX(-140%) skewX(-18deg); opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { transform: translateX(560%) skewX(-18deg); opacity: 0; }
+}
+
+.trade-box { animation: draftBoxIn 720ms cubic-bezier(0.2, 0.9, 0.3, 1) both; transform-origin: top center; }
+.trade-header { animation: draftHeaderIn 700ms 260ms cubic-bezier(0.2, 1, 0.3, 1) both; }
+.trade-glow { animation: draftAlertPulse 1.6s 1s ease-in-out infinite both; }
+.trade-side-left { animation: draftSideInLeft 640ms 950ms cubic-bezier(0.3, 0.8, 0.3, 1) both; }
+.trade-side-right { animation: draftSideInRight 640ms 1500ms cubic-bezier(0.3, 0.8, 0.3, 1) both; }
+.trade-asset { animation: draftAssetIn 440ms cubic-bezier(0.2, 1.1, 0.35, 1) both; }
+.trade-shine { animation: draftShine 1500ms 2300ms ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .trade-box, .trade-header, .trade-glow, .trade-side-left,
+  .trade-side-right, .trade-asset, .trade-shine { animation: none; }
+}
+
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 9999px; }
 ::-webkit-scrollbar-track { background: transparent; }
