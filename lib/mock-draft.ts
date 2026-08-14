@@ -214,7 +214,10 @@ function withUnderdogData<T extends MockPlayer>(player: T): T {
 export function attachSleeperIds<T extends MockPlayer>(players: T[], nameToId: Map<string, string>): T[] {
   return players.map((p) => {
     if (p.pos === "DEF") return { ...p, sleeperId: p.proTeam };
-    const id = nameToId.get(normalizeName(p.name));
+    // Position first, so a shared name resolves to our man rather than to
+    // whoever the bare name happens to rank highest (getPlayerNameToIdMap).
+    const name = normalizeName(p.name);
+    const id = nameToId.get(`${name}|${p.pos}`) ?? nameToId.get(name);
     return id ? { ...p, sleeperId: id } : p;
   });
 }

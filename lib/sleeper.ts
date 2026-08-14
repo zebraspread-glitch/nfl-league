@@ -105,6 +105,8 @@ interface SleeperPlayer {
   position?: string;
   team?: string;
   injury_status?: string;
+  /** False once Sleeper retires a player, but they stay in the catalog forever. */
+  active?: boolean;
 }
 
 // --- Mapping helpers ---------------------------------------------------------
@@ -579,18 +581,44 @@ function normalizePlayerName(name: string): string {
 
 let nameToIdCache: Map<string, string> | null = null;
 
+/**
+ * Sleeper never drops a player from its catalog, so common names collide — there
+ * are two Lamar Jacksons in there, the Ravens QB and a cornerback. Rank the
+ * candidates so the fantasy-relevant one wins a bare-name lookup: on an NFL
+ * roster beats off it, and still-active beats retired.
+ */
+function nameMatchRank(p: SleeperPlayer): number {
+  return (p.team ? 2 : 0) + (p.active === false ? 0 : 1);
+}
+
 /** Name → Sleeper player id, for matching static/curated player lists (e.g. the mock draft
- *  pool) to Sleeper's own id scheme so they can use the real headshot CDN. */
+ *  pool) to Sleeper's own id scheme so they can use the real headshot CDN.
+ *
+ *  Every player is filed under two keys: `"name|POS"`, which separates
+ *  same-named players at different positions outright, and the bare `"name"` as
+ *  a fallback for when the caller's position label doesn't match Sleeper's.
+ *  Look the composite key up first — see attachSleeperIds. */
 export async function getPlayerNameToIdMap(): Promise<Map<string, string>> {
   if (nameToIdCache) return nameToIdCache;
   const catalog = await fetchPlayerCatalog();
   const map = new Map<string, string>();
+  const bestRank = new Map<string, number>();
+
   if (catalog) {
     for (const [id, p] of Object.entries(catalog)) {
       const full = p.full_name || [p.first_name, p.last_name].filter(Boolean).join(" ");
-      if (full) map.set(normalizePlayerName(full), id);
+      if (!full) continue;
+
+      const name = normalizePlayerName(full);
+      const rank = nameMatchRank(p);
+      for (const key of p.position ? [`${name}|${p.position}`, name] : [name]) {
+        if ((bestRank.get(key) ?? -1) >= rank) continue;
+        bestRank.set(key, rank);
+        map.set(key, id);
+      }
     }
   }
+
   nameToIdCache = map;
   return map;
 }
