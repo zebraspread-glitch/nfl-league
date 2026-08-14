@@ -93,11 +93,23 @@ function HalfPanel({
       }}
     >
       <div style={{ opacity: revealed ? 1 : 0 }}>
-        <div
-          className="font-cond font-bold uppercase"
-          style={{ fontSize: px(8), letterSpacing: "0.22em", opacity: 0.72 }}
-        >
-          {half.team.name} receive
+        <div className="flex items-center" style={{ gap: px(5) }}>
+          {half.team.logo && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={half.team.logo}
+              alt=""
+              aria-hidden
+              className="shrink-0 object-contain"
+              style={{ width: px(18), height: px(18) }}
+            />
+          )}
+          <div
+            className="font-cond font-bold uppercase"
+            style={{ fontSize: px(8), letterSpacing: "0.22em", opacity: 0.72 }}
+          >
+            {half.team.name} receive
+          </div>
         </div>
 
         {rows.length === 0 ? (

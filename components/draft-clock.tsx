@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   applyPickOverrides,
@@ -402,7 +402,21 @@ export function DraftClock({
 
   if (!current) {
     return (
-      <Shell>
+      <Shell
+        reserveControlSpace
+        overlay={
+          <Controls>
+            <button
+              onClick={back}
+              className="rounded-md border border-white/25 px-4 py-2 font-cond text-sm uppercase tracking-widest text-white/70"
+            >
+              Back to last pick
+            </button>
+            <ControlButton onClick={resetDraft}>Restart Draft</ControlButton>
+            <ExitLink />
+          </Controls>
+        }
+      >
         <Banner>
           <div className="flex h-full items-center justify-center">
             <div
@@ -413,22 +427,65 @@ export function DraftClock({
             </div>
           </div>
         </Banner>
-        <Controls>
-          <button
-            onClick={back}
-            className="rounded-md border border-white/25 px-4 py-2 font-cond text-sm uppercase tracking-widest text-white/70"
-          >
-            Back to last pick
-          </button>
-          <ControlButton onClick={resetDraft}>Restart Draft</ControlButton>
-          <ExitLink />
-        </Controls>
       </Shell>
     );
   }
 
   return (
-    <Shell reserveControlSpace={showControls}>
+    <Shell
+      reserveControlSpace={showControls}
+      overlay={
+        <>
+          {tradeOpen && (
+            <DraftTradePanel
+              picks={picks.slice(state.index)}
+              teams={TEAMS}
+              playerNames={playerNames}
+              tradeCount={tradeCount}
+              onAnnounce={announceTrade}
+              onUndo={undoTrades}
+              onClose={() => setTradeOpen(false)}
+            />
+          )}
+
+          {showControls ? (
+            <Controls>
+              <button
+                onClick={primary}
+                className="rounded-md px-5 py-2.5 font-cond text-lg font-extrabold uppercase tracking-wider text-black"
+                style={{ background: VOLT }}
+              >
+                {primaryLabel}
+              </button>
+              <ControlButton onClick={togglePause} disabled={state.phase !== "clock"}>
+                {running ? "Pause" : "Start"}
+              </ControlButton>
+              <ControlButton onClick={() => addSeconds(30)}>+30s</ControlButton>
+              <ControlButton onClick={resetClock}>Reset Clock</ControlButton>
+              <ControlButton onClick={back}>Back</ControlButton>
+              <ControlButton onClick={() => setTradeOpen((v) => !v)}>
+                Trade (T){tradeCount > 0 ? ` - ${tradeCount}` : ""}
+              </ControlButton>
+              <ControlButton onClick={resetDraft}>Restart Draft</ControlButton>
+              <ControlButton onClick={toggleFullscreen}>Fullscreen</ControlButton>
+              <ControlButton onClick={() => setShowControls(false)}>Hide Controls</ControlButton>
+              <span className="font-cond text-sm uppercase tracking-widest text-white/35">
+                {current.team.name} - pick {current.overall} of {picks.length}
+                {state.phase === "clock" && !running && !expired && (notStarted ? " - ready" : " - paused")}
+              </span>
+              <ExitLink />
+            </Controls>
+          ) : (
+            <button
+              onClick={() => setShowControls(true)}
+              className="absolute bottom-3 right-3 rounded-md border border-white/10 px-2.5 py-1 font-cond text-[10px] uppercase tracking-widest text-white/20"
+            >
+              Controls
+            </button>
+          )}
+        </>
+      }
+    >
       <Banner>
         {/* Upcoming-picks strip: the team on the clock on a dark cell, the rest grey. */}
         <div className="flex h-[21.78%] items-stretch">
@@ -564,54 +621,6 @@ export function DraftClock({
           stage={tradeStage}
         />
       )}
-
-      {tradeOpen && (
-        <DraftTradePanel
-          picks={picks.slice(state.index)}
-          teams={TEAMS}
-          playerNames={playerNames}
-          tradeCount={tradeCount}
-          onAnnounce={announceTrade}
-          onUndo={undoTrades}
-          onClose={() => setTradeOpen(false)}
-        />
-      )}
-
-      {showControls ? (
-        <Controls>
-          <button
-            onClick={primary}
-            className="rounded-md px-5 py-2.5 font-cond text-lg font-extrabold uppercase tracking-wider text-black"
-            style={{ background: VOLT }}
-          >
-            {primaryLabel}
-          </button>
-          <ControlButton onClick={togglePause} disabled={state.phase !== "clock"}>
-            {running ? "Pause" : "Start"}
-          </ControlButton>
-          <ControlButton onClick={() => addSeconds(30)}>+30s</ControlButton>
-          <ControlButton onClick={resetClock}>Reset Clock</ControlButton>
-          <ControlButton onClick={back}>Back</ControlButton>
-          <ControlButton onClick={() => setTradeOpen((v) => !v)}>
-            Trade (T){tradeCount > 0 ? ` - ${tradeCount}` : ""}
-          </ControlButton>
-          <ControlButton onClick={resetDraft}>Restart Draft</ControlButton>
-          <ControlButton onClick={toggleFullscreen}>Fullscreen</ControlButton>
-          <ControlButton onClick={() => setShowControls(false)}>Hide Controls</ControlButton>
-          <span className="font-cond text-sm uppercase tracking-widest text-white/35">
-            {current.team.name} - pick {current.overall} of {picks.length}
-            {state.phase === "clock" && !running && !expired && (notStarted ? " - ready" : " - paused")}
-          </span>
-          <ExitLink />
-        </Controls>
-      ) : (
-        <button
-          onClick={() => setShowControls(true)}
-          className="absolute bottom-3 right-3 rounded-md border border-white/10 px-2.5 py-1 font-cond text-[10px] uppercase tracking-widest text-white/20"
-        >
-          Controls
-        </button>
-      )}
     </Shell>
   );
 }
@@ -619,23 +628,86 @@ export function DraftClock({
 /** Black surround, with the banner centred at the reference aspect ratio. */
 function Shell({
   children,
-  controls,
+  overlay,
   reserveControlSpace,
 }: {
   children: React.ReactNode;
-  controls?: React.ReactNode;
+  /** Pinned to the shell, outside the scaled stack: controls and the trade form.
+   *  A transform makes its subtree the containing block, so anything absolutely
+   *  positioned against the shell has to live here rather than in children. */
+  overlay?: React.ReactNode;
   /** Keeps the centred stack clear of the control bar when it is showing. */
   reserveControlSpace?: boolean;
 }) {
+  const frame = useRef<HTMLDivElement>(null);
+  const stack = useRef<HTMLDivElement>(null);
+  // Every size in the banner is a share of the viewport *width*, so a short
+  // window — a laptop with browser chrome, rather than the fullscreen TV — can
+  // leave the banner plus a trade alert taller than the space available. Scale
+  // the stack to fit instead of letting the bottom crop off.
+  const [scale, setScale] = useState(1);
+
+  // scrollHeight and clientHeight are layout measurements, which a transform
+  // doesn't affect, so applying the scale can't feed back in and oscillate —
+  // re-running this on a scale change settles rather than loops.
+  const fit = useCallback(() => {
+    const frameEl = frame.current;
+    const stackEl = stack.current;
+    if (!frameEl || !stackEl) return;
+
+    const { paddingTop, paddingBottom } = getComputedStyle(frameEl);
+    const available = frameEl.clientHeight - parseFloat(paddingTop) - parseFloat(paddingBottom);
+    const needed = stackEl.scrollHeight;
+    setScale(needed > 0 && needed > available ? available / needed : 1);
+  }, []);
+
+  // Measure after every render, so an alert appearing or gaining a row is caught
+  // in the same frame it paints — before the viewer sees it overflow. The scale
+  // can only be known by measuring, so the cascading render the rule warns about
+  // is the point here; it settles in one pass because setScale bails on an equal
+  // value and the measurements ignore the transform.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useLayoutEffect(fit);
+
+  // Picks up what a render doesn't: resizing the window, entering fullscreen for
+  // the TV, and late layout shifts as fonts or artwork load.
+  useEffect(() => {
+    const frameEl = frame.current;
+    const stackEl = stack.current;
+    if (!frameEl || !stackEl) return;
+
+    const observer = new ResizeObserver(fit);
+    observer.observe(frameEl);
+    observer.observe(stackEl);
+    // The observer covers both on its own in a normal browser; the listeners are
+    // the cheap guarantee that going fullscreen mid-draft can't leave the banner
+    // stuck at a smaller scale until the next render.
+    window.addEventListener("resize", fit);
+    document.addEventListener("fullscreenchange", fit);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", fit);
+      document.removeEventListener("fullscreenchange", fit);
+    };
+  }, [fit]);
+
   return (
     <div className="fixed inset-0 z-50 select-none bg-black text-white">
       <div
-        className="flex h-full flex-col items-center justify-center"
+        ref={frame}
+        className="flex h-full flex-col items-center justify-center overflow-hidden"
         style={{ paddingBottom: reserveControlSpace ? "7.5rem" : undefined }}
       >
-        {children}
+        <div
+          ref={stack}
+          className="flex w-full flex-col items-center"
+          style={{ transform: scale < 1 ? `scale(${scale})` : undefined }}
+        >
+          {children}
+        </div>
       </div>
-      {controls}
+      {overlay}
     </div>
   );
 }
