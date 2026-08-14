@@ -944,7 +944,7 @@ function SelectionTakeover({
 
   return (
     <div
-      className="fixed inset-0 z-[80] overflow-hidden bg-black font-cond uppercase text-white"
+      className="selection-reveal-root fixed inset-0 z-[80] overflow-hidden bg-black font-cond uppercase text-white"
       style={{ position: "fixed", inset: 0, zIndex: 2147483647, background: "#000000" }}
       onClick={(event) => event.stopPropagation()}
       onKeyDown={(event) => event.stopPropagation()}
@@ -964,18 +964,16 @@ function SelectionTakeover({
         }}
       />
       <div
-        className="takeover-sweep absolute inset-0"
+        className="absolute inset-0"
         style={{
           background: "linear-gradient(100deg, transparent 0%, rgba(255,255,255,0.24) 46%, transparent 72%)",
+          opacity: 0.28,
         }}
       />
-
-      <div aria-hidden className="takeover-flash absolute inset-0 bg-white" />
-
       <div
         aria-hidden
-        className="takeover-shine absolute inset-y-0 left-0 w-1/5"
-        style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.72), transparent)" }}
+        className="selection-reveal-scan pointer-events-none absolute inset-y-0 left-0 w-1/4"
+        style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent)" }}
       />
 
       {pick.team.logo && (
@@ -984,30 +982,22 @@ function SelectionTakeover({
           src={pick.team.logo}
           alt=""
           aria-hidden
-          className="takeover-crest pointer-events-none absolute right-[-4vw] top-1/2 object-contain"
-          style={{ width: "min(50vw, 62vh)", height: "min(50vw, 62vh)", opacity: 0.1 }}
+          className="pointer-events-none absolute right-[-4vw] top-1/2 object-contain"
+          style={{ width: "min(50vw, 62vh)", height: "min(50vw, 62vh)", opacity: 0.1, transform: "translateY(-50%)" }}
         />
       )}
 
-      <div
-        className="relative z-10 grid h-full min-h-0"
-        style={{
-          gridTemplateRows: "auto minmax(0, 1fr) auto",
-          gap: "clamp(16px, 2vh, 28px)",
-          padding: "clamp(24px, 3vw, 54px)",
-          paddingBottom: "clamp(32px, 4vh, 64px)",
-        }}
-      >
-        <div className="takeover-label flex items-center justify-between gap-6 pr-[12vw]">
-          <div className="flex min-w-0 items-center gap-5">
+      <div className="relative z-10 flex h-full min-h-0 flex-col overflow-hidden" style={{ padding: "clamp(22px, 3vw, 54px)" }}>
+        <div className="selection-reveal-stage flex shrink-0 items-center justify-between gap-6" style={{ minHeight: "clamp(64px, 9vh, 112px)", paddingRight: "clamp(10rem, 14vw, 17rem)" }}>
+          <div className="flex min-w-0 items-center gap-5 overflow-hidden">
             <div
-              className="font-extrabold tracking-[0.2em]"
+              className="shrink-0 font-extrabold tracking-[0.2em]"
               style={{ color: accent, fontSize: "clamp(1.25rem, 2vw, 2.6rem)" }}
             >
               MGL DRAFT
             </div>
-            <div className="h-[0.3rem] w-[10vw]" style={{ background: accent }} />
-            <div className="font-extrabold tracking-[0.18em]" style={{ fontSize: "clamp(1.1rem, 1.7vw, 2.2rem)" }}>
+            <div className="h-[0.3rem] min-w-14 flex-1 max-w-[13rem]" style={{ background: accent }} />
+            <div className="shrink-0 font-extrabold tracking-[0.18em]" style={{ fontSize: "clamp(1.1rem, 1.7vw, 2.2rem)" }}>
               THE PICK IS IN
             </div>
           </div>
@@ -1016,10 +1006,18 @@ function SelectionTakeover({
           </div>
         </div>
 
-        <div className="grid min-h-0 grid-cols-[minmax(20rem,38vw)_minmax(0,1fr)] items-center gap-[3.5vw]">
+        <div
+          className="grid min-h-0 flex-1 items-center"
+          style={{
+            gridTemplateColumns: "minmax(18rem, 40vw) minmax(0, 1fr)",
+            gap: "clamp(24px, 4vw, 84px)",
+            paddingBottom: "clamp(14px, 2vh, 34px)",
+            paddingTop: "clamp(12px, 2vh, 28px)",
+          }}
+        >
           <div
-            className="takeover-face relative min-h-0 overflow-hidden border border-white/18 bg-black/35 shadow-[0_2rem_5rem_rgba(0,0,0,0.45)]"
-            style={{ height: "min(66vh, 680px)" }}
+            className="selection-reveal-card relative h-full min-h-0 overflow-hidden border border-white/18 bg-black/35 shadow-[0_2rem_5rem_rgba(0,0,0,0.45)]"
+            style={{ maxHeight: "100%" }}
           >
             <PlayerHeroImage player={player} />
             <div
@@ -1051,74 +1049,80 @@ function SelectionTakeover({
             )}
           </div>
 
-          <div className="flex min-h-0 min-w-0 flex-col justify-center">
-            <div className="takeover-meta font-extrabold tracking-[0.16em] text-white/70" style={{ fontSize: "clamp(1rem, 1.5vw, 2rem)" }}>
+          <div className="flex min-h-0 min-w-0 flex-col justify-center overflow-hidden">
+            <div className="selection-reveal-stage font-extrabold tracking-[0.16em] text-white/70" style={{ fontSize: "clamp(1rem, 1.5vw, 2rem)" }}>
               {playerMeta || "Selected Player"}
             </div>
 
             <div
-              className="takeover-name mt-[1.8vh] max-w-[55vw] break-words font-extrabold leading-[0.86]"
+              className="selection-reveal-name mt-[1.6vh] min-w-0 break-words font-extrabold"
               style={{
                 color: "#ffffff",
-                fontSize: "clamp(4rem, 7.2vw, 9.2rem)",
+                fontSize: "clamp(3.2rem, 5.9vw, 7.1rem)",
+                letterSpacing: "-0.035em",
+                lineHeight: 0.9,
                 textShadow: "0 0.08em 0.24em rgba(0,0,0,0.5)",
               }}
             >
               {player.name}
             </div>
 
-            <div className="takeover-meta mt-[4vh] grid grid-cols-[auto_minmax(0,1fr)] items-center gap-[2vw]">
-              <div
-                className="grid place-items-center bg-white/95 p-[1.2vh] shadow-[0_1.2rem_3rem_rgba(0,0,0,0.35)]"
-                style={{ height: "clamp(116px, 16vh, 176px)", width: "clamp(116px, 16vh, 176px)" }}
-              >
-                {pick.team.logo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={pick.team.logo} alt={`${pick.team.name} logo`} className="h-full w-full object-contain" />
-                ) : (
-                  <span className="font-extrabold" style={{ color: background, fontSize: "clamp(2rem, 4vw, 5rem)" }}>
-                    {pick.team.abbrev}
-                  </span>
-                )}
+            <div className="mt-[3vh] grid min-h-0 grid-cols-2 gap-[1.2vw]">
+              <div className="selection-reveal-card grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-4 bg-black/42 p-4 shadow-[0_1rem_3rem_rgba(0,0,0,0.28)]">
+                <div className="grid place-items-center bg-white/94 p-3" style={{ height: "clamp(76px, 11vh, 130px)", width: "clamp(76px, 11vh, 130px)" }}>
+                  {nflLogo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={nflLogo} alt={`${player.proTeam} logo`} className="h-full w-full object-contain" />
+                  ) : (
+                    <span className="font-extrabold text-black" style={{ fontSize: "clamp(1.5rem, 3vw, 4rem)" }}>
+                      {player.proTeam || player.pos}
+                    </span>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <div className="font-bold tracking-[0.2em] text-white/58" style={{ fontSize: "clamp(0.75rem, 1.1vw, 1.35rem)" }}>
+                    NFL TEAM
+                  </div>
+                  <div className="truncate font-extrabold leading-none" style={{ fontSize: "clamp(1.8rem, 3.1vw, 4.4rem)" }}>
+                    {player.proTeam || "NFL"}
+                  </div>
+                </div>
               </div>
 
-              <div className="min-w-0">
-                <div className="font-bold tracking-[0.22em] text-white/62" style={{ fontSize: "clamp(0.85rem, 1.25vw, 1.6rem)" }}>
-                  DRAFTED TO
+              <div className="selection-reveal-card grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-4 bg-black/42 p-4 shadow-[0_1rem_3rem_rgba(0,0,0,0.28)]">
+                <div className="grid place-items-center bg-white/94 p-3" style={{ height: "clamp(76px, 11vh, 130px)", width: "clamp(76px, 11vh, 130px)" }}>
+                  {pick.team.logo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={pick.team.logo} alt={`${pick.team.name} logo`} className="h-full w-full object-contain" />
+                  ) : (
+                    <span className="font-extrabold" style={{ color: background, fontSize: "clamp(1.5rem, 3vw, 4rem)" }}>
+                      {pick.team.abbrev}
+                    </span>
+                  )}
                 </div>
-                <div
-                  className="font-extrabold leading-[0.9]"
-                  style={{ color: "#ffffff", fontSize: "clamp(2.5rem, 4.8vw, 6rem)", textShadow: "0 0.08em 0.2em rgba(0,0,0,0.35)" }}
-                >
-                  {pick.team.name}
+                <div className="min-w-0">
+                  <div className="font-bold tracking-[0.2em] text-white/58" style={{ fontSize: "clamp(0.75rem, 1.1vw, 1.35rem)" }}>
+                    DRAFTED TO
+                  </div>
+                  <div className="truncate font-extrabold leading-none" style={{ fontSize: "clamp(1.7rem, 2.8vw, 4rem)" }}>
+                    {pick.team.name}
+                  </div>
                 </div>
+              </div>
+            </div>
+
+            <div className="selection-reveal-stage mt-[2.4vh] flex flex-wrap gap-3">
+              <div className="bg-black/50 px-5 py-3 font-extrabold tracking-[0.18em] text-white" style={{ fontSize: "clamp(0.95rem, 1.35vw, 1.7rem)" }}>
+                ROUND {pick.round}
+              </div>
+              <div className="bg-black/50 px-5 py-3 font-extrabold tracking-[0.18em] text-white" style={{ fontSize: "clamp(0.95rem, 1.35vw, 1.7rem)" }}>
+                PICK {pick.slot}
+              </div>
+              <div className="px-5 py-3 font-extrabold tracking-[0.18em] text-black" style={{ background: accent, fontSize: "clamp(0.95rem, 1.35vw, 1.7rem)" }}>
+                OVERALL {pick.overall}
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="takeover-meta flex items-end justify-between gap-6">
-          <div className="flex flex-wrap gap-3">
-            <div className="bg-black/46 px-5 py-3 font-extrabold tracking-[0.18em] text-white" style={{ fontSize: "clamp(1rem, 1.45vw, 1.8rem)" }}>
-              ROUND {pick.round}
-            </div>
-            <div className="bg-black/46 px-5 py-3 font-extrabold tracking-[0.18em] text-white" style={{ fontSize: "clamp(1rem, 1.45vw, 1.8rem)" }}>
-              PICK {pick.slot}
-            </div>
-            <div className="px-5 py-3 font-extrabold tracking-[0.18em] text-black" style={{ background: accent, fontSize: "clamp(1rem, 1.45vw, 1.8rem)" }}>
-              OVERALL {pick.overall}
-            </div>
-          </div>
-
-          {nflLogo && player.proTeam && (
-            <div className="flex items-center gap-4 bg-black/36 px-5 py-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={nflLogo} alt={`${player.proTeam} logo`} className="object-contain" style={{ height: "clamp(42px, 5vh, 64px)", width: "clamp(42px, 5vh, 64px)" }} />
-              <div className="font-extrabold tracking-[0.18em]" style={{ fontSize: "clamp(1rem, 1.45vw, 1.8rem)" }}>
-                NFL TEAM {player.proTeam}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -1128,7 +1132,7 @@ function SelectionTakeover({
           event.stopPropagation();
           onNext();
         }}
-        className="takeover-meta absolute right-8 top-8 z-20 px-7 py-3 font-extrabold uppercase tracking-wider text-black shadow-[0_0_2rem_rgba(0,0,0,0.35)]"
+        className="absolute right-8 top-8 z-20 px-7 py-3 font-extrabold uppercase tracking-wider text-black shadow-[0_0_2rem_rgba(0,0,0,0.35)]"
         style={{ background: VOLT }}
       >
         Next Pick
@@ -1148,7 +1152,7 @@ function PlayerHeroImage({ player }: { player: TradePlayer }) {
         src={image.url}
         alt={player.name}
         onError={() => setFailed(true)}
-        className={image.isLogo ? "relative h-full w-full bg-white/92 object-contain p-[7vh]" : "relative h-full w-full object-cover object-top"}
+        className={image.isLogo ? "absolute inset-0 h-full w-full bg-white/92 object-contain p-[7vh]" : "absolute inset-0 h-full w-full object-cover object-top"}
       />
     );
   }

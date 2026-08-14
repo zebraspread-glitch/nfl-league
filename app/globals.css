@@ -230,45 +230,39 @@ body {
   .trade-side-right, .trade-asset, .trade-shine { animation: none; }
 }
 
-/* Selection takeover: the full-screen card that lands once a pick's player is
-   named. The team colour sweeps across from the left, the crest settles in
-   behind it, then the pick line, face, name and position stagger in on top and
-   a shine crosses the lot. Every resting value is also set inline on the
-   element, so the reduced-motion block below leaves a correct static card. */
-@keyframes draftTakeoverSweep {
-  0%   { clip-path: inset(0 100% 0 0); }
-  100% { clip-path: inset(0 0 0 0); }
+/* Selection reveal: full-screen pick card. These animations all end at the
+   exact static layout values so the card does not jump after the intro. */
+@keyframes selectionRevealRoot {
+  0%   { opacity: 0; filter: saturate(0.65) brightness(0.7); }
+  100% { opacity: 1; filter: saturate(1) brightness(1); }
 }
 
-@keyframes draftCrestIn {
-  0%   { transform: translate(14%, -50%) scale(0.82); opacity: 0; }
-  100% { transform: translate(0, -50%) scale(1); opacity: 0.18; }
+@keyframes selectionRevealStage {
+  0%   { opacity: 0; transform: translateY(18px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes draftTakeoverFace {
-  0%   { transform: scale(0.4); opacity: 0; }
-  60%  { transform: scale(1.08); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
+@keyframes selectionRevealName {
+  0%   { opacity: 0; transform: translateX(-28px); letter-spacing: 0.02em; }
+  100% { opacity: 1; transform: translateX(0); letter-spacing: -0.035em; }
 }
 
-@keyframes draftTakeoverName {
-  0%   { transform: translateX(-8%) scale(1.35); opacity: 0; }
-  55%  { transform: translateX(0) scale(0.97); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
+@keyframes selectionRevealScan {
+  0%   { transform: translateX(-160%) skewX(-16deg); opacity: 0; }
+  14%  { opacity: 0.85; }
+  78%  { opacity: 0.85; }
+  100% { transform: translateX(480%) skewX(-16deg); opacity: 0; }
 }
 
-.takeover-sweep { animation: draftTakeoverSweep 620ms cubic-bezier(0.2, 0.8, 0.25, 1) both; }
-.takeover-crest { animation: draftCrestIn 900ms 220ms cubic-bezier(0.2, 0.9, 0.3, 1) both; }
-.takeover-label { animation: draftSlideIn 620ms 340ms ease-out both; }
-.takeover-face { animation: draftTakeoverFace 720ms 520ms cubic-bezier(0.2, 1.05, 0.35, 1) both; }
-.takeover-name { animation: draftTakeoverName 760ms 640ms cubic-bezier(0.2, 1.05, 0.35, 1) both; transform-origin: left center; }
-.takeover-meta { animation: draftSlideIn 620ms 900ms ease-out both; }
-.takeover-flash { animation: draftFlash 700ms 380ms ease-out both; }
-.takeover-shine { animation: draftShine 1400ms 1000ms ease-out both; }
+.selection-reveal-root { animation: selectionRevealRoot 260ms ease-out both; }
+.selection-reveal-stage { animation: selectionRevealStage 520ms 90ms cubic-bezier(0.2, 0.85, 0.25, 1) both; }
+.selection-reveal-card { animation: selectionRevealStage 620ms 150ms cubic-bezier(0.2, 0.95, 0.25, 1) both; }
+.selection-reveal-name { animation: selectionRevealName 640ms 220ms cubic-bezier(0.2, 0.9, 0.25, 1) both; }
+.selection-reveal-scan { animation: selectionRevealScan 1150ms 180ms cubic-bezier(0.2, 0.75, 0.25, 1) both; }
 
 @media (prefers-reduced-motion: reduce) {
-  .takeover-sweep, .takeover-crest, .takeover-label, .takeover-face,
-  .takeover-name, .takeover-meta, .takeover-flash, .takeover-shine { animation: none; }
+  .selection-reveal-root, .selection-reveal-stage, .selection-reveal-card,
+  .selection-reveal-name, .selection-reveal-scan { animation: none; }
 }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
