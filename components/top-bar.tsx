@@ -28,6 +28,9 @@ const TITLES: Record<string, string> = {
   "/more": "More",
   "/power-rankings": "Power Rankings",
   "/keepers": "Keepers Board",
+  "/admin": "Admin",
+  "/admin/login": "Admin",
+  "/admin/draft": "Draft Clock",
 };
 
 function titleFor(pathname: string): string {
