@@ -1248,6 +1248,10 @@ function SelectionTakeover({
           aria-hidden
           className="pointer-events-none absolute overflow-hidden rounded-full"
           style={{
+            // Positioned inline as well as by class: this is a ~500px box, so
+            // if the utility sheet is ever missing (a stale rebuild in dev will
+            // do it) an in-flow medallion shoves the whole takeover off screen.
+            position: "absolute",
             right: "-6vw",
             top: "44%",
             transform: "translateY(-50%)",
@@ -1537,6 +1541,9 @@ function PlayerHeroImage({ player }: { player: TradePlayer }) {
         alt={player.name}
         onError={() => setFailed(true)}
         className={image.isLogo ? "absolute inset-0 h-full w-full bg-white/92 object-contain p-[7vh]" : "absolute inset-0 h-full w-full object-cover object-top"}
+        // Belt and braces, as on the franchise medallion: a full-size headshot
+        // that falls into normal flow drags the layout down with it.
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
       />
     );
   }
