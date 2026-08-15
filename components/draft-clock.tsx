@@ -190,6 +190,18 @@ export function DraftClock({
   const lastPick = state.index > 0 ? picks[state.index - 1] : undefined;
   const lastPlayer = lastPick ? playerByName.get(picked[lastPick.overall] ?? "") : undefined;
 
+  /** Every pick made so far, in draft order — what the strip rolls through
+   *  once it is done holding on the pick that just landed. */
+  const history = useMemo(() => {
+    const made: { pick: LivePick; player: TradePlayer }[] = [];
+    for (const pick of picks.slice(0, state.index)) {
+      const name = picked[pick.overall];
+      if (!name) continue;
+      made.push({ pick, player: playerByName.get(name) ?? { name, pos: "NFL" } });
+    }
+    return made;
+  }, [picked, picks, playerByName, state.index]);
+
   // Take each surface's colour from that team's own artwork (see sampleLogoColor).
   const logoSrc = current?.team.logo;
   const lastLogoSrc = lastPlayer ? lastPick?.team.logo : undefined;
@@ -612,10 +624,13 @@ export function DraftClock({
         }
       >
         {lastPick && lastPlayer && (
-          <LastPickStrip
+          // Keyed by pick so the hold restarts from the top every time a new
+          // selection lands.
+          <PickStrip
             key={lastPick.overall}
             pick={lastPick}
             player={lastPlayer}
+            history={history}
             background={(lastLogoSrc && logoColors[lastLogoSrc]) || lastPick.team.primary}
           />
         )}
@@ -863,62 +878,303 @@ function pickLabel(pick: LivePick) {
   return `${pick.round}.${String(pick.slot).padStart(2, "0")}`;
 }
 
+/** `#rrggbb` -> `rgba(...)`, for laying a franchise colour over the artwork. */
+function withAlpha(hex: string, alpha: number) {
+  const n = Number.parseInt(hex.slice(1), 16);
+  if (hex.length !== 7 || Number.isNaN(n)) return hex;
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+}
+
+/** How long the pick that just landed holds the strip before the roll starts. */
+const LAST_PICK_HOLD_MS = 30_000;
+/** Roll speed, as a share of the viewport width per second. */
+const TICKER_VW_PER_SECOND = 5.5;
+/** Rows in the roll run smaller than the held pick, so more than one is on
+ *  screen at a time and it reads as a ticker rather than a slideshow. */
+const TICKER_SCALE = 0.5;
+
 /**
- * The pick that just happened, sitting on top of the banner in the selecting
- * team's colour while the next team runs down their clock.
+ * One completed pick: crest, slot, franchise, headshot, player. `scale` shrinks
+ * it for the ticker, where several rows share the strip, from the full-width
+ * proportions it uses when a single pick has the strip to itself.
  */
-function LastPickStrip({
+function PickRow({
   pick,
   player,
-  background,
+  ink,
+  scale = 1,
 }: {
   pick: LivePick;
   player: TradePlayer;
-  background: string;
+  ink: string;
+  scale?: number;
 }) {
-  const ink = isDark(background) ? "#ffffff" : INK;
+  const size = (n: number) => px(n * scale);
 
   return (
-    <div
-      className="draft-slide-in flex w-screen items-center overflow-hidden font-cond uppercase"
-      style={{
-        background,
-        color: ink,
-        gap: px(6),
-        paddingLeft: px(9),
-        paddingRight: px(11),
-        paddingTop: px(3),
-        paddingBottom: px(3),
-      }}
-    >
+    <>
       {pick.team.logo && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={pick.team.logo}
           alt=""
           aria-hidden
-          className="shrink-0 object-contain"
-          style={{ width: px(20), height: px(20) }}
+          className="shrink-0 rounded-full border border-black/20 object-cover"
+          style={{ width: size(20), height: size(20) }}
         />
       )}
 
-      <span className="shrink-0 font-extrabold" style={{ fontSize: px(15) }}>
+      <span className="shrink-0 font-extrabold" style={{ fontSize: size(15) }}>
         {pickLabel(pick)}
       </span>
-      <span className="shrink-0 truncate font-bold" style={{ fontSize: px(11), opacity: 0.75 }}>
-        {pick.team.name}
+      <span className="shrink-0 font-bold tracking-wider" style={{ fontSize: size(12), opacity: 0.75 }}>
+        {pick.team.abbrev}
       </span>
 
-      <span aria-hidden className="shrink-0" style={{ fontSize: px(11), opacity: 0.4 }}>
+      <span aria-hidden className="shrink-0" style={{ fontSize: size(11), opacity: 0.4 }}>
         |
       </span>
 
-      <DraftPlayerFace player={player} ink={ink} size={px(20)} chipFontSize={px(8)} />
-      <span className="min-w-0 truncate font-extrabold" style={{ fontSize: px(15) }}>
+      <DraftPlayerFace player={player} ink={ink} size={size(20)} chipFontSize={size(8)} />
+      <span className="min-w-0 truncate font-extrabold" style={{ fontSize: size(15) }}>
         {player.name}
       </span>
-      <span className="shrink-0" style={{ fontSize: px(9), opacity: 0.65 }}>
+      <span className="shrink-0" style={{ fontSize: size(9), opacity: 0.65 }}>
         {[player.pos, player.proTeam].filter(Boolean).join(" · ")}
+      </span>
+    </>
+  );
+}
+
+/**
+ * The strip above the banner. It opens on the pick that just happened, in the
+ * selecting team's colour, and holds there for LAST_PICK_HOLD_MS — long enough
+ * for the room to read it. After that it becomes a ticker rolling through every
+ * pick of the draft so far, on repeat, until the next selection resets it.
+ */
+function PickStrip({
+  pick,
+  player,
+  history,
+  background,
+}: {
+  pick: LivePick;
+  player: TradePlayer;
+  /** Every pick made so far, oldest first. Includes `pick`. */
+  history: { pick: LivePick; player: TradePlayer }[];
+  background: string;
+}) {
+  // A one-pick draft has nothing to roll through, so it just keeps holding.
+  const canRoll = history.length > 1;
+  const [rolling, setRolling] = useState(false);
+
+  useEffect(() => {
+    if (!canRoll) return;
+    const id = setTimeout(() => setRolling(true), LAST_PICK_HOLD_MS);
+    return () => clearTimeout(id);
+  }, [canRoll]);
+
+  if (!rolling) {
+    return (
+      <div
+        className="draft-slide-in flex w-screen items-center overflow-hidden font-cond uppercase"
+        style={{
+          background,
+          color: isDark(background) ? "#ffffff" : INK,
+          gap: px(6),
+          paddingLeft: px(9),
+          paddingRight: px(11),
+          paddingTop: px(3),
+          paddingBottom: px(3),
+        }}
+      >
+        <PickRow pick={pick} player={player} ink={isDark(background) ? "#ffffff" : INK} />
+      </div>
+    );
+  }
+
+  return <PickTicker history={history} />;
+}
+
+/**
+ * Every pick so far, sliding right to left on a loop. The list is rendered
+ * twice and the row is translated by exactly half its width, so the second copy
+ * is under the first at the moment the animation restarts and the seam never
+ * shows.
+ */
+function PickTicker({ history }: { history: { pick: LivePick; player: TradePlayer }[] }) {
+  const row = useRef<HTMLDivElement>(null);
+  const [duration, setDuration] = useState(0);
+
+  // Duration is derived from the measured width so the strip moves at one
+  // constant speed whether three picks have been made or all 132.
+  const measure = useCallback(() => {
+    const el = row.current;
+    if (!el) return;
+    const copyWidth = el.scrollWidth / 2;
+    const perSecond = (window.innerWidth * TICKER_VW_PER_SECOND) / 100;
+    setDuration(perSecond > 0 ? copyWidth / perSecond : 0);
+  }, []);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useLayoutEffect(measure);
+
+  useEffect(() => {
+    const el = row.current;
+    if (!el) return;
+    // Headshots load late and each one widens the row, so watch it rather than
+    // measuring once and running at the wrong speed for the rest of the night.
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    window.addEventListener("resize", measure);
+    document.addEventListener("fullscreenchange", measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
+      document.removeEventListener("fullscreenchange", measure);
+    };
+  }, [measure]);
+
+  return (
+    <div className="flex w-screen items-stretch overflow-hidden font-cond uppercase" style={{ background: "#0b1220", color: "#ffffff" }}>
+      <div
+        className="z-10 flex shrink-0 items-center font-extrabold tracking-widest"
+        style={{
+          background: VOLT,
+          color: INK,
+          fontSize: px(9),
+          paddingLeft: px(9),
+          paddingRight: px(9),
+        }}
+      >
+        Picks so far
+      </div>
+
+      <div className="relative min-w-0 flex-1 overflow-hidden">
+        <div
+          ref={row}
+          className="draft-ticker-roll flex w-max items-center"
+          style={{ animationDuration: duration > 0 ? `${duration}s` : undefined }}
+        >
+          {[0, 1].map((copy) => (
+            <div key={copy} className="flex shrink-0 items-center" aria-hidden={copy === 1}>
+              {history.map((entry) => (
+                <div
+                  key={entry.pick.overall}
+                  className="flex shrink-0 items-center border-l"
+                  style={{
+                    gap: px(6 * TICKER_SCALE),
+                    borderColor: "rgba(255,255,255,0.12)",
+                    borderLeftWidth: px(0.4),
+                    paddingLeft: px(9),
+                    paddingRight: px(9),
+                    paddingTop: px(3),
+                    paddingBottom: px(3),
+                  }}
+                >
+                  <PickRow pick={entry.pick} player={entry.player} ink="#ffffff" scale={TICKER_SCALE} />
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Sets the biggest font size, between `minVw` and `maxVw`, at which the text
+ * still fits its container on one line. A character count is too crude to size
+ * these by hand — "Brian Thomas Jr." is two characters shorter than "Amon-Ra
+ * St. Brown" and a good deal wider — and a name that wrapped or truncated mid-
+ * announcement would be the one thing on screen everyone is looking at.
+ */
+function FitText({
+  text,
+  maxVw,
+  minVw,
+  className,
+  style,
+}: {
+  text: string;
+  maxVw: number;
+  minVw: number;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState<number | null>(null);
+
+  // Same shape as Shell's fit: measure at the max size, so a wider window (or
+  // going fullscreen for the TV) lets the type grow back rather than only ever
+  // shrinking. The measurement ignores the size we then set, so it settles.
+  const fit = useCallback(() => {
+    const el = ref.current;
+    const parent = el?.parentElement;
+    if (!el || !parent) return;
+
+    const max = (window.innerWidth * maxVw) / 100;
+    const min = (window.innerWidth * minVw) / 100;
+    el.style.fontSize = `${max}px`;
+    const room = parent.clientWidth;
+    const needed = el.scrollWidth;
+    const next = needed > room ? Math.max(min, Math.floor((max * room) / needed)) : max;
+    el.style.fontSize = `${next}px`;
+    setSize(next);
+  }, [maxVw, minVw]);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useLayoutEffect(fit);
+
+  useEffect(() => {
+    window.addEventListener("resize", fit);
+    document.addEventListener("fullscreenchange", fit);
+    return () => {
+      window.removeEventListener("resize", fit);
+      document.removeEventListener("fullscreenchange", fit);
+    };
+  }, [fit]);
+
+  return (
+    <div ref={ref} className={className} style={{ ...style, fontSize: size ?? undefined, whiteSpace: "nowrap" }}>
+      {text}
+    </div>
+  );
+}
+
+/** One segment of the round/pick/overall bar. */
+function MetaCell({
+  label,
+  value,
+  fill,
+  ink,
+}: {
+  label: string;
+  value: number;
+  /** Set to paint the segment in the accent (used for the overall number). */
+  fill?: string;
+  ink?: string;
+}) {
+  return (
+    <div
+      className="flex flex-col items-center justify-center border-l border-white/10"
+      style={{
+        gap: "clamp(2px, 0.4vh, 6px)",
+        minWidth: "clamp(64px, 7vw, 130px)",
+        padding: "clamp(8px, 0.9vh, 18px) clamp(8px, 0.9vw, 20px)",
+        background: fill ?? "rgba(0,0,0,0.3)",
+        color: fill ? ink : "#ffffff",
+      }}
+    >
+      <span
+        className="font-bold leading-none tracking-[0.22em]"
+        style={{ fontSize: "clamp(0.6rem, 0.82vw, 1rem)", opacity: fill ? 0.72 : 0.5 }}
+      >
+        {label}
+      </span>
+      <span className="font-extrabold leading-none" style={{ fontSize: "clamp(1.3rem, 2.1vw, 2.7rem)" }}>
+        {value}
       </span>
     </div>
   );
@@ -938,9 +1194,21 @@ function SelectionTakeover({
   onNext: () => void;
 }) {
   const secondary = pick.team.secondary || background;
-  const playerMeta = [player.pos, player.proTeam].filter(Boolean).join(" - ");
+  const playerMeta = [player.pos, player.proTeam].filter(Boolean).join(" · ");
   const nflLogo = proTeamLogoUrl(player.proTeam);
   const pickText = pickLabel(pick);
+  // The banner picks a dark accent for teams whose colour is light, but this
+  // screen always resolves to a near-black composition — a dark accent would
+  // disappear on it, so fall back to the broadcast volt.
+  const hi = isDark(accent) ? VOLT : accent;
+  const onHi = isDark(hi) ? "#ffffff" : "#000000";
+  // The header sits on the top-left corner, the one part of the frame still in
+  // full team colour. Volt on a light franchise (gold, teal) is unreadable
+  // there, so that corner alone flips to ink.
+  const onTeam = isDark(background);
+  const headerAccent = onTeam ? hi : INK;
+  const headerInk = onTeam ? "rgba(255,255,255,0.82)" : "rgba(11,18,32,0.78)";
+  const pad = "clamp(20px, 2.7vw, 52px)";
 
   return (
     <div
@@ -949,194 +1217,310 @@ function SelectionTakeover({
       onClick={(event) => event.stopPropagation()}
       onKeyDown={(event) => event.stopPropagation()}
     >
+      {/* The team's colour, driven diagonally into near-black so type on the
+          right half always has a dark, even bed to sit on. */}
       <div
+        aria-hidden
         className="absolute inset-0"
-        style={{
-          background: `linear-gradient(125deg, ${background} 0%, ${secondary} 37%, #030712 74%, #01030a 100%)`,
-        }}
+        style={{ background: `linear-gradient(118deg, ${background} 0%, ${secondary} 32%, #0a1020 70%, #01030a 100%)` }}
       />
+      {/* The dark half is the franchise's too: its colours come back as glows in
+          the corners the gradient has already faded out, so the whole frame is
+          in team colour without ever putting a mid-tone behind the type. */}
       <div
         aria-hidden
         className="absolute inset-0"
         style={{
-          background:
-            "radial-gradient(circle at 18% 12%, rgba(255,255,255,0.24), transparent 23%), radial-gradient(circle at 80% 72%, rgba(210,236,31,0.18), transparent 28%), linear-gradient(115deg, rgba(2,6,23,0.04) 0%, rgba(2,6,23,0.56) 52%, rgba(2,6,23,0.88) 100%)",
+          background: [
+            `radial-gradient(70% 60% at 96% 88%, ${withAlpha(secondary, 0.5)}, transparent 72%)`,
+            `radial-gradient(55% 50% at 78% 8%, ${withAlpha(background, 0.42)}, transparent 74%)`,
+            "radial-gradient(60% 55% at 10% 6%, rgba(255,255,255,0.24), transparent 70%)",
+          ].join(", "),
         }}
       />
+      {/* Franchise artwork as a soft medallion, bleeding off the right edge.
+          Several franchise "logos" are photographs, so it is knocked down to a
+          duotone in the team's own colour and masked to a circle that fades out
+          before its edge — that way a photo reads as branding rather than as a
+          stray picture someone left on the screen. */}
+      {pick.team.logo && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute overflow-hidden rounded-full"
+          style={{
+            right: "-6vw",
+            top: "44%",
+            transform: "translateY(-50%)",
+            width: "min(52vh, 34vw)",
+            height: "min(52vh, 34vw)",
+            opacity: 0.26,
+            isolation: "isolate",
+            maskImage: "radial-gradient(circle at 50% 50%, #000 38%, transparent 70%)",
+            WebkitMaskImage: "radial-gradient(circle at 50% 50%, #000 38%, transparent 70%)",
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={pick.team.logo}
+            alt=""
+            className="h-full w-full object-cover"
+            style={{ filter: "grayscale(1) contrast(1.15)" }}
+          />
+          <div className="absolute inset-0" style={{ background: secondary, mixBlendMode: "color" }} />
+        </div>
+      )}
+      {/* Broadcast pinstripe, faint enough to read as texture rather than lines. */}
       <div
+        aria-hidden
+        className="absolute inset-0 opacity-[0.05]"
+        style={{ backgroundImage: "repeating-linear-gradient(115deg, #ffffff 0 2px, transparent 2px 15px)" }}
+      />
+      <div
+        aria-hidden
         className="absolute inset-0"
-        style={{
-          background: "linear-gradient(100deg, transparent 0%, rgba(255,255,255,0.24) 46%, transparent 72%)",
-          opacity: 0.28,
-        }}
+        style={{ background: "radial-gradient(125% 105% at 50% 45%, transparent 32%, rgba(0,0,0,0.66) 100%)" }}
       />
       <div
         aria-hidden
         className="selection-reveal-scan pointer-events-none absolute inset-y-0 left-0 w-1/4"
         style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent)" }}
       />
+      <div
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-[0.28rem]"
+        style={{ background: `linear-gradient(90deg, ${background} 0%, ${secondary} 42%, ${hi} 100%)` }}
+      />
 
-      {pick.team.logo && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={pick.team.logo}
-          alt=""
-          aria-hidden
-          className="pointer-events-none absolute right-[-4vw] top-1/2 object-contain"
-          style={{ width: "min(50vw, 62vh)", height: "min(50vw, 62vh)", opacity: 0.1, transform: "translateY(-50%)" }}
-        />
-      )}
+      <div
+        className="relative z-10 flex h-full min-h-0 flex-col overflow-hidden"
+        style={{ padding: pad, gap: "clamp(12px, 2vh, 30px)" }}
+      >
+        <header className="selection-reveal-stage flex shrink-0 items-center justify-between" style={{ gap: "clamp(16px, 2vw, 40px)" }}>
+          <div className="flex min-w-0 items-center" style={{ gap: "clamp(10px, 1.1vw, 22px)" }}>
+            <span aria-hidden className="block shrink-0" style={{ width: "0.5rem", height: "clamp(1.7rem, 2.7vw, 3.4rem)", background: headerAccent }} />
+            <span className="shrink-0 font-extrabold tracking-[0.22em]" style={{ color: headerAccent, fontSize: "clamp(1rem, 1.7vw, 2.3rem)" }}>
+              MGL Draft
+            </span>
+            <span className="min-w-0 truncate font-extrabold tracking-[0.2em]" style={{ color: headerInk, fontSize: "clamp(0.9rem, 1.45vw, 2rem)" }}>
+              The pick is in
+            </span>
+          </div>
 
-      <div className="relative z-10 flex h-full min-h-0 flex-col overflow-hidden" style={{ padding: "clamp(22px, 3vw, 54px)" }}>
-        <div className="selection-reveal-stage flex shrink-0 items-center justify-between gap-6" style={{ minHeight: "clamp(64px, 9vh, 112px)", paddingRight: "clamp(10rem, 14vw, 17rem)" }}>
-          <div className="flex min-w-0 items-center gap-5 overflow-hidden">
-            <div
-              className="shrink-0 font-extrabold tracking-[0.2em]"
-              style={{ color: accent, fontSize: "clamp(1.25rem, 2vw, 2.6rem)" }}
+          <div className="flex shrink-0 items-center" style={{ gap: "clamp(10px, 1.1vw, 22px)" }}>
+            {pick.team.logo && (
+              <div
+                className="grid shrink-0 place-items-center overflow-hidden rounded-full bg-white/95"
+                style={{
+                  height: "clamp(2.2rem, 3.4vw, 4.2rem)",
+                  width: "clamp(2.2rem, 3.4vw, 4.2rem)",
+                  boxShadow: `0 0 0 0.2rem ${secondary}, 0 0 1.6rem ${withAlpha(secondary, 0.55)}`,
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={pick.team.logo} alt={`${pick.team.name} logo`} className="h-full w-full object-cover" />
+              </div>
+            )}
+
+            <div className="flex shrink-0 items-stretch overflow-hidden rounded-md">
+            <span
+              className="flex items-center bg-black/55 font-bold tracking-[0.24em] text-white/60"
+              style={{ fontSize: "clamp(0.7rem, 1vw, 1.25rem)", padding: "0 clamp(10px, 0.9vw, 18px)" }}
             >
-              MGL DRAFT
-            </div>
-            <div className="h-[0.3rem] min-w-14 flex-1 max-w-[13rem]" style={{ background: accent }} />
-            <div className="shrink-0 font-extrabold tracking-[0.18em]" style={{ fontSize: "clamp(1.1rem, 1.7vw, 2.2rem)" }}>
-              THE PICK IS IN
+              Pick
+            </span>
+            <span
+              className="flex items-center font-extrabold tabular-nums"
+              style={{
+                background: hi,
+                color: onHi,
+                fontSize: "clamp(1.1rem, 1.75vw, 2.3rem)",
+                padding: "clamp(6px, 0.7vh, 12px) clamp(12px, 1.1vw, 22px)",
+              }}
+            >
+              {pickText}
+            </span>
             </div>
           </div>
-          <div className="shrink-0 bg-black/50 px-5 py-3 font-extrabold tracking-[0.18em]" style={{ fontSize: "clamp(1rem, 1.45vw, 1.8rem)" }}>
-            PICK {pickText}
-          </div>
-        </div>
+        </header>
 
         <div
-          className="grid min-h-0 flex-1 items-center"
-          style={{
-            gridTemplateColumns: "minmax(18rem, 40vw) minmax(0, 1fr)",
-            gap: "clamp(24px, 4vw, 84px)",
-            paddingBottom: "clamp(14px, 2vh, 34px)",
-            paddingTop: "clamp(12px, 2vh, 28px)",
-          }}
+          className="grid min-h-0 flex-1"
+          style={{ gridTemplateColumns: "minmax(0, 0.8fr) minmax(0, 1.2fr)", gap: "clamp(20px, 3vw, 64px)" }}
         >
           <div
-            className="selection-reveal-card relative h-full min-h-0 overflow-hidden border border-white/18 bg-black/35 shadow-[0_2rem_5rem_rgba(0,0,0,0.45)]"
-            style={{ maxHeight: "100%" }}
+            className="selection-reveal-card relative min-h-0 overflow-hidden rounded-[1.1rem] ring-1 ring-white/20"
+            style={{ boxShadow: `0 2.5rem 6rem rgba(0,0,0,0.6), 0 0 5rem ${withAlpha(secondary, 0.4)}` }}
           >
             <PlayerHeroImage player={player} />
             <div
               aria-hidden
               className="absolute inset-0"
-              style={{ background: "linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.54) 100%)" }}
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 24%, transparent 46%, rgba(2,4,10,0.88) 100%)",
+              }}
             />
 
-            <div className="absolute left-[1.5vw] top-[2vh] flex items-center gap-3">
-              <span className="grid h-16 w-16 place-items-center bg-black/78 font-extrabold" style={{ color: accent, fontSize: "clamp(1.3rem, 2vw, 2.4rem)" }}>
-                {player.pos}
-              </span>
-              {player.proTeam && (
-                <span className="bg-black/62 px-4 py-2 font-extrabold tracking-[0.18em]" style={{ fontSize: "clamp(1rem, 1.5vw, 1.9rem)" }}>
-                  {player.proTeam}
+            <div
+              className="absolute inset-x-0 bottom-0 flex items-end justify-between"
+              style={{ gap: "clamp(8px, 1vw, 18px)", padding: "clamp(12px, 1.4vw, 26px)", paddingBottom: "clamp(18px, 2vw, 34px)" }}
+            >
+              <div className="flex min-w-0 items-center" style={{ gap: "clamp(8px, 0.7vw, 14px)" }}>
+                <span
+                  className="shrink-0 rounded-md font-extrabold leading-none"
+                  style={{
+                    background: hi,
+                    color: onHi,
+                    fontSize: "clamp(1.1rem, 1.7vw, 2.2rem)",
+                    padding: "clamp(7px, 0.7vw, 14px) clamp(10px, 0.9vw, 18px)",
+                  }}
+                >
+                  {player.pos}
                 </span>
+                {player.proTeam && (
+                  <span
+                    className="shrink-0 rounded-md bg-black/60 font-extrabold tracking-[0.16em] text-white"
+                    style={{
+                      fontSize: "clamp(0.85rem, 1.25vw, 1.6rem)",
+                      padding: "clamp(7px, 0.7vw, 14px) clamp(10px, 0.9vw, 18px)",
+                    }}
+                  >
+                    {player.proTeam}
+                  </span>
+                )}
+              </div>
+
+              {nflLogo && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={nflLogo}
+                  alt=""
+                  aria-hidden
+                  className="shrink-0 object-contain drop-shadow-[0_0.8rem_1.6rem_rgba(0,0,0,0.6)]"
+                  style={{ height: "clamp(46px, 7vh, 92px)", width: "clamp(46px, 7vh, 92px)" }}
+                />
               )}
             </div>
 
-            {nflLogo && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={nflLogo}
-                alt=""
-                aria-hidden
-                className="absolute bottom-[2.2vh] right-[1.6vw] object-contain drop-shadow-[0_1rem_1.8rem_rgba(0,0,0,0.55)]"
-                style={{ height: "clamp(78px, 12vh, 140px)", width: "clamp(78px, 12vh, 140px)" }}
-              />
-            )}
+            <div aria-hidden className="absolute inset-x-0 bottom-0" style={{ height: "0.32rem", background: hi }} />
           </div>
 
-          <div className="flex min-h-0 min-w-0 flex-col justify-center overflow-hidden">
-            <div className="selection-reveal-stage font-extrabold tracking-[0.16em] text-white/70" style={{ fontSize: "clamp(1rem, 1.5vw, 2rem)" }}>
-              {playerMeta || "Selected Player"}
-            </div>
-
-            <div
-              className="selection-reveal-name mt-[1.6vh] min-w-0 break-words font-extrabold"
-              style={{
-                color: "#ffffff",
-                fontSize: "clamp(3.2rem, 5.9vw, 7.1rem)",
-                letterSpacing: "-0.035em",
-                lineHeight: 0.9,
-                textShadow: "0 0.08em 0.24em rgba(0,0,0,0.5)",
-              }}
-            >
-              {player.name}
-            </div>
-
-            <div className="mt-[3vh] grid min-h-0 grid-cols-2 gap-[1.2vw]">
-              <div className="selection-reveal-card grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-4 bg-black/42 p-4 shadow-[0_1rem_3rem_rgba(0,0,0,0.28)]">
-                <div className="grid place-items-center bg-white/94 p-3" style={{ height: "clamp(76px, 11vh, 130px)", width: "clamp(76px, 11vh, 130px)" }}>
-                  {nflLogo ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={nflLogo} alt={`${player.proTeam} logo`} className="h-full w-full object-contain" />
-                  ) : (
-                    <span className="font-extrabold text-black" style={{ fontSize: "clamp(1.5rem, 3vw, 4rem)" }}>
-                      {player.proTeam || player.pos}
-                    </span>
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <div className="font-bold tracking-[0.2em] text-white/58" style={{ fontSize: "clamp(0.75rem, 1.1vw, 1.35rem)" }}>
-                    NFL TEAM
-                  </div>
-                  <div className="truncate font-extrabold leading-none" style={{ fontSize: "clamp(1.8rem, 3.1vw, 4.4rem)" }}>
-                    {player.proTeam || "NFL"}
-                  </div>
-                </div>
+          {/* The info bar sits on the bottom edge, level with the portrait, and
+              the name centres in whatever is left above it. */}
+          <div className="flex min-h-0 min-w-0 flex-col" style={{ gap: "clamp(10px, 1.7vh, 24px)" }}>
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-center" style={{ gap: "clamp(6px, 1vh, 14px)" }}>
+              <div className="selection-reveal-stage flex min-w-0 items-center" style={{ gap: "clamp(8px, 0.8vw, 16px)" }}>
+                {nflLogo && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={nflLogo} alt="" aria-hidden className="shrink-0 object-contain" style={{ height: "clamp(22px, 2.6vh, 38px)" }} />
+                )}
+                <span className="min-w-0 truncate font-bold tracking-[0.28em] text-white/65" style={{ fontSize: "clamp(0.8rem, 1.15vw, 1.5rem)" }}>
+                  {playerMeta || "Selected player"}
+                </span>
               </div>
 
-              <div className="selection-reveal-card grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-4 bg-black/42 p-4 shadow-[0_1rem_3rem_rgba(0,0,0,0.28)]">
-                <div className="grid place-items-center bg-white/94 p-3" style={{ height: "clamp(76px, 11vh, 130px)", width: "clamp(76px, 11vh, 130px)" }}>
+              <FitText
+                text={player.name}
+                maxVw={7.4}
+                minVw={2.6}
+                className="selection-reveal-name min-w-0 font-extrabold text-white"
+                style={{
+                  letterSpacing: "-0.035em",
+                  lineHeight: 0.88,
+                  textShadow: "0 0.06em 0.3em rgba(0,0,0,0.6)",
+                }}
+              />
+
+              <div
+                aria-hidden
+                className="selection-reveal-rule"
+                style={{ height: "0.34rem", width: "clamp(5rem, 10vw, 13rem)", background: hi }}
+              />
+            </div>
+
+            {/* Who got him and where the pick came from, in one bar. Kept as a
+                single block so its bottom edge lines up with the portrait's. */}
+            <div
+              className="selection-reveal-card flex min-w-0 shrink-0 items-stretch overflow-hidden rounded-[0.9rem] border border-white/12"
+              style={{
+                borderLeft: `0.4rem solid ${hi}`,
+                background: `linear-gradient(90deg, ${withAlpha(background, 0.55)} 0%, ${withAlpha(secondary, 0.28)} 48%, rgba(255,255,255,0.05) 100%)`,
+              }}
+            >
+              <div
+                className="flex min-w-0 flex-1 items-center"
+                style={{ gap: "clamp(12px, 1.2vw, 26px)", padding: "clamp(10px, 1vw, 20px)" }}
+              >
+                <div
+                  className="grid shrink-0 place-items-center overflow-hidden rounded-full bg-white/95"
+                  style={{
+                    height: "clamp(56px, 8.6vh, 104px)",
+                    width: "clamp(56px, 8.6vh, 104px)",
+                    boxShadow: `0 0 0 0.18rem ${withAlpha(secondary, 0.9)}`,
+                  }}
+                >
                   {pick.team.logo ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={pick.team.logo} alt={`${pick.team.name} logo`} className="h-full w-full object-contain" />
+                    <img src={pick.team.logo} alt={`${pick.team.name} logo`} className="h-full w-full object-cover" />
                   ) : (
-                    <span className="font-extrabold" style={{ color: background, fontSize: "clamp(1.5rem, 3vw, 4rem)" }}>
+                    <span className="font-extrabold" style={{ color: background, fontSize: "clamp(1.2rem, 2.2vw, 3rem)" }}>
                       {pick.team.abbrev}
                     </span>
                   )}
                 </div>
-                <div className="min-w-0">
-                  <div className="font-bold tracking-[0.2em] text-white/58" style={{ fontSize: "clamp(0.75rem, 1.1vw, 1.35rem)" }}>
-                    DRAFTED TO
+
+                {/* flex-1 so the name measures against a width the flex layout
+                    fixes, rather than one its own font size decides. */}
+                <div className="min-w-0 flex-1">
+                  <div className="font-bold tracking-[0.26em] text-white/55" style={{ fontSize: "clamp(0.68rem, 0.95vw, 1.15rem)" }}>
+                    Drafted to
                   </div>
-                  <div className="truncate font-extrabold leading-none" style={{ fontSize: "clamp(1.7rem, 2.8vw, 4rem)" }}>
-                    {pick.team.name}
+                  <FitText
+                    text={pick.team.name}
+                    maxVw={3.1}
+                    minVw={1.15}
+                    className="min-w-0 font-extrabold leading-[1.05] text-white"
+                    style={{ letterSpacing: "-0.015em" }}
+                  />
+                  <div className="min-w-0 truncate font-bold tracking-[0.2em] text-white/45" style={{ fontSize: "clamp(0.64rem, 0.88vw, 1.05rem)" }}>
+                    {pick.team.manager}
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="selection-reveal-stage mt-[2.4vh] flex flex-wrap gap-3">
-              <div className="bg-black/50 px-5 py-3 font-extrabold tracking-[0.18em] text-white" style={{ fontSize: "clamp(0.95rem, 1.35vw, 1.7rem)" }}>
-                ROUND {pick.round}
-              </div>
-              <div className="bg-black/50 px-5 py-3 font-extrabold tracking-[0.18em] text-white" style={{ fontSize: "clamp(0.95rem, 1.35vw, 1.7rem)" }}>
-                PICK {pick.slot}
-              </div>
-              <div className="px-5 py-3 font-extrabold tracking-[0.18em] text-black" style={{ background: accent, fontSize: "clamp(0.95rem, 1.35vw, 1.7rem)" }}>
-                OVERALL {pick.overall}
+              <div className="flex shrink-0 items-stretch">
+                <MetaCell label="Round" value={pick.round} />
+                <MetaCell label="Pick" value={pick.slot} />
+                <MetaCell label="Overall" value={pick.overall} fill={hi} ink={onHi} />
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <button
-        type="button"
-        onClick={(event) => {
-          event.stopPropagation();
-          onNext();
-        }}
-        className="absolute right-8 top-8 z-20 px-7 py-3 font-extrabold uppercase tracking-wider text-black shadow-[0_0_2rem_rgba(0,0,0,0.35)]"
-        style={{ background: VOLT }}
-      >
-        Next Pick
-      </button>
+        {/* Footer keeps the operator's button out of the artwork, so nothing on
+            the TV feed has to leave a hole in the layout for it. */}
+        <footer className="flex shrink-0 items-center justify-between" style={{ gap: "clamp(12px, 1.5vw, 28px)" }}>
+          <span className="min-w-0 truncate font-bold tracking-[0.34em] text-white/25" style={{ fontSize: "clamp(0.62rem, 0.85vw, 1.05rem)" }}>
+            Space — next pick
+          </span>
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onNext();
+            }}
+            className="shrink-0 rounded-md font-extrabold uppercase tracking-[0.2em] shadow-[0_0_2rem_rgba(0,0,0,0.35)]"
+            style={{
+              background: hi,
+              color: onHi,
+              fontSize: "clamp(0.8rem, 1.05vw, 1.3rem)",
+              padding: "clamp(9px, 1vh, 16px) clamp(16px, 1.6vw, 32px)",
+            }}
+          >
+            Next Pick
+          </button>
+        </footer>
+      </div>
     </div>
   );
 }

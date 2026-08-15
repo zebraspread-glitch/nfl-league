@@ -254,15 +254,45 @@ body {
   100% { transform: translateX(480%) skewX(-16deg); opacity: 0; }
 }
 
+/* Draft strip ticker. The row holds two copies of the pick list, so shifting it
+   by half its width lands the second copy exactly where the first started and
+   the loop has no visible seam. Duration is set inline, from the measured
+   width, to keep the speed constant as the list grows. */
+@keyframes draftTickerRoll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.draft-ticker-roll {
+  animation-name: draftTickerRoll;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .draft-ticker-roll { animation: none; }
+}
+
+/* Accent rule under the player name, wiping out from the left edge. */
+@keyframes selectionRevealRule {
+  0%   { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+
 .selection-reveal-root { animation: selectionRevealRoot 260ms ease-out both; }
 .selection-reveal-stage { animation: selectionRevealStage 520ms 90ms cubic-bezier(0.2, 0.85, 0.25, 1) both; }
 .selection-reveal-card { animation: selectionRevealStage 620ms 150ms cubic-bezier(0.2, 0.95, 0.25, 1) both; }
 .selection-reveal-name { animation: selectionRevealName 640ms 220ms cubic-bezier(0.2, 0.9, 0.25, 1) both; }
 .selection-reveal-scan { animation: selectionRevealScan 1150ms 180ms cubic-bezier(0.2, 0.75, 0.25, 1) both; }
+.selection-reveal-rule {
+  transform-origin: left center;
+  animation: selectionRevealRule 520ms 420ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .selection-reveal-root, .selection-reveal-stage, .selection-reveal-card,
-  .selection-reveal-name, .selection-reveal-scan { animation: none; }
+  .selection-reveal-name, .selection-reveal-scan, .selection-reveal-rule { animation: none; }
 }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
