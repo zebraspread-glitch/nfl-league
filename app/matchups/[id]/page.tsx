@@ -82,10 +82,18 @@ export default async function MatchupPage({ params }: { params: Promise<{ id: st
   const homeValue = hasScores ? matchup.home.score : homeProj;
   const awayRecord = matchup.away.record ?? standingRecord(awayStanding);
   const homeRecord = matchup.home.record ?? standingRecord(homeStanding);
+  // "Min. Remaining" mirrors the NFL app: NFL game-minutes still to play across
+  // a team's starters, out of a full slate (every starter's game untouched).
+  const awayMinutes = minutesRemainingTotal(awayRoster);
+  const homeMinutes = minutesRemainingTotal(homeRoster);
+  const minutesMax = Math.max(
+    60 * Math.max(awayRoster?.starters.length ?? 0, homeRoster?.starters.length ?? 0),
+    1
+  );
 
   return (
     <div>
-      <div className="-mx-3 bg-card px-4 pb-4 pt-4 shadow-sm">
+      <Card className="mt-1 px-4 pb-4 pt-4">
         <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2">
           <HeaderAvatar side={matchup.away} rank={awayStanding?.rank} />
 
@@ -94,13 +102,9 @@ export default async function MatchupPage({ params }: { params: Promise<{ id: st
             <span className="h-9 w-px bg-border" />
             <HeaderScore value={matchup.home.score} leading={homeValue >= awayValue} align="left" />
 
-            <div className="text-right font-cond text-base tabular-nums text-text-muted">
-              {awayProj > 0 ? awayProj.toFixed(2) : ""}
-            </div>
+            <ProjectedTotal value={awayProj} leading={awayProj >= homeProj} align="right" />
             <span className="font-cond text-sm font-bold uppercase tracking-wide text-text-dim">vs</span>
-            <div className="text-left font-cond text-base tabular-nums text-text-muted">
-              {homeProj > 0 ? homeProj.toFixed(2) : ""}
-            </div>
+            <ProjectedTotal value={homeProj} leading={homeProj >= awayProj} align="left" />
           </div>
 
           <HeaderAvatar side={matchup.home} rank={homeStanding?.rank} />
@@ -122,7 +126,13 @@ export default async function MatchupPage({ params }: { params: Promise<{ id: st
             </div>
           </div>
         </div>
-      </div>
+
+        <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-x-3">
+          <MinutesRemaining minutes={awayMinutes} max={minutesMax} align="right" />
+          <span className="h-8 w-px bg-border" />
+          <MinutesRemaining minutes={homeMinutes} max={minutesMax} align="left" />
+        </div>
+      </Card>
 
       <MatchupTabs teams={teamsPanel} preview={previewPanel} />
     </div>
@@ -583,6 +593,9 @@ function SlotSection({
   muted?: boolean;
 }) {
   if (!rows.length) return null;
+  // The gold ring marks each side's top scorer in this section, like the app.
+  const awayTop = Math.max(0, ...rows.map((r) => r.away?.points ?? 0));
+  const homeTop = Math.max(0, ...rows.map((r) => r.home?.points ?? 0));
   return (
     <>
       <div className="-mx-3 mt-3 bg-section px-4 py-3">
@@ -592,12 +605,24 @@ function SlotSection({
         {rows.map((row, i) => (
           <Fragment key={i}>
             {row.away ? (
-              <StarterCell entry={row.away} align="left" status={status} muted={muted} />
+              <StarterCell
+                entry={row.away}
+                align="left"
+                status={status}
+                muted={muted}
+                top={row.away.points > 0 && row.away.points === awayTop}
+              />
             ) : (
               <EmptyCell slot={row.label} align="left" muted={muted} />
             )}
             {row.home ? (
-              <StarterCell entry={row.home} align="right" status={status} muted={muted} />
+              <StarterCell
+                entry={row.home}
+                align="right"
+                status={status}
+                muted={muted}
+                top={row.home.points > 0 && row.home.points === homeTop}
+              />
             ) : (
               <EmptyCell slot={row.label} align="right" muted={muted} />
             )}
@@ -625,6 +650,44 @@ function injuryBadge(status?: string): { label: string; color: string } | null {
     default:
       return null;
   }
+}
+
+function minutesRemainingTotal(roster: Roster | null): number {
+  if (!roster) return 0;
+  return roster.starters.reduce((acc, slot) => acc + (slot.entry?.minutesRemaining ?? 0), 0);
+}
+
+/** Projected team total under the live score — green for the side projected to
+ *  win it, amber for the side chasing. */
+function ProjectedTotal({ value, leading, align }: { value: number; leading: boolean; align: "left" | "right" }) {
+  if (!(value > 0)) return <div />;
+  return (
+    <div
+      className={`font-cond text-base italic tabular-nums ${align === "left" ? "text-left" : "text-right"} ${
+        leading ? "text-up" : "text-warn"
+      }`}
+    >
+      {value.toFixed(2)}
+    </div>
+  );
+}
+
+/** Teal progress bar showing how much NFL game time a side has left. Fills from
+ *  the centre outwards so the two teams mirror each other. */
+function MinutesRemaining({ minutes, max, align }: { minutes: number; max: number; align: "left" | "right" }) {
+  const pct = Math.max(0, Math.min(100, (minutes / max) * 100));
+  const left = align === "left";
+  return (
+    <div className="min-w-0">
+      <div className={`flex h-1.5 w-full overflow-hidden rounded-full bg-section ${left ? "" : "justify-end"}`}>
+        <span className="block h-full rounded-full bg-teal" style={{ width: `${pct}%` }} />
+      </div>
+      <div className={`mt-1 flex items-center justify-between text-xs text-text-muted ${left ? "" : "flex-row-reverse"}`}>
+        <span className="tabular-nums text-text">{Math.round(minutes)}</span>
+        <span className="truncate">Min. Remaining</span>
+      </div>
+    </div>
+  );
 }
 
 function projectedTotal(roster: Roster | null): number {
@@ -686,22 +749,29 @@ function StarterCell({
   align,
   status,
   muted = false,
+  top = false,
 }: {
   entry: RosterEntry;
   align: "left" | "right";
   status: string;
   muted?: boolean;
+  top?: boolean;
 }) {
   const left = align === "left";
   const showLogo = entry.position !== "DEF";
   const logo = showLogo ? proTeamLogoUrl(entry.proTeam) : undefined;
-  const when = entry.gameStarted ? status || "Final" : entry.gameWhen ?? "";
+  const live = Boolean(entry.gameLive);
+  // Live games show the clock; finished ones the result; the rest their kickoff.
+  const when = live ? entry.gameClock ?? "Live" : entry.gameStarted ? status || "Final" : entry.gameWhen ?? "";
 
   const badge = injuryBadge(entry.injuryStatus);
+  // Sleeper has no on-field flag, so a player in a live game counts as on the
+  // field unless he carries a designation that rules him out.
+  const benched = badge ? ["O", "IA", "SUS", "D"].includes(badge.label) : false;
 
   const head = (
     <div className={`flex items-center gap-1.5 ${left ? "" : "flex-row-reverse"}`}>
-      <div className="relative shrink-0">
+      <div className={`relative shrink-0 rounded-full ${top ? "ring-2 ring-gold ring-offset-2 ring-offset-card" : ""}`}>
         <SleeperPlayerAvatar sleeperId={entry.sleeperId ?? ""} pos={entry.position} name={entry.name} size="lg" />
         {badge && (
           <span
@@ -730,14 +800,26 @@ function StarterCell({
       ) : (
         <span className="score text-2xl text-text sm:text-3xl">—</span>
       )}
-      {entry.projected !== undefined && (
-        <div className="font-cond text-sm italic text-text-muted sm:text-base">{entry.projected.toFixed(2)}</div>
+      {live ? (
+        <div className={`mt-1 flex ${left ? "justify-end" : "justify-start"}`}>
+          <span
+            className={`rounded px-2 py-0.5 font-cond text-[11px] font-bold uppercase tracking-wide ${
+              benched ? "bg-section text-text-muted" : "bg-up text-white"
+            }`}
+          >
+            {benched ? "Sideline" : "On Field"}
+          </span>
+        </div>
+      ) : (
+        entry.projected !== undefined && (
+          <div className="font-cond text-sm italic text-text-muted sm:text-base">{entry.projected.toFixed(2)}</div>
+        )
       )}
     </div>
   );
 
   const content = (
-    <Card className={`${CELL_BOX} ${muted ? "bg-section" : ""}`}>
+    <Card className={`${CELL_BOX} ${live ? "shadow-md ring-1 ring-border-strong" : muted ? "bg-section" : "bg-row"}`}>
       <div className="px-3 pb-2.5 pt-3">
         <div className={`flex items-center ${left ? "" : "flex-row-reverse"}`}>
           {head}
@@ -759,7 +841,7 @@ function StarterCell({
 
       <div
         className={`mt-auto flex items-center justify-between gap-2 px-3 py-2 text-[11px] ${
-          muted ? "bg-row" : "bg-section"
+          live ? "bg-card" : "bg-section"
         } ${left ? "" : "flex-row-reverse"}`}
       >
         <span className="truncate text-text-muted">{entry.gameLabel ?? entry.proTeam ?? "—"}</span>

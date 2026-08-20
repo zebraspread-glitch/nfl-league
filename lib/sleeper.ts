@@ -431,6 +431,9 @@ export async function getRoster(teamId: number, week: number): Promise<Roster | 
       gameLabel: game?.label,
       gameWhen: game?.when,
       gameStarted: game?.started,
+      gameLive: game?.live,
+      gameClock: game?.clock,
+      minutesRemaining: game?.minutesRemaining,
       injuryStatus: meta?.injury_status || undefined,
     };
   };
@@ -676,6 +679,8 @@ interface SleeperScoreGame {
     home_score?: number;
     home_team?: string;
     is_in_progress?: boolean;
+    quarter_num?: number;
+    time_remaining?: string;
     is_over?: boolean;
     status?: string;
     date_time?: string;
@@ -766,6 +771,25 @@ interface TeamGameInfo {
   label: string;
   when: string;
   started: boolean;
+  /** In progress right now (kicked off, not yet final). */
+  live: boolean;
+  /** Live clock, e.g. "Q3 04:12" — only set while the game is in progress. */
+  clock?: string;
+  /** NFL minutes still to play, 0-60. Drives the "Min. Remaining" bars. */
+  minutesRemaining: number;
+}
+
+/** NFL game minutes still to play: a full 60 before kickoff, the rest of the
+ *  current quarter plus whatever quarters follow while live, 0 once final. */
+function minutesLeft(meta: SleeperScoreGame["metadata"], started: boolean, complete: boolean): number {
+  if (complete) return 0;
+  if (!started) return 60;
+  const quarter = meta?.quarter_num ?? 1;
+  const [mm = "0"] = (meta?.time_remaining ?? "15:00").split(":");
+  const inQuarter = Math.max(0, Math.min(15, Number(mm) || 0));
+  // Overtime (quarter 5+) is untimed as far as this estimate goes.
+  const quartersLeft = Math.max(0, 4 - quarter);
+  return quartersLeft * 15 + inQuarter;
 }
 
 /** Map each NFL team to its game this week, from that team's perspective ("CLE @ NE" vs "DEN vs DAL"). */
@@ -788,17 +812,28 @@ function gameInfoForWeek(
     const homeScore = scoreMeta?.home_score;
     const hasScore = started && typeof awayScore === "number" && typeof homeScore === "number";
 
+    const live = started && !complete;
+    // Live games read as a running score ("BUF 14 vs PHI 7"); finals keep the
+    // result letter; anything not yet kicked off is just the fixture.
     const awayLabel =
       hasScore && complete
         ? `${g.away} ${awayScore} @ ${g.home} ${homeScore} ((${resultLetter(awayScore, homeScore)}))`
+        : hasScore && live
+        ? `${g.away} ${awayScore} @ ${g.home} ${homeScore}`
         : `${g.away} @ ${g.home}`;
     const homeLabel =
       hasScore && complete
         ? `${g.home} ${homeScore} vs ${g.away} ${awayScore} ((${resultLetter(homeScore, awayScore)}))`
+        : hasScore && live
+        ? `${g.home} ${homeScore} vs ${g.away} ${awayScore}`
         : `${g.home} vs ${g.away}`;
 
-    map.set(g.away, { label: awayLabel, when, started });
-    map.set(g.home, { label: homeLabel, when, started });
+    const quarter = scoreMeta?.quarter_num;
+    const clock = live && quarter ? `Q${quarter} ${scoreMeta?.time_remaining ?? ""}`.trim() : undefined;
+    const remaining = minutesLeft(scoreMeta, started, complete);
+
+    map.set(g.away, { label: awayLabel, when, started, live, clock, minutesRemaining: remaining });
+    map.set(g.home, { label: homeLabel, when, started, live, clock, minutesRemaining: remaining });
   }
   return map;
 }

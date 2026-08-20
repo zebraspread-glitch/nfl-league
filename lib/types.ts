@@ -83,6 +83,12 @@ export interface RosterEntry {
   gameWhen?: string;
   /** True once the player's NFL game has kicked off (so we show actual points, not "—"). */
   gameStarted?: boolean;
+  /** True while the player's NFL game is in progress (drives the live card treatment). */
+  gameLive?: boolean;
+  /** Live clock for an in-progress game, e.g. "Q3 04:12". */
+  gameClock?: string;
+  /** Minutes of NFL game time still to be played for this player, 0-60. */
+  minutesRemaining?: number;
   /** Sleeper's injury designation, e.g. "Questionable", "Out", "IR", when present. */
   injuryStatus?: string;
 }

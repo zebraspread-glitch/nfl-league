@@ -89,7 +89,7 @@ export async function getAllGames(): Promise<Game[]> {
 // browsable on /games but excluded from every aggregation.
 
 export function playoffCutoffForSeason(season: number): number {
-  return season >= 2023 && season <= 2025 ? 8 : 6;
+  return season >= 2023 ? 8 : 6;
 }
 
 let playoffRankCache: Map<number, Map<number, number>> | null = null;

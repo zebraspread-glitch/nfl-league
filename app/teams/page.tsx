@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getMatchups, getSnapshot, getStandings } from "@/lib/sleeper";
 import { CURRENT_SEASON, getSeasonResults, HISTORY_SEASONS } from "@/lib/league-data";
-import { Card, EmptyState, Hexagon, PageIntro, TeamAvatar, rankBadgeTone } from "@/components/ui";
+import { Card, EmptyState, Hexagon, PageIntro, TeamAvatar } from "@/components/ui";
 import type { Matchup, MatchupStatus, SeasonResult, SeasonStanding, Standing, TeamMeta } from "@/lib/types";
 
 export const revalidate = 300;
@@ -81,7 +81,7 @@ export default async function LadderPage({
     : "rank";
   const dir: SortDir = dirParam === "asc" || dirParam === "desc" ? dirParam : defaultSortDir(sort);
 
-  const playoffCutoff = season === currentSeason ? 6 : playoffCutoffForSeason(season);
+  const playoffCutoff = playoffCutoffForSeason(season);
 
   let rows: LadderRow[] | null = null;
   if (season === currentSeason) {
@@ -285,7 +285,7 @@ function HistoricalLadderSwitch({ season, active }: { season: number; active: Hi
 }
 
 function playoffCutoffForSeason(season: number): number {
-  return season >= 2023 && season <= 2025 ? 8 : 6;
+  return season >= 2023 ? 8 : 6;
 }
 
 function regularSeasonRows(season: SeasonResult): SeasonStanding[] {
@@ -393,24 +393,56 @@ function LadderTable({
   season: number;
   view: LadderView;
 }) {
+  const rankOrder = sort === "rank" && dir === "asc";
   return (
     <Card>
       <LadderHeader sort={sort} dir={dir} season={season} view={view} />
-      {rows.map((row, i) => (
-        <LadderRowView key={row.key} row={row} index={i} view={view} />
-      ))}
-      <div className="flex items-center gap-2 border-t border-border px-3 py-2 text-xs text-text-muted">
-        <span className="hexagon inline-block h-3.5 w-3 bg-teal" /> Top {playoffCutoff} make the playoffs
-      </div>
+      {rows.map((row, i) => {
+        const rowView = (
+          <LadderRowView key={row.key} row={row} index={i} view={view} playoffCutoff={playoffCutoff} />
+        );
+        // The cutoff band only reads correctly while the ladder is in rank order.
+        return rankOrder && row.rank === playoffCutoff + 1 ? (
+          <div key={row.key}>
+            <div className="bg-bg px-4 py-3 font-cond text-base font-semibold text-text-muted">
+              Out of playoffs if season ended today
+            </div>
+            {rowView}
+          </div>
+        ) : (
+          rowView
+        );
+      })}
+      {!rankOrder && (
+        <div className="flex items-center gap-2 border-t border-border px-3 py-2 text-xs text-text-muted">
+          <span className="hexagon inline-block h-3.5 w-3 bg-teal" /> Top {playoffCutoff} make the playoffs
+        </div>
+      )}
     </Card>
   );
 }
 
-function LadderRowView({ row, index, view }: { row: LadderRow; index: number; view: LadderView }) {
+function LadderRowView({
+  row,
+  index,
+  view,
+  playoffCutoff,
+}: {
+  row: LadderRow;
+  index: number;
+  view: LadderView;
+  playoffCutoff: number;
+}) {
+  const inPlayoffs = row.rank <= playoffCutoff;
   const content = (
     <>
-      <span className="flex w-9 justify-center">
-        <Hexagon value={row.rank} tone={rankBadgeTone(row.rank)} />
+      {/* rank rail — tinted for playoff spots, muted once you're out */}
+      <span
+        className={`-my-2.5 flex w-14 shrink-0 items-center justify-center self-stretch ${
+          inPlayoffs ? "bg-teal/12" : "bg-section"
+        }`}
+      >
+        <Hexagon value={row.rank} tone={inPlayoffs ? "teal" : "grey"} />
       </span>
       {row.team ? <TeamAvatar team={row.team} size="md" /> : <span className="h-11 w-11 shrink-0 rounded-full bg-section" />}
       <div className="min-w-0 flex-1">
@@ -445,7 +477,7 @@ function LadderRowView({ row, index, view }: { row: LadderRow; index: number; vi
     </>
   );
 
-  const className = `flex items-center gap-3 px-3 py-2.5 ${index % 2 ? "bg-card" : "bg-row"} ${
+  const className = `flex items-center gap-3 py-2.5 pr-3 ${index % 2 ? "bg-card" : "bg-row"} ${
     row.href ? "hover:bg-card-hover" : ""
   }`;
 
@@ -494,8 +526,8 @@ function SortLabel({
 function LadderHeader({ sort, dir, season, view }: { sort: SortKey; dir: SortDir; season: number; view: LadderView }) {
   if (view === "brief") {
     return (
-      <div className="flex items-center gap-3 border-b border-border bg-section px-3 py-2 font-cond text-[11px] font-semibold uppercase tracking-wide text-text-muted sm:text-sm">
-        <span className="w-9 text-center">
+      <div className="flex items-center gap-3 border-b border-border bg-section py-2 pr-3 font-cond text-[11px] font-semibold uppercase tracking-wide text-text-muted sm:text-sm">
+        <span className="-my-2 flex w-14 shrink-0 items-center justify-center self-stretch bg-teal/12 text-text">
           <SortLabel label="Rank" sortKey="rank" sort={sort} dir={dir} season={season} view={view} />
         </span>
         <span className="flex-1 pl-11">Team</span>
@@ -513,8 +545,8 @@ function LadderHeader({ sort, dir, season, view }: { sort: SortKey; dir: SortDir
 
   if (view === "extended") {
     return (
-      <div className="flex items-center gap-3 border-b border-border bg-section px-3 py-2 font-cond text-[11px] font-semibold uppercase tracking-wide text-text-muted sm:text-sm">
-        <span className="w-9 text-center">
+      <div className="flex items-center gap-3 border-b border-border bg-section py-2 pr-3 font-cond text-[11px] font-semibold uppercase tracking-wide text-text-muted sm:text-sm">
+        <span className="-my-2 flex w-14 shrink-0 items-center justify-center self-stretch bg-teal/12 text-text">
           <SortLabel label="Rank" sortKey="rank" sort={sort} dir={dir} season={season} view={view} />
         </span>
         <span className="flex-1 pl-11">Team</span>
@@ -540,8 +572,8 @@ function LadderHeader({ sort, dir, season, view }: { sort: SortKey; dir: SortDir
 
   if (view === "next5") {
     return (
-      <div className="flex items-center gap-3 border-b border-border bg-section px-3 py-2 font-cond text-[11px] font-semibold uppercase tracking-wide text-text-muted sm:text-sm">
-        <span className="w-9 text-center">
+      <div className="flex items-center gap-3 border-b border-border bg-section py-2 pr-3 font-cond text-[11px] font-semibold uppercase tracking-wide text-text-muted sm:text-sm">
+        <span className="-my-2 flex w-14 shrink-0 items-center justify-center self-stretch bg-teal/12 text-text">
           <SortLabel label="Rank" sortKey="rank" sort={sort} dir={dir} season={season} view={view} />
         </span>
         <span className="flex-1 pl-11">Team</span>
@@ -552,8 +584,8 @@ function LadderHeader({ sort, dir, season, view }: { sort: SortKey; dir: SortDir
 
   if (view === "form") {
     return (
-      <div className="flex items-center gap-3 border-b border-border bg-section px-3 py-2 font-cond text-[11px] font-semibold uppercase tracking-wide text-text-muted sm:text-sm">
-        <span className="w-9 text-center">
+      <div className="flex items-center gap-3 border-b border-border bg-section py-2 pr-3 font-cond text-[11px] font-semibold uppercase tracking-wide text-text-muted sm:text-sm">
+        <span className="-my-2 flex w-14 shrink-0 items-center justify-center self-stretch bg-teal/12 text-text">
           <SortLabel label="Rank" sortKey="rank" sort={sort} dir={dir} season={season} view={view} />
         </span>
         <span className="flex-1 pl-11">Team</span>
@@ -563,8 +595,8 @@ function LadderHeader({ sort, dir, season, view }: { sort: SortKey; dir: SortDir
   }
 
   return (
-    <div className="flex items-center gap-2 border-b border-border bg-section px-3 py-2 font-cond text-[11px] font-semibold uppercase tracking-wide text-text-muted sm:gap-3 sm:text-sm">
-      <span className="w-9 text-center">
+    <div className="flex items-center gap-2 border-b border-border bg-section py-2 pr-3 font-cond text-[11px] font-semibold uppercase tracking-wide text-text-muted sm:gap-3 sm:text-sm">
+      <span className="-my-2 flex w-14 shrink-0 items-center justify-center self-stretch bg-teal/12 text-text">
         <SortLabel label="Rank" sortKey="rank" sort={sort} dir={dir} season={season} view={view} />
       </span>
       <span className="flex-1 pl-11">Team</span>

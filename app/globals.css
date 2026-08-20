@@ -28,6 +28,8 @@
 
   --gold: #f5b400;
   --up: #21a366;
+  /* Amber used for the trailing side's projection on the matchup header. */
+  --warn: #e07b2b;
   --down: #e0322b;
   --live: #e0322b;
 }
@@ -68,6 +70,7 @@ html.dark {
   --color-accent: var(--accent);
   --color-gold: var(--gold);
   --color-up: var(--up);
+  --color-warn: var(--warn);
   --color-down: var(--down);
   --color-live: var(--live);
 
