@@ -5,6 +5,7 @@ import { CURRENT_SEASON_FIXTURE_WEEKS, HISTORY_SEASONS } from "@/lib/league-data
 import { getSeasonGames, weekLabel, type Game, type GameSide } from "@/lib/games";
 import { MatchupCard } from "@/components/matchup-card";
 import { EmptyState } from "@/components/ui";
+import { PickerMenu } from "@/components/picker-menu";
 import type { Matchup, TeamMeta } from "@/lib/types";
 
 export const revalidate = 120;
@@ -149,25 +150,19 @@ function SeasonPicker({
   selectedTeam?: TeamMeta;
 }) {
   return (
-    <details name="matchup-picker" className="group relative inline-block">
-      <summary className="flex h-9 cursor-pointer list-none items-center rounded-full border border-border bg-card px-3.5 font-cond text-sm font-bold text-text shadow-sm transition-colors hover:bg-card-hover">
-        <span>{selectedSeason}</span>
-      </summary>
-
-      <div className="absolute left-0 top-11 w-32 overflow-hidden rounded-lg border border-border bg-card shadow-lg">
-        {[...seasons].reverse().map((season) => (
-          <Link
-            key={season}
-            href={matchupsHref({ season, week, selectedTeam })}
-            className={`block px-3 py-2 text-sm font-semibold hover:bg-card-hover ${
-              selectedSeason === season ? "bg-teal/10 text-text" : "text-text-muted"
-            }`}
-          >
-            {season}
-          </Link>
-        ))}
-      </div>
-    </details>
+    <PickerMenu label={<span>{selectedSeason}</span>} panelClassName="w-32">
+      {[...seasons].reverse().map((season) => (
+        <Link
+          key={season}
+          href={matchupsHref({ season, week, selectedTeam })}
+          className={`block px-3 py-2 text-sm font-semibold hover:bg-card-hover ${
+            selectedSeason === season ? "bg-teal/10 text-text" : "text-text-muted"
+          }`}
+        >
+          {season}
+        </Link>
+      ))}
+    </PickerMenu>
   );
 }
 
@@ -181,35 +176,29 @@ function FixturePicker({
   week: number;
 }) {
   return (
-    <details name="matchup-picker" className="group relative inline-block">
-      <summary className="flex h-9 cursor-pointer list-none items-center rounded-full border border-border bg-card px-3.5 font-cond text-sm font-bold text-text shadow-sm transition-colors hover:bg-card-hover">
-        <span>{selectedTeam ? selectedTeam.name : "Team"}</span>
-      </summary>
-
-      <div className="absolute left-0 top-11 w-64 overflow-hidden rounded-lg border border-border bg-card shadow-lg">
-        <Link
-          href={matchupsHref({ season, week })}
-          className={`block px-3 py-2 text-sm font-semibold hover:bg-card-hover ${
-            selectedTeam ? "text-text-muted" : "bg-section text-text"
-          }`}
-        >
-          Round fixture
-        </Link>
-        <div className="max-h-80 overflow-y-auto border-t border-border">
-          {TEAMS.map((team) => (
-            <Link
-              key={team.id}
-              href={matchupsHref({ season, week, selectedTeam: team })}
-              className={`block px-3 py-2 text-sm font-semibold hover:bg-card-hover ${
-                selectedTeam?.id === team.id ? "bg-teal/10 text-text" : "text-text-muted"
-              }`}
-            >
-              {team.name}
-            </Link>
-          ))}
-        </div>
+    <PickerMenu label={<span>{selectedTeam ? selectedTeam.name : "Team"}</span>} panelClassName="w-64">
+      <Link
+        href={matchupsHref({ season, week })}
+        className={`block px-3 py-2 text-sm font-semibold hover:bg-card-hover ${
+          selectedTeam ? "text-text-muted" : "bg-section text-text"
+        }`}
+      >
+        Round fixture
+      </Link>
+      <div className="max-h-80 overflow-y-auto border-t border-border">
+        {TEAMS.map((team) => (
+          <Link
+            key={team.id}
+            href={matchupsHref({ season, week, selectedTeam: team })}
+            className={`block px-3 py-2 text-sm font-semibold hover:bg-card-hover ${
+              selectedTeam?.id === team.id ? "bg-teal/10 text-text" : "text-text-muted"
+            }`}
+          >
+            {team.name}
+          </Link>
+        ))}
       </div>
-    </details>
+    </PickerMenu>
   );
 }
 

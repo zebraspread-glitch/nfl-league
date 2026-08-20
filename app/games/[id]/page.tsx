@@ -19,7 +19,7 @@ export default async function BoxscorePage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="space-y-3">
-      <Link href={`/games?season=${game.season}&week=${game.week}`} className="px-1 text-sm text-teal">
+      <Link href={`/matchups?season=${game.season}&week=${game.week}`} className="px-1 text-sm text-teal">
         &lt; {game.season} - {weekLabel(game.week)}
       </Link>
 
