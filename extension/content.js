@@ -10,7 +10,7 @@
 const OVERLAY_ORIGIN = "https://nfl-league-mgl.vercel.app";
 const FRAME_ID = "mgl-draft-overlay";
 const SCALE_KEY = "mgl-overlay-scale";
-const DEFAULT_SCALE = 0.62;
+const DEFAULT_SCALE = 0.45;
 
 function clampScale(value) {
   return Math.min(1, Math.max(0.2, Math.round(value * 100) / 100));
@@ -86,6 +86,11 @@ document.addEventListener("keydown", (event) => {
     setScale(readScale() - 0.04);
   } else if (event.key === "]") {
     setScale(readScale() + 0.04);
+  } else if (event.key === "0") {
+    // Back to the default size, for when it has been nudged somewhere silly.
+    localStorage.removeItem(SCALE_KEY);
+    const frame = frameEl();
+    if (frame) frame.src = overlayUrl();
   }
 });
 

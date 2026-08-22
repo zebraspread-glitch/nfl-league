@@ -31,7 +31,7 @@ export default async function DraftOverlayPage({
   };
 
   const requested = Number(one("scale"));
-  const scale = Number.isFinite(requested) ? Math.min(1, Math.max(0.2, requested)) : 0.62;
+  const scale = Number.isFinite(requested) ? Math.min(1, Math.max(0.2, requested)) : 0.45;
   const manual = one("manual") === "1";
 
   return (

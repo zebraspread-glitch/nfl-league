@@ -705,7 +705,10 @@ export function DraftClock({
   return (
     <>
       <Shell
-        reserveControlSpace={controlsVisible}
+        // Over a draft board the controls float on the banner instead of
+        // reserving a strip under it, so the banner sits flush to the bottom
+        // edge of the screen rather than hovering above a gap.
+        reserveControlSpace={controlsVisible && !isOverlay}
         overlayMode={isOverlay}
         overlayScale={overlayScale}
         clickThrough={isOverlay && isDisplay}

@@ -13,7 +13,7 @@ function overlay() {
   const KEY = "mgl-overlay-scale";
   const scale = () => {
     const v = Number(localStorage.getItem(KEY));
-    return v > 0 ? Math.min(1, Math.max(0.2, v)) : 0.62;
+    return v > 0 ? Math.min(1, Math.max(0.2, v)) : 0.45;
   };
   const url = () => O + "/draft/overlay?manual=1&scale=" + scale();
   const el = () => document.getElementById(ID) as HTMLIFrameElement | null;
@@ -53,6 +53,11 @@ function overlay() {
       else mount();
     } else if (e.key === "[") setScale(scale() - 0.04);
     else if (e.key === "]") setScale(scale() + 0.04);
+    else if (e.key === "0") {
+      localStorage.removeItem(KEY);
+      const f = el();
+      if (f) f.src = url();
+    }
   });
   window.addEventListener("message", (e) => {
     if (e.origin !== O) return;
