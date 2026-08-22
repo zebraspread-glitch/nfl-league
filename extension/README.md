@@ -19,6 +19,7 @@ underneath stays fully clickable.
 | `Alt` + `O` | hide / show the banner |
 | `Alt` + `]` | bigger |
 | `Alt` + `[` | smaller |
+| `Alt` + `R` | turn the full-screen pick reveal on / off |
 
 The size is remembered per browser, so set it once on the TV screen.
 

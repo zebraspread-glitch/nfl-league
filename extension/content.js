@@ -8,6 +8,7 @@
 const OVERLAY_ORIGIN = "https://nfl-league-mgl.vercel.app";
 const FRAME_ID = "mgl-draft-overlay";
 const SCALE_KEY = "mgl-overlay-scale";
+const REVEAL_KEY = "mgl-overlay-reveal";
 const DEFAULT_SCALE = 0.62;
 
 function clampScale(value) {
@@ -19,8 +20,12 @@ function readScale() {
   return Number.isFinite(saved) && saved > 0 ? clampScale(saved) : DEFAULT_SCALE;
 }
 
+function revealOn() {
+  return localStorage.getItem(REVEAL_KEY) !== "0";
+}
+
 function overlayUrl() {
-  return `${OVERLAY_ORIGIN}/draft/overlay?scale=${readScale()}`;
+  return `${OVERLAY_ORIGIN}/draft/overlay?scale=${readScale()}&reveal=${revealOn() ? 1 : 0}`;
 }
 
 function mount() {
@@ -63,6 +68,11 @@ document.addEventListener("keydown", (event) => {
     setScale(readScale() - 0.04);
   } else if (event.key === "]") {
     setScale(readScale() + 0.04);
+  } else if (event.key === "r" || event.key === "R") {
+    // Kills the full-screen selection takeover but keeps the banner, for when
+    // the room would rather keep looking at the board.
+    localStorage.setItem(REVEAL_KEY, revealOn() ? "0" : "1");
+    if (frame) frame.src = overlayUrl();
   }
 });
 
