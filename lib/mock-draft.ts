@@ -69,7 +69,7 @@ export const TEAM_NEEDS: Record<TeamId, string[]> = {
 // Rounds 1-11 snake order, by team id. Round 1 has 12 slots but several teams
 // own multiple (or zero) picks due to trades — see the league's Future Picks page.
 const ROUND_ORDER: TeamId[][] = [
-  [T.lucky, T.brownlow, T.chichi, T.paho, T.dimmy, T.tinkle, T.chichi, T.thomo, T.thomo, T.cronin, T.thomo, T.dimmy],
+  [T.lucky, T.brownlow, T.chichi, T.paho, T.dimmy, T.tinkle, T.chichi, T.thomo, T.thomo, T.cronin, T.thomo, T.lavar],
   [T.lucky, T.brownlow, T.chichi, T.paho, T.dalts, T.tinkle, T.dimmy, T.dalts, T.monke, T.cronin, T.thomo, T.dimmy],
   [T.tinkle, T.brownlow, T.dimmy, T.paho, T.monke, T.tinkle, T.monke, T.lavar, T.ginnivan, T.cronin, T.chichi, T.dimmy],
   [T.dimmy, T.brownlow, T.monke, T.paho, T.paho, T.tinkle, T.monke, T.dalts, T.monke, T.cronin, T.paho, T.dimmy],
