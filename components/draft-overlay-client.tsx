@@ -157,5 +157,5 @@ export function DraftOverlayClient({
     [picks, board.length]
   );
 
-  return <DraftClock picks={board} players={drafted} mode="overlay" feed={feed} overlayScale={scale} />;
+  return <DraftClock picks={board} players={drafted} mode="display" feed={feed} overlayStyle overlayScale={scale} />;
 }

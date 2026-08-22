@@ -22,11 +22,24 @@ export function DraftClockClient({
   picks,
   players,
   mode,
+  overlayStyle,
+  overlayScale,
 }: {
   picks: LivePick[];
   players?: TradePlayer[];
   /** "display" is the TV feed: no controls, follows the control window. */
   mode?: DraftClockMode;
+  /** Transparent and bottom-pinned, for laying over a draft board. */
+  overlayStyle?: boolean;
+  overlayScale?: number;
 }) {
-  return <DraftClock picks={picks} players={players} mode={mode} />;
+  return (
+    <DraftClock
+      picks={picks}
+      players={players}
+      mode={mode}
+      overlayStyle={overlayStyle}
+      overlayScale={overlayScale}
+    />
+  );
 }

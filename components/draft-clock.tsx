@@ -29,14 +29,16 @@ const ANNOUNCEMENT_KEY = "mgl-draft-announcement-v1";
 const SYNC_CHANNEL = "mgl-draft-clock-sync";
 
 /**
- * "control" is the laptop: every button, and the source of truth.
+ * "control" is the operator: every button, and the source of truth.
  * "display" is the TV: the same board with no chrome, following the control
  * window. Both windows tick their own clock off the shared `startedAt`, so
  * only the board itself has to travel — not a message per second.
- * "overlay" is the same feed again with no backdrop, pinned to the bottom and
- * click-through, for laying over the Sleeper draft room from the extension.
+ *
+ * Presentation is a separate axis (`overlayStyle`), because the banner laid
+ * over the Sleeper draft room can be either: a follower fed by Sleeper, or the
+ * operator's own clock with its controls sitting on top of the board.
  */
-export type DraftClockMode = "control" | "display" | "overlay";
+export type DraftClockMode = "control" | "display";
 
 /** Who each pick was spent on, keyed by overall pick number. Keyed that way
  *  rather than by team so a traded pick keeps its selection. */
@@ -121,6 +123,7 @@ export function DraftClock({
   players = [],
   mode = "control",
   feed = null,
+  overlayStyle = false,
   overlayScale = 1,
 }: {
   picks: LivePick[];
@@ -128,14 +131,16 @@ export function DraftClock({
   players?: TradePlayer[];
   /** "display" strips the operator's chrome and follows the control window. */
   mode?: DraftClockMode;
-  /** Overlay mode's board, driven by the Sleeper feed instead of a channel. */
+  /** A board pushed in from outside, for a follower with no control window. */
   feed?: SyncSnapshot | null;
+  /** No backdrop, pinned to the bottom edge: the banner over a draft board. */
+  overlayStyle?: boolean;
   /** Shrinks the banner so it sits over a draft board without burying it. */
   overlayScale?: number;
 }) {
-  const isOverlay = mode === "overlay";
-  /** Every non-control mode is a follower: no chrome, no writes, no keys. */
-  const isDisplay = mode !== "control";
+  const isOverlay = overlayStyle;
+  /** A follower: no chrome, no writes, no keys of its own. */
+  const isDisplay = mode === "display";
   const playerNames = useMemo(() => players.map((p) => p.name), [players]);
   // Trades are an overlay on the fixed draft order, so everything downstream
   // (ticker, current team, controls) picks them up with no further plumbing.
@@ -667,6 +672,7 @@ export function DraftClock({
         reserveControlSpace={!isDisplay}
         overlayMode={isOverlay}
         overlayScale={overlayScale}
+        clickThrough={isOverlay && isDisplay}
         overlay={
           isDisplay ? null : (
           <Controls>
@@ -702,6 +708,7 @@ export function DraftClock({
         reserveControlSpace={controlsVisible}
         overlayMode={isOverlay}
         overlayScale={overlayScale}
+        clickThrough={isOverlay && isDisplay}
         overlay={
           <>
             {tradeOpen && !isDisplay && (
@@ -924,7 +931,7 @@ export function DraftClock({
           accent={announcement.accent}
           onNext={nextFromSelectionReveal}
           operator={!isDisplay}
-          clickThrough={isOverlay}
+          clickThrough={isOverlay && isDisplay}
         />
       )}
     </>
@@ -938,8 +945,12 @@ function Shell({
   reserveControlSpace,
   overlayMode = false,
   overlayScale = 1,
+  clickThrough = false,
 }: {
   children: React.ReactNode;
+  /** Lets the page underneath take the mouse. Only for a follower — an
+   *  operator needs to reach their own buttons. */
+  clickThrough?: boolean;
   /** Drops the black surround and pins the banner to the bottom edge, so the
    *  page underneath shows through everywhere the banner isn't. */
   overlayMode?: boolean;
@@ -1010,8 +1021,8 @@ function Shell({
   return (
     <div
       className={`fixed inset-0 z-50 select-none text-white ${
-        overlayMode ? "pointer-events-none bg-transparent" : "bg-black"
-      }`}
+        overlayMode ? "bg-transparent" : "bg-black"
+      }${clickThrough ? " pointer-events-none" : ""}`}
     >
       <div
         ref={frame}

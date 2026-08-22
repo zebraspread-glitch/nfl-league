@@ -2,13 +2,14 @@
 //
 // Sleeper sends `x-frame-options: SAMEORIGIN`, so the board can't be pulled
 // into our page — the overlay has to go the other way, injected into theirs.
-// The banner is a full-viewport transparent iframe that ignores the mouse, so
-// the draft room underneath stays completely usable.
+//
+// The banner is the operator's own clock, run by hand. It normally ignores the
+// mouse so the draft room underneath stays usable; Alt+C hands it the mouse and
+// keyboard to work the controls, and Alt+C again gives them back.
 
 const OVERLAY_ORIGIN = "https://nfl-league-mgl.vercel.app";
 const FRAME_ID = "mgl-draft-overlay";
 const SCALE_KEY = "mgl-overlay-scale";
-const REVEAL_KEY = "mgl-overlay-reveal";
 const DEFAULT_SCALE = 0.62;
 
 function clampScale(value) {
@@ -20,16 +21,16 @@ function readScale() {
   return Number.isFinite(saved) && saved > 0 ? clampScale(saved) : DEFAULT_SCALE;
 }
 
-function revealOn() {
-  return localStorage.getItem(REVEAL_KEY) !== "0";
+function overlayUrl() {
+  return `${OVERLAY_ORIGIN}/draft/overlay?manual=1&scale=${readScale()}`;
 }
 
-function overlayUrl() {
-  return `${OVERLAY_ORIGIN}/draft/overlay?scale=${readScale()}&reveal=${revealOn() ? 1 : 0}`;
+function frameEl() {
+  return document.getElementById(FRAME_ID);
 }
 
 function mount() {
-  if (document.getElementById(FRAME_ID)) return;
+  if (frameEl()) return;
 
   const frame = document.createElement("iframe");
   frame.id = FRAME_ID;
@@ -42,37 +43,57 @@ function mount() {
     height: "100vh",
     border: "0",
     background: "transparent",
-    // Clicks, scrolls and drags all belong to the draft room.
+    // Clicks, scrolls and drags belong to the draft room until Alt+C.
     pointerEvents: "none",
     zIndex: "2147483647",
   });
   document.body.appendChild(frame);
 }
 
+/** True while the overlay holds the mouse and keyboard. */
+function isLive() {
+  const frame = frameEl();
+  return !!frame && frame.style.pointerEvents === "auto";
+}
+
+function setLive(live) {
+  const frame = frameEl();
+  if (!frame) return;
+  frame.style.pointerEvents = live ? "auto" : "none";
+  if (live) frame.focus();
+  else document.body.focus();
+}
+
 function setScale(next) {
   localStorage.setItem(SCALE_KEY, String(clampScale(next)));
-  const frame = document.getElementById(FRAME_ID);
+  const frame = frameEl();
   if (frame) frame.src = overlayUrl();
 }
 
-// Alt+O hides the banner (someone needs to read the row behind it), Alt+[ and
-// Alt+] size it to the screen it ends up on — no reinstall to tune it.
 document.addEventListener("keydown", (event) => {
   if (!event.altKey) return;
-  const frame = document.getElementById(FRAME_ID);
 
-  if (event.key === "o" || event.key === "O") {
+  if (event.key === "c" || event.key === "C") {
+    // Taking the controls also takes the keyboard, so from here on the keys are
+    // handled inside the frame — including the Alt+C that hands them back.
+    event.preventDefault();
+    setLive(!isLive());
+  } else if (event.key === "o" || event.key === "O") {
+    const frame = frameEl();
     if (frame) frame.remove();
     else mount();
   } else if (event.key === "[") {
     setScale(readScale() - 0.04);
   } else if (event.key === "]") {
     setScale(readScale() + 0.04);
-  } else if (event.key === "r" || event.key === "R") {
-    // Kills the full-screen selection takeover but keeps the banner, for when
-    // the room would rather keep looking at the board.
-    localStorage.setItem(REVEAL_KEY, revealOn() ? "0" : "1");
-    if (frame) frame.src = overlayUrl();
+  }
+});
+
+// The frame has the keyboard while it is live, so its own Alt+C arrives here.
+window.addEventListener("message", (event) => {
+  if (event.origin !== OVERLAY_ORIGIN) return;
+  if (event.data && event.data.source === "mgl-overlay" && event.data.type === "release") {
+    setLive(false);
   }
 });
 
