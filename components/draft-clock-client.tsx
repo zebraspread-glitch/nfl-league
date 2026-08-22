@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import type { LivePick, TradePlayer } from "@/lib/draft-clock";
+import type { DraftClockMode } from "@/components/draft-clock";
 
 const DraftClock = dynamic(
   () => import("@/components/draft-clock").then((mod) => mod.DraftClock),
@@ -20,9 +21,12 @@ const DraftClock = dynamic(
 export function DraftClockClient({
   picks,
   players,
+  mode,
 }: {
   picks: LivePick[];
   players?: TradePlayer[];
+  /** "display" is the TV feed: no controls, follows the control window. */
+  mode?: DraftClockMode;
 }) {
-  return <DraftClock picks={picks} players={players} />;
+  return <DraftClock picks={picks} players={players} mode={mode} />;
 }

@@ -24,6 +24,17 @@ const STORAGE_KEY = "mgl-draft-clock-v1";
 const TRADES_KEY = "mgl-draft-trades-v1";
 const PICKED_KEY = "mgl-draft-picked-v1";
 const ANNOUNCEMENT_KEY = "mgl-draft-announcement-v1";
+/** Carries the board from the control window to the TV window. Same browser,
+ *  so a second monitor over HDMI is exactly the case this covers. */
+const SYNC_CHANNEL = "mgl-draft-clock-sync";
+
+/**
+ * "control" is the laptop: every button, and the source of truth.
+ * "display" is the TV: the same board with no chrome, following the control
+ * window. Both windows tick their own clock off the shared `startedAt`, so
+ * only the board itself has to travel — not a message per second.
+ */
+export type DraftClockMode = "control" | "display";
 
 /** Who each pick was spent on, keyed by overall pick number. Keyed that way
  *  rather than by team so a traded pick keeps its selection. */
@@ -34,6 +45,19 @@ type PickAnnouncement = {
   background: string;
   accent: string;
 };
+
+/** Everything the TV mirrors. Deliberately not `showControls` or `tradeOpen`:
+ *  the operator's chrome is the one thing that stays on the laptop. */
+type SyncSnapshot = {
+  state: ClockState;
+  overrides: PickOverrides;
+  picked: PickedPlayers;
+  announcement: PickAnnouncement | null;
+  trade: LiveTrade | null;
+  tradeStage: number;
+};
+
+type SyncMessage = { type: "hello" } | { type: "sync"; snapshot: SyncSnapshot };
 
 // Palette and proportions are traced from the NFL Network draft ticker this is
 // meant to look like. The reference crop is 419x101, so every size inside the
@@ -93,11 +117,15 @@ function nameSize(name: string) {
 export function DraftClock({
   picks: basePicks,
   players = [],
+  mode = "control",
 }: {
   picks: LivePick[];
   /** Tradable players — autocomplete in the editor, headshots in the alert. */
   players?: TradePlayer[];
+  /** "display" strips the operator's chrome and follows the control window. */
+  mode?: DraftClockMode;
 }) {
+  const isDisplay = mode === "display";
   const playerNames = useMemo(() => players.map((p) => p.name), [players]);
   // Trades are an overlay on the fixed draft order, so everything downstream
   // (ticker, current team, controls) picks them up with no further plumbing.
@@ -158,26 +186,79 @@ export function DraftClock({
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [basePicks.length]);
 
+  // Only the control window writes. The TV holds the same board but is a
+  // follower, so letting it save would risk it overwriting the real state with
+  // whatever it had when a message was missed.
   useEffect(() => {
-    if (!loaded) return;
+    if (!loaded || isDisplay) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [state, loaded]);
+  }, [state, loaded, isDisplay]);
 
   useEffect(() => {
-    if (!loaded) return;
+    if (!loaded || isDisplay) return;
     localStorage.setItem(TRADES_KEY, JSON.stringify(overrides));
-  }, [overrides, loaded]);
+  }, [overrides, loaded, isDisplay]);
 
   useEffect(() => {
-    if (!loaded) return;
+    if (!loaded || isDisplay) return;
     localStorage.setItem(PICKED_KEY, JSON.stringify(picked));
-  }, [picked, loaded]);
+  }, [picked, loaded, isDisplay]);
 
   useEffect(() => {
-    if (!loaded) return;
+    if (!loaded || isDisplay) return;
     if (announcement) localStorage.setItem(ANNOUNCEMENT_KEY, JSON.stringify(announcement));
     else localStorage.removeItem(ANNOUNCEMENT_KEY);
-  }, [announcement, loaded]);
+  }, [announcement, loaded, isDisplay]);
+
+  const snapshot = useMemo<SyncSnapshot>(
+    () => ({ state, overrides, picked, announcement, trade, tradeStage }),
+    [state, overrides, picked, announcement, trade, tradeStage]
+  );
+  /** Read by the "hello" reply, which has to answer with the board as it is at
+   *  that moment rather than the one captured when the channel opened. */
+  const latest = useRef(snapshot);
+  useEffect(() => {
+    latest.current = snapshot;
+  }, [snapshot]);
+
+  const outbound = useRef<BroadcastChannel | null>(null);
+  useEffect(() => {
+    if (isDisplay || typeof BroadcastChannel === "undefined") return;
+    const channel = new BroadcastChannel(SYNC_CHANNEL);
+    channel.onmessage = (event: MessageEvent<SyncMessage>) => {
+      // A TV window opened mid-draft: hand it the board rather than making it
+      // wait for the next press to catch up.
+      if (event.data?.type === "hello") channel.postMessage({ type: "sync", snapshot: latest.current });
+    };
+    outbound.current = channel;
+    return () => {
+      channel.close();
+      outbound.current = null;
+    };
+  }, [isDisplay]);
+
+  useEffect(() => {
+    if (isDisplay || !loaded) return;
+    outbound.current?.postMessage({ type: "sync", snapshot });
+  }, [isDisplay, loaded, snapshot]);
+
+  useEffect(() => {
+    if (!isDisplay || typeof BroadcastChannel === "undefined") return;
+    const channel = new BroadcastChannel(SYNC_CHANNEL);
+    channel.onmessage = (event: MessageEvent<SyncMessage>) => {
+      const message = event.data;
+      if (message?.type !== "sync") return;
+      setState(message.snapshot.state);
+      setOverrides(message.snapshot.overrides);
+      setPicked(message.snapshot.picked);
+      setAnnouncement(message.snapshot.announcement);
+      setTrade(message.snapshot.trade);
+      setTradeStage(message.snapshot.tradeStage);
+      setNow(Date.now());
+    };
+    channel.postMessage({ type: "hello" });
+    return () => channel.close();
+  }, [isDisplay]);
 
   useEffect(() => {
     if (!running) return;
@@ -425,6 +506,15 @@ export function DraftClock({
     else void document.documentElement.requestFullscreen().catch(() => {});
   }, []);
 
+  /** Opens the chrome-free feed to drag onto the TV. Named, so pressing it a
+   *  second time re-focuses the window that is already out there rather than
+   *  opening a second one. Relative to this page, so /admin/draft and any
+   *  future mount of the clock each find their own TV route. */
+  const openTvWindow = useCallback(() => {
+    const base = window.location.pathname.replace(/\/$/, "");
+    window.open(`${base}/tv`, "mgl-draft-tv", "width=1280,height=760");
+  }, []);
+
   const nextFromSelectionReveal = useCallback(() => {
     const announcedOverall = announcement?.pick.overall;
     setAnnouncement(null);
@@ -440,6 +530,13 @@ export function DraftClock({
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
+
+      // The TV window takes no instructions of its own beyond going fullscreen
+      // — everything else would put the two screens out of step.
+      if (isDisplay) {
+        if (event.key === "f" || event.key === "F") toggleFullscreen();
+        return;
+      }
 
       // Never hijack keys while the trade form has focus, or Space would
       // announce a pick instead of operating the dropdown.
@@ -502,7 +599,16 @@ export function DraftClock({
 
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [primary, togglePause, back, resetClock, resetDraft, toggleFullscreen, addSeconds]);
+  }, [primary, togglePause, back, resetClock, resetDraft, toggleFullscreen, addSeconds, isDisplay]);
+
+  // The TV feed has no button to click, so the whole surface is the fullscreen
+  // toggle — the one thing that has to be done from that window itself.
+  useEffect(() => {
+    if (!isDisplay) return;
+    const onDouble = () => toggleFullscreen();
+    document.addEventListener("dblclick", onDouble);
+    return () => document.removeEventListener("dblclick", onDouble);
+  }, [isDisplay, toggleFullscreen]);
 
   // The reference shows the team on the clock plus the next two.
   const nextTwo = useMemo(() => picks.slice(state.index + 1, state.index + 3), [picks, state.index]);
@@ -524,12 +630,14 @@ export function DraftClock({
   const ink = onDark ? "#ffffff" : INK;
   const accent = onDark ? VOLT : INK;
   const showSelectionTakeover = Boolean(announcement);
+  const controlsVisible = showControls && !isDisplay;
 
   if (!current) {
     return (
       <Shell
-        reserveControlSpace
+        reserveControlSpace={!isDisplay}
         overlay={
+          isDisplay ? null : (
           <Controls>
             <button
               onClick={back}
@@ -540,6 +648,7 @@ export function DraftClock({
             <ControlButton onClick={resetDraft}>Restart Draft</ControlButton>
             <ExitLink />
           </Controls>
+          )
         }
       >
         <Banner>
@@ -559,10 +668,10 @@ export function DraftClock({
   return (
     <>
       <Shell
-        reserveControlSpace={showControls}
+        reserveControlSpace={controlsVisible}
         overlay={
           <>
-            {tradeOpen && (
+            {tradeOpen && !isDisplay && (
               <DraftTradePanel
                 picks={picks.slice(state.index)}
                 teams={TEAMS}
@@ -574,7 +683,7 @@ export function DraftClock({
               />
             )}
 
-            {showControls ? (
+            {isDisplay ? null : controlsVisible ? (
               <Controls>
                 <button
                   onClick={primary}
@@ -604,6 +713,7 @@ export function DraftClock({
                   Trade (T){tradeCount > 0 ? ` - ${tradeCount}` : ""}
                 </ControlButton>
                 <ControlButton onClick={resetDraft}>Restart Draft</ControlButton>
+                <ControlButton onClick={openTvWindow}>TV Window</ControlButton>
                 <ControlButton onClick={toggleFullscreen}>Fullscreen</ControlButton>
                 <ControlButton onClick={() => setShowControls(false)}>Hide Controls</ControlButton>
                 <span className="font-cond text-sm uppercase tracking-widest text-white/35">
@@ -780,6 +890,7 @@ export function DraftClock({
           background={announcement.background}
           accent={announcement.accent}
           onNext={nextFromSelectionReveal}
+          operator={!isDisplay}
         />
       )}
     </>
@@ -1186,12 +1297,16 @@ function SelectionTakeover({
   background,
   accent,
   onNext,
+  operator = true,
 }: {
   pick: LivePick;
   player: TradePlayer;
   background: string;
   accent: string;
   onNext: () => void;
+  /** False on the TV feed: the footer keeps its space so both screens compose
+   *  identically, but the prompt and the button are not shown. */
+  operator?: boolean;
 }) {
   const secondary = pick.team.secondary || background;
   const playerMeta = [player.pos, player.proTeam].filter(Boolean).join(" · ");
@@ -1503,7 +1618,11 @@ function SelectionTakeover({
 
         {/* Footer keeps the operator's button out of the artwork, so nothing on
             the TV feed has to leave a hole in the layout for it. */}
-        <footer className="flex shrink-0 items-center justify-between" style={{ gap: "clamp(12px, 1.5vw, 28px)" }}>
+        <footer
+          className="flex shrink-0 items-center justify-between"
+          style={{ gap: "clamp(12px, 1.5vw, 28px)", visibility: operator ? undefined : "hidden" }}
+          aria-hidden={!operator}
+        >
           <span className="min-w-0 truncate font-bold tracking-[0.34em] text-white/25" style={{ fontSize: "clamp(0.62rem, 0.85vw, 1.05rem)" }}>
             Space — next pick
           </span>
