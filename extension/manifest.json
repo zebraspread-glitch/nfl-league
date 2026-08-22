@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "MGL Draft Overlay",
+  "version": "1.0.0",
+  "description": "Lays the MGL broadcast banner over the Sleeper draft room.",
+  "content_scripts": [
+    {
+      "matches": ["https://sleeper.com/draft/nfl/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

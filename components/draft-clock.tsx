@@ -33,8 +33,10 @@ const SYNC_CHANNEL = "mgl-draft-clock-sync";
  * "display" is the TV: the same board with no chrome, following the control
  * window. Both windows tick their own clock off the shared `startedAt`, so
  * only the board itself has to travel — not a message per second.
+ * "overlay" is the same feed again with no backdrop, pinned to the bottom and
+ * click-through, for laying over the Sleeper draft room from the extension.
  */
-export type DraftClockMode = "control" | "display";
+export type DraftClockMode = "control" | "display" | "overlay";
 
 /** Who each pick was spent on, keyed by overall pick number. Keyed that way
  *  rather than by team so a traded pick keeps its selection. */
@@ -48,7 +50,7 @@ type PickAnnouncement = {
 
 /** Everything the TV mirrors. Deliberately not `showControls` or `tradeOpen`:
  *  the operator's chrome is the one thing that stays on the laptop. */
-type SyncSnapshot = {
+export type SyncSnapshot = {
   state: ClockState;
   overrides: PickOverrides;
   picked: PickedPlayers;
@@ -69,11 +71,11 @@ const REF_H = 101;
 const px = (n: number) => `${(n * 100) / REF_W}vw`;
 
 /** Broadcast yellow-green used for the clock and "PICK IS IN". */
-const VOLT = "#d2ec1f";
+export const VOLT = "#d2ec1f";
 const BAR_GREEN = "#66d411";
 const DANGER = "#ff3b30";
 /** Clock/accent colour when the team's backdrop is too light for VOLT. */
-const INK = "#0b1220";
+export const INK = "#0b1220";
 
 type Phase = "clock" | "in";
 
@@ -118,14 +120,22 @@ export function DraftClock({
   picks: basePicks,
   players = [],
   mode = "control",
+  feed = null,
+  overlayScale = 1,
 }: {
   picks: LivePick[];
   /** Tradable players — autocomplete in the editor, headshots in the alert. */
   players?: TradePlayer[];
   /** "display" strips the operator's chrome and follows the control window. */
   mode?: DraftClockMode;
+  /** Overlay mode's board, driven by the Sleeper feed instead of a channel. */
+  feed?: SyncSnapshot | null;
+  /** Shrinks the banner so it sits over a draft board without burying it. */
+  overlayScale?: number;
 }) {
-  const isDisplay = mode === "display";
+  const isOverlay = mode === "overlay";
+  /** Every non-control mode is a follower: no chrome, no writes, no keys. */
+  const isDisplay = mode !== "control";
   const playerNames = useMemo(() => players.map((p) => p.name), [players]);
   // Trades are an overlay on the fixed draft order, so everything downstream
   // (ticker, current team, controls) picks them up with no further plumbing.
@@ -242,8 +252,11 @@ export function DraftClock({
     outbound.current?.postMessage({ type: "sync", snapshot });
   }, [isDisplay, loaded, snapshot]);
 
+  // Overlay mode skips the channel entirely: inside a third-party iframe on
+  // sleeper.com its storage is partitioned away from the real site, so it is
+  // driven by the Sleeper feed below instead.
   useEffect(() => {
-    if (!isDisplay || typeof BroadcastChannel === "undefined") return;
+    if (mode !== "display" || typeof BroadcastChannel === "undefined") return;
     const channel = new BroadcastChannel(SYNC_CHANNEL);
     channel.onmessage = (event: MessageEvent<SyncMessage>) => {
       const message = event.data;
@@ -258,7 +271,23 @@ export function DraftClock({
     };
     channel.postMessage({ type: "hello" });
     return () => channel.close();
-  }, [isDisplay]);
+  }, [mode]);
+
+  // Mirroring an external feed into the board is exactly the subscription case
+  // the rule is written for — the polling lives outside React and the clock has
+  // no other way to hear about a pick.
+  useEffect(() => {
+    if (!feed) return;
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setState(feed.state);
+    setOverrides(feed.overrides);
+    setPicked(feed.picked);
+    setAnnouncement(feed.announcement);
+    setTrade(feed.trade);
+    setTradeStage(feed.tradeStage);
+    setNow(Date.now());
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [feed]);
 
   useEffect(() => {
     if (!running) return;
@@ -636,6 +665,8 @@ export function DraftClock({
     return (
       <Shell
         reserveControlSpace={!isDisplay}
+        overlayMode={isOverlay}
+        overlayScale={overlayScale}
         overlay={
           isDisplay ? null : (
           <Controls>
@@ -669,6 +700,8 @@ export function DraftClock({
     <>
       <Shell
         reserveControlSpace={controlsVisible}
+        overlayMode={isOverlay}
+        overlayScale={overlayScale}
         overlay={
           <>
             {tradeOpen && !isDisplay && (
@@ -891,6 +924,7 @@ export function DraftClock({
           accent={announcement.accent}
           onNext={nextFromSelectionReveal}
           operator={!isDisplay}
+          clickThrough={isOverlay}
         />
       )}
     </>
@@ -902,8 +936,15 @@ function Shell({
   children,
   overlay,
   reserveControlSpace,
+  overlayMode = false,
+  overlayScale = 1,
 }: {
   children: React.ReactNode;
+  /** Drops the black surround and pins the banner to the bottom edge, so the
+   *  page underneath shows through everywhere the banner isn't. */
+  overlayMode?: boolean;
+  /** Applied on top of the fit scale, to keep the banner off the board. */
+  overlayScale?: number;
   /** Pinned to the shell, outside the scaled stack: controls and the trade form.
    *  A transform makes its subtree the containing block, so anything absolutely
    *  positioned against the shell has to live here rather than in children. */
@@ -964,17 +1005,28 @@ function Shell({
     };
   }, [fit]);
 
+  const total = (scale < 1 ? scale : 1) * overlayScale;
+
   return (
-    <div className="fixed inset-0 z-50 select-none bg-black text-white">
+    <div
+      className={`fixed inset-0 z-50 select-none text-white ${
+        overlayMode ? "pointer-events-none bg-transparent" : "bg-black"
+      }`}
+    >
       <div
         ref={frame}
-        className="flex h-full flex-col items-center justify-center overflow-hidden"
+        className={`flex h-full flex-col items-center overflow-hidden ${
+          overlayMode ? "justify-end" : "justify-center"
+        }`}
         style={{ paddingBottom: reserveControlSpace ? "7.5rem" : undefined }}
       >
         <div
           ref={stack}
           className="flex w-full flex-col items-center"
-          style={{ transform: scale < 1 ? `scale(${scale})` : undefined }}
+          style={{
+            transform: total !== 1 ? `scale(${total})` : undefined,
+            transformOrigin: overlayMode ? "bottom center" : undefined,
+          }}
         >
           {children}
         </div>
@@ -1298,6 +1350,7 @@ function SelectionTakeover({
   accent,
   onNext,
   operator = true,
+  clickThrough = false,
 }: {
   pick: LivePick;
   player: TradePlayer;
@@ -1307,6 +1360,8 @@ function SelectionTakeover({
   /** False on the TV feed: the footer keeps its space so both screens compose
    *  identically, but the prompt and the button are not shown. */
   operator?: boolean;
+  /** Lets clicks fall through to the draft room underneath the overlay. */
+  clickThrough?: boolean;
 }) {
   const secondary = pick.team.secondary || background;
   const playerMeta = [player.pos, player.proTeam].filter(Boolean).join(" · ");
@@ -1327,7 +1382,9 @@ function SelectionTakeover({
 
   return (
     <div
-      className="selection-reveal-root fixed inset-0 z-[80] overflow-hidden bg-black font-cond uppercase text-white"
+      className={`selection-reveal-root fixed inset-0 z-[80] overflow-hidden bg-black font-cond uppercase text-white${
+        clickThrough ? " pointer-events-none" : ""
+      }`}
       style={{ position: "fixed", inset: 0, zIndex: 2147483647, background: "#000000" }}
       onClick={(event) => event.stopPropagation()}
       onKeyDown={(event) => event.stopPropagation()}
