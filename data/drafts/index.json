@@ -1,5 +1,12 @@
 [
   {
+    "season": 2026,
+    "rounds": 15,
+    "teams": 12,
+    "picks": 180,
+    "keepers": 48
+  },
+  {
     "season": 2025,
     "rounds": 15,
     "teams": 12,

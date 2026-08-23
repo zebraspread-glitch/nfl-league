@@ -1,0 +1,126 @@
+[
+  {
+    "id": "2026-1397212880494927872",
+    "season": 2026,
+    "week": 0,
+    "date": "Aug 23, 9:20pm",
+    "legs": [
+      {
+        "fromTeamId": null,
+        "fromName": "Dimmy",
+        "toTeamId": null,
+        "toName": "Dalts",
+        "items": [
+          {
+            "kind": "player",
+            "sleeperPlayerId": "8130",
+            "name": "Trey McBride",
+            "pos": "TE",
+            "proTeam": "ARI"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2027 Rd 15"
+          }
+        ]
+      },
+      {
+        "fromTeamId": null,
+        "fromName": "Dalts",
+        "toTeamId": null,
+        "toName": "Dimmy",
+        "items": [
+          {
+            "kind": "player",
+            "sleeperPlayerId": "12519",
+            "name": "Luther Burden",
+            "pos": "WR",
+            "proTeam": "CHI"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2027 Rd 2"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2026-1397212399827697664",
+    "season": 2026,
+    "week": 0,
+    "date": "Aug 23, 9:18pm",
+    "legs": [
+      {
+        "fromTeamId": null,
+        "fromName": "Paho",
+        "toTeamId": null,
+        "toName": "GinniVan Jefferson",
+        "items": [
+          {
+            "kind": "player",
+            "sleeperPlayerId": "5850",
+            "name": "Josh Jacobs",
+            "pos": "RB",
+            "proTeam": "GB"
+          }
+        ]
+      },
+      {
+        "fromTeamId": null,
+        "fromName": "GinniVan Jefferson",
+        "toTeamId": null,
+        "toName": "Paho",
+        "items": [
+          {
+            "kind": "player",
+            "sleeperPlayerId": "8155",
+            "name": "Breece Hall",
+            "pos": "RB",
+            "proTeam": "NYJ"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2026-1396478055001645056",
+    "season": 2026,
+    "week": 0,
+    "date": "Aug 21, 8:40pm",
+    "legs": [
+      {
+        "fromTeamId": null,
+        "fromName": "Dimmy",
+        "toTeamId": null,
+        "toName": "Lavar Balls",
+        "items": [
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 1"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2027 Rd 10"
+          }
+        ]
+      },
+      {
+        "fromTeamId": null,
+        "fromName": "Lavar Balls",
+        "toTeamId": null,
+        "toName": "Dimmy",
+        "items": [
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2026 Rd 6"
+          },
+          {
+            "kind": "pick",
+            "label": "Draft Pick - 2027 Rd 1"
+          }
+        ]
+      }
+    ]
+  }
+]

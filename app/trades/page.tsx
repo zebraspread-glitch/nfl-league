@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Card, EmptyState, PageIntro, SectionHeader, TeamAvatar } from "@/components/ui";
 import { PlayerBadge } from "@/components/player-badge";
-import { getAllTrades, getTradeSeasons, type Trade, type TradeLeg } from "@/lib/trades";
+import { SleeperPlayerAvatar } from "@/components/sleeper-player-avatar";
+import { getAllTrades, getTradeSeasons, tradePlayerHref, type Trade, type TradeItem, type TradeLeg } from "@/lib/trades";
 import { weekLabel } from "@/lib/games";
 import { TEAMS } from "@/lib/teams";
 
@@ -34,7 +35,7 @@ export default async function TradesPage({
 
   return (
     <div>
-      <PageIntro title="Trades" subtitle={`${allTrades.length} all-time trades, 2021-2025`} />
+      <PageIntro title="Trades" subtitle={`${allTrades.length} all-time trades, ${seasonRange(seasons)}`} />
       <ViewToggle season={season} view={view} teamId={activeTeamId} />
       <SeasonTabs seasons={seasons} active={season} view={view} teamId={activeTeamId} />
       {view === "team" && <TeamTabs active={activeTeamId} season={season} />}
@@ -50,6 +51,18 @@ export default async function TradesPage({
       )}
     </div>
   );
+}
+
+function seasonRange(seasons: number[]): string {
+  if (seasons.length === 0) return "no seasons yet";
+  const lo = Math.min(...seasons);
+  const hi = Math.max(...seasons);
+  return lo === hi ? `${lo}` : `${lo}-${hi}`;
+}
+
+/** Week 0 is the offseason bucket — trades made before the season opener. */
+function tradeWeekLabel(week: number): string {
+  return week === 0 ? "Preseason" : weekLabel(week);
 }
 
 function ViewToggle({ season, view, teamId }: { season: number | "all"; view: View; teamId: number }) {
@@ -136,7 +149,7 @@ function TradeCard({ trade }: { trade: Trade }) {
   return (
     <Card>
       <SectionHeader>
-        {trade.season} - {weekLabel(trade.week)} - {trade.date}
+        {trade.season} - {tradeWeekLabel(trade.week)} - {trade.date}
       </SectionHeader>
       <div className="grid gap-px bg-section/60 sm:grid-cols-2">
         {trade.legs.map((leg, i) => (
@@ -158,28 +171,59 @@ function TradeLegBox({ leg }: { leg: TradeLeg }) {
         </div>
       </div>
       <div className="space-y-1.5">
-        {leg.items.map((item, i) =>
-          item.kind === "player" ? (
-            <div key={i} className="flex items-center gap-2">
-              <PlayerBadge playerId={item.playerId!} pos={item.pos ?? ""} name={item.name ?? ""} />
-              <Link href={`/players/${item.playerId}`} className="min-w-0 flex-1">
-                <div className="truncate text-sm font-medium">{item.name}</div>
-                <div className="truncate text-[11px] text-text-muted">
-                  {item.pos}
-                  {item.proTeam ? ` - ${item.proTeam}` : ""}
-                </div>
-              </Link>
-            </div>
-          ) : (
-            <div key={i} className="flex items-center gap-2 pl-1">
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-section text-[10px] font-bold text-text-muted">
-                PK
-              </span>
-              <div className="truncate text-sm text-text-muted">{item.label}</div>
-            </div>
-          ),
-        )}
+        {leg.items.map((item, i) => (
+          <TradeItemRow key={i} item={item} />
+        ))}
       </div>
+    </div>
+  );
+}
+
+/** Headshot for a traded player, from whichever image source its season uses. */
+function TradedPlayerFace({ item }: { item: TradeItem }) {
+  if (item.sleeperPlayerId) {
+    return (
+      <SleeperPlayerAvatar sleeperId={item.sleeperPlayerId} pos={item.pos ?? ""} name={item.name ?? ""} />
+    );
+  }
+  if (item.playerId) {
+    return <PlayerBadge playerId={item.playerId} pos={item.pos ?? ""} name={item.name ?? ""} />;
+  }
+  return <span className="h-8 w-8 shrink-0 rounded-full bg-section" />;
+}
+
+function TradeItemRow({ item }: { item: TradeItem }) {
+  if (item.kind !== "player") {
+    return (
+      <div className="flex items-center gap-2 pl-1">
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-section text-[10px] font-bold text-text-muted">
+          {item.kind === "faab" ? "$" : "PK"}
+        </span>
+        <div className="truncate text-sm text-text-muted">{item.label}</div>
+      </div>
+    );
+  }
+
+  const href = tradePlayerHref(item);
+  const body = (
+    <>
+      <div className="truncate text-sm font-medium">{item.name}</div>
+      <div className="truncate text-[11px] text-text-muted">
+        {item.pos}
+        {item.proTeam ? ` - ${item.proTeam}` : ""}
+      </div>
+    </>
+  );
+  return (
+    <div className="flex items-center gap-2">
+      <TradedPlayerFace item={item} />
+      {href ? (
+        <Link href={href} className="min-w-0 flex-1">
+          {body}
+        </Link>
+      ) : (
+        <div className="min-w-0 flex-1">{body}</div>
+      )}
     </div>
   );
 }

@@ -140,6 +140,8 @@ const SLEEPER_USERNAME_TO_TEAM_ID: Record<string, TeamId> = {
   lavarballs27: 5, // old handle
   lavarballsmgl: 5, // renamed 2026
   ginnivanjefferson: 4,
+  tinklevanginkel: 7, // joined 2026
+  deaaroncronin: 3, // joined 2026
 };
 
 const SLEEPER_ROSTER_TO_TEAM_ID: Record<number, TeamId> = {
@@ -194,11 +196,14 @@ async function getRosters(): Promise<SleeperRoster[]> {
 interface SleeperLeague {
   roster_positions?: string[];
   settings?: { reserve_slots?: number };
+  scoring_settings?: Record<string, number>;
 }
 
 interface LeagueConfig {
   rosterPositions: string[];
   reserveSlots: number;
+  /** The league's own scoring rules — stat key to points per unit. */
+  scoringSettings: Record<string, number>;
 }
 
 const DEFAULT_ROSTER_POSITIONS = ["QB", "RB", "RB", "WR", "WR", "TE", "WRRB_FLEX", "K", "DEF", "BN", "BN", "BN", "BN", "BN", "BN"];
@@ -209,6 +214,7 @@ async function getLeagueConfig(): Promise<LeagueConfig> {
   return {
     rosterPositions: data?.roster_positions?.length ? data.roster_positions : DEFAULT_ROSTER_POSITIONS,
     reserveSlots: data?.settings?.reserve_slots ?? 0,
+    scoringSettings: data?.scoring_settings ?? {},
   };
 }
 
@@ -272,10 +278,12 @@ function rosterRecord(roster: SleeperRoster): MatchupSide["record"] {
 }
 
 async function enrichManualMatchups(matchups: Matchup[], week: number): Promise<Matchup[]> {
-  const [matchupRows, rosters, users] = await Promise.all([
+  const season = Number(process.env.SLEEPER_SEASON) || CURRENT_SEASON;
+  const [matchupRows, rosters, users, projections] = await Promise.all([
     sleeperFetch<SleeperMatchup[]>(`/matchups/${week}`),
     getRosters(),
     getUsers(),
+    fetchProjections(season, week),
   ]);
   if (!rosters.length) return matchups;
 
@@ -294,6 +302,7 @@ async function enrichManualMatchups(matchups: Matchup[], week: number): Promise<
     return {
       ...manualSide,
       score: Math.round((live?.points ?? manualSide.score) * 100) / 100,
+      projected: projectedTotal(roster, live, projections) ?? manualSide.projected,
       record: rosterRecord(roster),
       rosterId: roster.roster_id,
     };
@@ -318,10 +327,12 @@ export async function getMatchups(week: number): Promise<Matchup[]> {
   const leagueId = readLeagueId();
   if (!leagueId) return getFallbackMatchups(week);
 
-  const [matchupRows, rosters, users] = await Promise.all([
+  const season = Number(process.env.SLEEPER_SEASON) || CURRENT_SEASON;
+  const [matchupRows, rosters, users, projections] = await Promise.all([
     sleeperFetch<SleeperMatchup[]>(`/matchups/${week}`),
     getRosters(),
     getUsers(),
+    fetchProjections(season, week),
   ]);
   if (!matchupRows?.length || !rosters.length) return getFallbackMatchups(week);
 
@@ -352,6 +363,7 @@ export async function getMatchups(week: number): Promise<Matchup[]> {
       return {
         team,
         score: Math.round((m.points ?? 0) * 100) / 100,
+        projected: projectedTotal(roster, m, projections),
         record: recordById.get(m.roster_id),
         rosterId: m.roster_id,
       };
@@ -654,7 +666,7 @@ const SLEEPER_DATA_HOST = "https://api.sleeper.com";
 
 interface SleeperProjection {
   player_id: string;
-  stats?: { pts_ppr?: number };
+  stats?: Record<string, number>;
 }
 
 interface SleeperScheduleGame {
@@ -694,7 +706,16 @@ export interface WeekKickoff {
 
 const projectionCache = new Map<string, Map<string, number>>();
 
-/** Per-player projected points (PPR — the league scores 1.0 per reception), keyed by Sleeper player id. */
+/**
+ * Per-player projected points, keyed by Sleeper player id.
+ *
+ * Scored with the LEAGUE's own rules rather than the feed's ready-made
+ * `pts_ppr`. MGL deviates from standard PPR (interceptions -3 not -1, lost
+ * fumbles -3 not -2), so `pts_ppr` runs a few points hot per team — enough to
+ * shift a projected total and the betting line built on it. Applying
+ * scoring_settings to the raw stat line reproduces the numbers Sleeper itself
+ * shows for this league.
+ */
 async function fetchProjections(season: number, week: number): Promise<Map<string, number>> {
   const key = `${season}-${week}`;
   const cached = projectionCache.get(key);
@@ -702,14 +723,37 @@ async function fetchProjections(season: number, week: number): Promise<Map<strin
 
   const map = new Map<string, number>();
   try {
-    const res = await fetch(`${SLEEPER_DATA_HOST}/projections/nfl/${season}/${week}?season_type=regular`, {
-      cache: "no-store",
-    });
+    const [res, config] = await Promise.all([
+      // Not `no-store`: getMatchups reads projections now, and a no-store fetch
+      // drags every page that calls it out of static rendering (/newspaper and
+      // /playoff-simulator would bail out and get no projections at all). The
+      // payload is past the 2MB data-cache ceiling regardless, so this revalidate
+      // window costs nothing and keeps those routes prerenderable.
+      fetch(`${SLEEPER_DATA_HOST}/projections/nfl/${season}/${week}?season_type=regular`, {
+        next: { revalidate: 300 },
+      }),
+      getLeagueConfig(),
+    ]);
     if (res.ok) {
       const data = (await res.json()) as SleeperProjection[];
+      const scoring = config.scoringSettings;
+      const hasScoring = Object.keys(scoring).length > 0;
       for (const p of data) {
-        const pts = p.stats?.pts_ppr;
-        if (typeof pts === "number") map.set(p.player_id, Math.round(pts * 100) / 100);
+        const stats = p.stats;
+        if (!stats) continue;
+        // Fall back to the feed's PPR total if the league config is unavailable.
+        let pts = 0;
+        if (hasScoring) {
+          for (const [stat, value] of Object.entries(stats)) {
+            const weight = scoring[stat];
+            if (typeof weight === "number" && typeof value === "number") pts += value * weight;
+          }
+        } else if (typeof stats.pts_ppr === "number") {
+          pts = stats.pts_ppr;
+        } else {
+          continue;
+        }
+        map.set(p.player_id, Math.round(pts * 100) / 100);
       }
     } else {
       console.warn(`[sleeper] projections ${res.status} for ${key}`);
@@ -719,6 +763,28 @@ async function fetchProjections(season: number, week: number): Promise<Map<strin
   }
   projectionCache.set(key, map);
   return map;
+}
+
+/**
+ * Projected total for a roster: its starters' projections summed.
+ *
+ * Before kickoff this uses the manager's own lineup (`roster.starters`).
+ * Sleeper auto-fills the matchup endpoint's starters before lock, so reading
+ * those would project benched players as starting. Once anything in the
+ * matchup has scored, the live lineup is the real one.
+ */
+function projectedTotal(
+  roster: SleeperRoster | undefined,
+  live: SleeperMatchup | undefined,
+  projections: Map<string, number>,
+): number | undefined {
+  if (!projections.size) return undefined;
+  const started = live?.players_points && Object.values(live.players_points).some((p) => p > 0);
+  const starters = (started ? live?.starters : roster?.starters) ?? roster?.starters ?? [];
+  const ids = starters.filter((id): id is string => Boolean(id) && id !== "0");
+  if (!ids.length) return undefined;
+  const total = ids.reduce((sum, id) => sum + (projections.get(id) ?? 0), 0);
+  return Math.round(total * 100) / 100;
 }
 
 const scheduleCache = new Map<number, SleeperScheduleGame[]>();

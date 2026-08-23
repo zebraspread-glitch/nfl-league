@@ -35,10 +35,15 @@ const POWER_RATING: Record<TeamId, number> = {
  *  no history (placeholder rosters with a negative id). */
 const LEAGUE_AVERAGE = 115.17;
 
-/** Standard deviation of a weekly head-to-head margin. A fantasy team's weekly
- *  score swings by roughly 25 points, so the margin between two of them swings
- *  by about sqrt(2) x that. Drives how a spread converts into a win %. */
-const MARGIN_SD = 34;
+/** Standard deviation of a weekly head-to-head margin — how a projected margin
+ *  converts into a win %.
+ *
+ *  Calibrated against Sleeper's own win percentages so the book agrees with the
+ *  app the league actually reads: Sleeper showed 58% / 42% on a projected
+ *  margin of 10.16 (GinniVan Jefferson 126.90, Thomo 116.74, 2026 week 1), and
+ *  58% implies z = 0.202, so SD = 10.16 / 0.202 ~= 50. The old value of 34 was
+ *  a guess at fantasy scoring variance and priced that same game at 62%. */
+const MARGIN_SD = 50;
 
 /** Total juice baked into the two moneylines — they imply ~104.5% together,
  *  the same hold a real book takes on a two-way market. */
@@ -112,18 +117,29 @@ function toDecimal(probability: number): number {
 
 const toHalfPoint = (n: number) => Math.round(n * 2) / 2;
 
-/** Build the (fake) line for one matchup. Pure and deterministic. */
+/**
+ * Build the (fake) line for one matchup. Pure and deterministic.
+ *
+ * The line is priced off Sleeper's projected totals whenever the matchup
+ * carries them, so the favourite and the win % match what the league sees in
+ * the Sleeper app. Only when projections are missing — historical fixtures, or
+ * Sleeper being unreachable — does it fall back to all-time scoring rates plus
+ * a deterministic form wobble.
+ */
 export function getMatchupOdds(matchup: Matchup): MatchupOdds {
   const { week, away, home } = matchup;
 
-  const awayProjected = rating(away.team.id) + formAdjustment(away.team.id, week);
-  const homeProjected = rating(home.team.id) + formAdjustment(home.team.id, week);
+  const live = away.projected != null && home.projected != null;
+  const awayProjected = live ? away.projected! : rating(away.team.id) + formAdjustment(away.team.id, week);
+  const homeProjected = live ? home.projected! : rating(home.team.id) + formAdjustment(home.team.id, week);
 
-  const homeMargin = toHalfPoint(homeProjected - awayProjected);
+  const rawMargin = homeProjected - awayProjected;
+  const homeMargin = toHalfPoint(rawMargin);
   const total = toHalfPoint(awayProjected + homeProjected);
 
-  // Price the moneyline off the same margin the spread is built from.
-  const homeWinProbability = normalCdf(homeMargin / MARGIN_SD);
+  // Price the moneyline off the exact margin, not the half-point the spread is
+  // posted at, so the implied win % lands on Sleeper's rather than the rounding.
+  const homeWinProbability = normalCdf(rawMargin / MARGIN_SD);
   const awayWinProbability = 1 - homeWinProbability;
 
   return {

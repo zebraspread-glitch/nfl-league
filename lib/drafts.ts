@@ -6,26 +6,36 @@ export interface DraftIndexEntry {
   rounds: number;
   teams: number;
   picks: number;
+  /** Seeded keeper slots, on the Sleeper-era seasons that have them. */
+  keepers?: number;
 }
 
 interface RawDraftPick {
   season: number;
   round: number;
   pick: number;
-  playerId: number;
+  /** Scraped NFL.com id — 2021-2025 only. */
+  playerId?: number;
+  /** Sleeper's own player id — 2026 on. The two schemes don't overlap, so a
+   *  pick carries whichever its season was sourced from. */
+  sleeperPlayerId?: string;
   playerName: string;
   position: string;
   proTeam: string;
   status?: { label: string; title: string };
-  fantasyTeamId: number;
+  fantasyTeamId?: number;
   fantasyTeamName: string;
+  /** Empty on Sleeper seasons, which fall back to the franchise's manager. */
   managers: string[];
+  /** A kept player Sleeper seeded onto the board, not a live selection. */
+  isKeeper?: boolean;
 }
 
 interface RawDraftSeason {
   season: number;
   rounds: number;
   teamCount: number;
+  keepers?: number;
   picks: RawDraftPick[];
 }
 
@@ -37,6 +47,7 @@ export interface DraftSeason {
   season: number;
   rounds: number;
   teamCount: number;
+  keepers?: number;
   picks: DraftPick[];
 }
 
@@ -44,6 +55,19 @@ const cache = new Map<number, DraftSeason>();
 
 function hydratePick(pick: RawDraftPick): DraftPick {
   return { ...pick, team: franchiseForName(pick.fantasyTeamName) };
+}
+
+/** The player's profile page, keyed by whichever id scheme the season used. */
+export function playerHref(pick: DraftPick): string | undefined {
+  const id = pick.sleeperPlayerId ?? pick.playerId;
+  return id ? `/players/${id}` : undefined;
+}
+
+/** Who made the pick. Sleeper seasons ship no manager names of their own, so
+ *  they read through to the curated franchise metadata. */
+export function managerLabel(pick: DraftPick): string {
+  if (pick.managers.length) return pick.managers.join(", ");
+  return pick.team?.manager || "Unknown manager";
 }
 
 export async function getDraftIndex(): Promise<DraftIndexEntry[]> {

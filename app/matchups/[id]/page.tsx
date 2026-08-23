@@ -5,6 +5,7 @@ import { getMatchups, getRoster, getStandings, getWeekKickoff } from "@/lib/slee
 import { Card, TeamAvatar, Score, EmptyState, Hexagon, Pill } from "@/components/ui";
 import { SleeperPlayerAvatar } from "@/components/sleeper-player-avatar";
 import { MatchupTabs } from "@/components/matchup-tabs";
+import { MatchupSwiper } from "@/components/matchup-swiper";
 import { MatchupCountdown } from "@/components/matchup-countdown";
 import { proTeamLogoUrl } from "@/lib/player-images";
 import { getHeadToHead, shortWeek } from "@/lib/games";
@@ -133,6 +134,8 @@ export default async function MatchupPage({ params }: { params: Promise<{ id: st
           <MinutesRemaining minutes={homeMinutes} max={minutesMax} align="left" />
         </div>
       </Card>
+
+      <MatchupSwiper ids={matchups.map((m) => m.id)} currentId={id} />
 
       <MatchupTabs teams={teamsPanel} preview={previewPanel} />
     </div>
