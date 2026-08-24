@@ -15,23 +15,24 @@ type MoreLink = {
 };
 
 const FEATURED_LINKS: MoreLink[] = [
-  { href: "/predictor", label: "Season Predictor", desc: "Pick a margin on all 84 games, then play out the finals", icon: "PRD", badge: "NEW" },
+  { href: "/superbowl-odds", label: "Superbowl Odds", desc: "MGL Book futures on the 2026 title, top 6 and the spoon", icon: "SB", badge: "NEW" },
   { href: "/power-rankings", label: "Power Rankings", desc: "TP's personal ranking of every team", icon: "🏆" },
+  { href: "/transactions", label: "Transactions", desc: "Every add & drop, 2021-2025", icon: "TX" },
+  { href: "/drafts", label: "Draft Results", desc: "Every historical MGL draft pick", icon: "DR" },
+  { href: "/playoffs", label: "Playoff Bracket", desc: "Full postseason bracket, 2021-2025", icon: "PO" },
+  { href: "/predictor", label: "Season Predictor", desc: "Pick a margin on all 84 games, then play out the finals", icon: "PRD" },
+];
+
+const OTHER_LINKS: MoreLink[] = [
   { href: "/keepers", label: "Keepers Board", desc: "Every team's kept players for 2026", icon: "🔒" },
   { href: "/mock-draft", label: "Mock Draft", desc: "Simulate the 2026 draft board pick by pick", icon: "MD" },
   { href: "/history", label: "History", desc: "Champions and final standings, 2021-2025", icon: "HY" },
   { href: "/head-to-head", label: "Head to Head", desc: "Compare any two franchises", icon: "HH" },
-];
-
-const OTHER_LINKS: MoreLink[] = [
   { href: "/playoff-simulator", label: "Playoff Simulator", desc: "Project the 2026 ladder by picking every remaining game", icon: "SIM" },
   { href: "/newspaper", label: "League Newspaper", desc: "MGL Gazette headlines, matchup wire and league gossip", icon: "NEWS" },
   { href: "/games", label: "Every Game", desc: "445 games with full player boxscores", icon: "GM" },
   { href: "/players", label: "Players", desc: "Search NFL players, profiles and MGL records", icon: "PL" },
-  { href: "/drafts", label: "Draft Results", desc: "Every historical MGL draft pick", icon: "DR" },
   { href: "/trades", label: "Trades", desc: "Every all-time trade, 2021-2025", icon: "TR" },
-  { href: "/transactions", label: "Transactions", desc: "Every add & drop, 2021-2025", icon: "TX" },
-  { href: "/playoffs", label: "Playoff Bracket", desc: "Full postseason bracket, 2021-2025", icon: "PO" },
   { href: "/scoregami", label: "Scoregami", desc: "Every integer matchup score and all-time scoregamis", icon: "SG" },
   { href: "/managers", label: "Managers", desc: "All-time managers, stats and legacy scores", icon: "MG" },
   { href: "/records", label: "Records", desc: "All-time wins, points and titles", icon: "RC" },
