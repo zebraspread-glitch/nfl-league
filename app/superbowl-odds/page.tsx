@@ -184,14 +184,14 @@ function BoardRow({
 function meta(entry: FuturesEntry): string[] {
   const parts = [entry.team.manager];
   if (entry.wins + entry.losses + entry.ties > 0) parts.push(formatRecord(entry));
-  parts.push(`${entry.projectedWins} proj wins`);
+  parts.push(`${entry.projectedWins.toFixed(1)} proj wins`);
   return parts;
 }
 
 function Explainer({ board }: { board: FuturesBoard }) {
   const lines = [
     `${board.simulations.toLocaleString()} seasons simulated, ${board.remainingGames} fixtures still to play.`,
-    `Each franchise is rated on its all-time points per game — regressed toward the league average, since the roster gets redrawn every draft — then blended with this season's scoring and nudged by the AI power ranking.`,
+    `Franchise ratings are fitted to the league's projected title odds, then move with actual scoring as results come in — by mid-season the board is mostly what has really happened.`,
     `Every remaining week is played out, the ladder is cut at ${PLAYOFF_CUTOFF} after Week ${REGULAR_SEASON_WEEKS}, and the bracket runs to a champion.`,
     `Prices are decimal and carry a book's margin, so they add up to more than 100% — exactly like the real thing.`,
   ];

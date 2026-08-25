@@ -1,5 +1,4 @@
 import { CURRENT_SEASON, getAllTimeRecords, getCurrentSeasonMatchups } from "./league-data";
-import { getAiPowerRankings } from "./power-rankings";
 import { completedWeeksFromStandings, PLAYOFF_CUTOFF, REGULAR_SEASON_WEEKS } from "./playoff-simulator";
 import { getStandings } from "./sleeper";
 import { TEAMS } from "./teams";
@@ -17,6 +16,10 @@ import type { Standing, TeamMeta, TeamId } from "./types";
 // to a champion. Counting how often each franchise lifts the trophy gives the
 // probability; the price is that probability with a book's margin on top.
 //
+// The ratings the run is driven off are fitted to the league's own projected
+// title odds — see PRESEASON_RATING — so the title market opens where the
+// projection board has it and every other market falls out of the same run.
+//
 // The whole run is seeded, so a rebuild produces the same board rather than
 // numbers that twitch on every revalidate.
 // ---------------------------------------------------------------------------
@@ -30,22 +33,41 @@ const SIMULATIONS = 20_000;
  *  independent scores make that margin, so each side carries 50/sqrt(2) ~= 35. */
 const TEAM_SCORE_SD = 50 / Math.SQRT2;
 
-/** How much of a franchise's gap to the league scoring average carries into
- *  next week. Raw 2021-2025 rates run 104-129 points a game, but rosters are
- *  redrafted every August and only a handful of keepers survive, so most of
- *  that gap is history rather than form. Taking it at 60% keeps the pecking
- *  order intact while pulling the tails back toward the pack — without it the
- *  model prices a twelve-team title race like a two-horse one. */
-const SCORING_PERSISTENCE = 0.6;
+/** The point every rating is measured against — the mean of the table below. */
+const LEAGUE_AVERAGE_RATING = 115;
 
-/** How hard the AI power ranking pulls a franchise off its scoring history.
- *  Ranks run 1-12, so the tilt spans about +/-4.5 points a game — enough to
- *  matter, never enough to bury what the franchise has actually scored. */
-const RANK_WEIGHT = 0.8;
+/** Where each franchise starts the season, in points per game.
+ *
+ *  These are not raw scoring rates. They are solved backwards from the title
+ *  odds the league's own projection board carries, so that running the Monte
+ *  Carlo below on this fixture reproduces those odds to within a fraction of a
+ *  point — Monke 36%, GinniVan 16%, Thomo 15%, and so on down to Lucky Bison at
+ *  0.5%. Dimmy is the one hand-set number: the projection board had the
+ *  franchise under 1% and it is priced here at 8% instead, with the rest of the
+ *  field renormalised around it so the twelve chances still add to 100%.
+ *
+ *  Refitting: change the targets, re-solve, and paste the new table in. The
+ *  spread is deliberately wider than real scoring — it encodes roster strength,
+ *  not a literal prediction of how many points a franchise puts up. */
+const PRESEASON_RATING: Record<TeamId, number> = {
+  1: 118.7, // Dimmy
+  2: 124.9, // Thomo
+  3: 111.5, // De'Aaron Cronin
+  4: 126.4, // GinniVan Jefferson
+  5: 102.5, // Lavar Balls
+  6: 137.9, // Monke Vengeance
+  7: 116.5, // Tinkle Van Ginkel
+  8: 115.0, // Dalts
+  9: 102.4, // Paho
+  10: 116.2, // ChiChi
+  11: 108.2, // Brownlowrowbottom
+  12: 99.9, // Lucky Bison
+};
 
-/** Games of the current season needed before form outweighs all-time scoring.
- *  At `n` games played the season carries n/(n+PRIOR_GAMES) of the rating, so
- *  Week 1 leans almost entirely on history and Week 12 barely at all. */
+/** Games of the current season needed before results outweigh the preseason
+ *  rating. At `n` games played the season carries n/(n+PRIOR_GAMES), so Week 1
+ *  is almost pure projection and by Week 12 the board is mostly what has
+ *  actually happened — which is the point of a market that moves. */
 const PRIOR_GAMES = 6;
 
 /** Margin baked into a whole-league outright market — the twelve prices imply
@@ -227,41 +249,22 @@ export function boardFor(board: FuturesBoard, market: MarketKey): FuturesEntry[]
 
 /** Points-per-game rating per franchise, in TEAMS order.
  *
- *  All-time scoring rate is the spine; this season's rate is folded in as it
- *  accumulates, and the AI power ranking nudges the result so the board agrees
- *  with the ranking the league reads on the same site. */
+ *  The preseason table is the spine. This season's actual scoring is folded in
+ *  as it accumulates, so the board opens on the projected title odds and then
+ *  drifts toward what the franchise is really putting up. */
 function buildRatings(standings: Standing[]): Float64Array {
-  const records = getAllTimeRecords();
-  const historyByTeam = new Map(records.map((r) => [r.team.id, r]));
   const standingByTeam = new Map(standings.map((s) => [s.team.id, s]));
-  const rankByTeam = new Map(getAiPowerRankings().entries.map((e) => [e.team.id, e.rank]));
-
-  const totals = records.reduce(
-    (acc, r) => {
-      acc.points += r.pointsFor;
-      acc.games += r.wins + r.losses + r.ties;
-      return acc;
-    },
-    { points: 0, games: 0 }
-  );
-  const leagueAverage = totals.games ? totals.points / totals.games : 115;
-  const middleRank = (TEAMS.length + 1) / 2;
 
   const ratings = new Float64Array(TEAMS.length);
   TEAMS.forEach((team, i) => {
-    const record = historyByTeam.get(team.id);
-    const historyGames = record ? record.wins + record.losses + record.ties : 0;
-    const historyRate = record && historyGames ? record.pointsFor / historyGames : leagueAverage;
+    const base = PRESEASON_RATING[team.id] ?? LEAGUE_AVERAGE_RATING;
 
     const standing = standingByTeam.get(team.id);
     const seasonGames = standing ? standing.wins + standing.losses + standing.ties : 0;
-    const seasonRate = standing && seasonGames ? standing.pointsFor / seasonGames : historyRate;
+    const seasonRate = standing && seasonGames ? standing.pointsFor / seasonGames : base;
     const seasonWeight = seasonGames / (seasonGames + PRIOR_GAMES);
 
-    const form = historyRate * (1 - seasonWeight) + seasonRate * seasonWeight;
-    const regressed = leagueAverage + (form - leagueAverage) * SCORING_PERSISTENCE;
-    const rank = rankByTeam.get(team.id) ?? middleRank;
-    ratings[i] = regressed + (middleRank - rank) * RANK_WEIGHT;
+    ratings[i] = base * (1 - seasonWeight) + seasonRate * seasonWeight;
   });
 
   return ratings;
