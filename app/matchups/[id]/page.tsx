@@ -601,7 +601,7 @@ function SlotSection({
   const homeTop = Math.max(0, ...rows.map((r) => r.home?.points ?? 0));
   return (
     <>
-      <div className="-mx-3 mt-3 bg-section px-4 py-3">
+      <div className="-mx-3 mt-3 px-4 py-3">
         <h2 className="font-cond text-xl font-semibold uppercase tracking-[0.12em] text-text-muted">{title}</h2>
       </div>
       <div className="mt-2 grid grid-cols-2 gap-2">
@@ -822,7 +822,7 @@ function StarterCell({
   );
 
   const content = (
-    <Card className={`${CELL_BOX} ${live ? "shadow-md ring-1 ring-border-strong" : muted ? "bg-section" : "bg-row"}`}>
+    <Card className={`${CELL_BOX} ${live ? "shadow-md ring-1 ring-border-strong" : muted ? "bg-section" : ""}`}>
       <div className="px-3 pb-2.5 pt-3">
         <div className={`flex items-center ${left ? "" : "flex-row-reverse"}`}>
           {head}
@@ -843,9 +843,7 @@ function StarterCell({
       </div>
 
       <div
-        className={`mt-auto flex items-center justify-between gap-2 px-3 py-2 text-[11px] ${
-          live ? "bg-card" : "bg-section"
-        } ${left ? "" : "flex-row-reverse"}`}
+        className={`mt-auto flex items-center justify-between gap-2 bg-section px-3 py-2 text-[11px] ${left ? "" : "flex-row-reverse"}`}
       >
         <span className="truncate text-text-muted">{entry.gameLabel ?? entry.proTeam ?? "—"}</span>
         {when && <span className="shrink-0 font-semibold text-text">{when}</span>}

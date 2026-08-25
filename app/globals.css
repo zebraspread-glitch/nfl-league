@@ -7,14 +7,14 @@
    =========================================================================== */
 
 :root {
-  --bg: #e7e8ea;
+  --bg: #e2e1de;
   --card: #ffffff;
-  --card-hover: #f4f5f6;
-  --section: #eef0f2;
+  --card-hover: #f3f2f0;
+  --section: #f1f0ee;
   /* Zebra-stripe alt row background (pairs with --card in list rows). */
-  --row: #f7f8fa;
-  --border: #e2e4e7;
-  --border-strong: #d3d7dd;
+  --row: #f8f7f5;
+  --border: #dcdbd7;
+  --border-strong: #cccbc7;
 
   --text: #15181d;
   --text-muted: #6a7280;
