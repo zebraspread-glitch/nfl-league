@@ -1,7 +1,7 @@
 import { franchiseForName, franchiseIdForName } from "./franchises";
 import { HISTORY_SEASONS, getSeasonResults } from "./league-data";
 import { TEAMS } from "./teams";
-import type { TeamMeta } from "./types";
+import type { SeasonStanding, TeamMeta } from "./types";
 
 const TEAMS_BY_ID = new Map(TEAMS.map((t) => [t.id, t]));
 
@@ -141,6 +141,114 @@ export function gameCounts(game: Game): boolean {
 /** All games that count toward records (regular season + championship bracket). */
 export async function getCountingGames(): Promise<Game[]> {
   return (await getAllGames()).filter(gameCounts);
+}
+
+// --- Ladder as it stood after any week ---------------------------------------
+// Rebuilds the regular-season ladder from scratch through a given week, so the
+// Ladder page can rewind to any week 1-14. Feeding week 14 back through this
+// reproduces data/history.json exactly (record, PF, PA and streak) for every
+// season, so the same tally is trusted for the in-progress season too.
+
+export const LADDER_WEEKS = 14;
+
+/** One team's side of one played game, in ladder terms. */
+export interface LadderResult {
+  /** Stable per-season key for the team (NFL.com team id, or franchise id). */
+  key: string;
+  /** The team's name *that season*. */
+  name: string;
+  team?: TeamMeta;
+  week: number;
+  pointsFor: number;
+  pointsAgainst: number;
+}
+
+interface LadderTally {
+  name: string;
+  team?: TeamMeta;
+  wins: number;
+  losses: number;
+  ties: number;
+  pointsFor: number;
+  pointsAgainst: number;
+  results: { week: number; result: "W" | "L" | "T" }[];
+}
+
+/** Tally played games into a ranked ladder, newest name and streak included. */
+export function buildLadder(results: LadderResult[]): SeasonStanding[] {
+  const tallies = new Map<string, LadderTally>();
+
+  for (const r of results) {
+    let row = tallies.get(r.key);
+    if (!row) {
+      row = { name: r.name, team: r.team, wins: 0, losses: 0, ties: 0, pointsFor: 0, pointsAgainst: 0, results: [] };
+      tallies.set(r.key, row);
+    }
+    // A team can be renamed between seasons but not mid-season; keep the latest.
+    row.name = r.name;
+    row.team = r.team ?? row.team;
+    row.pointsFor += r.pointsFor;
+    row.pointsAgainst += r.pointsAgainst;
+    const result = r.pointsFor > r.pointsAgainst ? "W" : r.pointsFor < r.pointsAgainst ? "L" : "T";
+    if (result === "W") row.wins += 1;
+    else if (result === "L") row.losses += 1;
+    else row.ties += 1;
+    row.results.push({ week: r.week, result });
+  }
+
+  return [...tallies.values()]
+    .map((row) => {
+      const played = row.wins + row.losses + row.ties;
+      return {
+        rank: 0,
+        name: row.name,
+        team: row.team,
+        wins: row.wins,
+        losses: row.losses,
+        ties: row.ties,
+        winPct: played ? (row.wins + row.ties / 2) / played : 0,
+        streak: latestStreak(row.results),
+        pointsFor: Math.round(row.pointsFor * 100) / 100,
+        pointsAgainst: Math.round(row.pointsAgainst * 100) / 100,
+      } satisfies SeasonStanding;
+    })
+    .sort((a, b) => b.winPct - a.winPct || b.pointsFor - a.pointsFor || a.pointsAgainst - b.pointsAgainst)
+    .map((row, i) => ({ ...row, rank: i + 1 }));
+}
+
+function latestStreak(results: { week: number; result: "W" | "L" | "T" }[]): string {
+  if (!results.length) return "";
+  const byWeek = [...results].sort((a, b) => b.week - a.week);
+  const kind = byWeek[0].result;
+  let run = 0;
+  for (const r of byWeek) {
+    if (r.result !== kind) break;
+    run += 1;
+  }
+  return `${kind}${run}`;
+}
+
+/** The ladder as it stood after `week` of a past season's regular season. */
+export async function getLadderThroughWeek(season: number, week: number): Promise<SeasonStanding[]> {
+  const cutoff = Math.min(Math.max(Math.trunc(week), 1), LADDER_WEEKS);
+  const games = (await getSeasonGames(season)).filter((g) => g.week <= cutoff);
+  const results: LadderResult[] = [];
+  for (const game of games) {
+    for (const [self, opponent] of [
+      [game.home, game.away],
+      [game.away, game.home],
+    ] as const) {
+      results.push({
+        key: String(self.teamId),
+        name: self.name,
+        team: self.team,
+        week: game.week,
+        pointsFor: self.total,
+        pointsAgainst: opponent.total,
+      });
+    }
+  }
+  return buildLadder(results);
 }
 
 // --- Playoff bracket visualization -------------------------------------------
