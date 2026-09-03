@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { getMatchups, getSnapshot, getStandings } from "@/lib/sleeper";
 import { buildLadder, getLadderThroughWeek, LADDER_WEEKS, type LadderResult } from "@/lib/games";
+import { applyLiveWeek, liveWeekIsPending, weekHasStarted } from "@/lib/live-ladder";
+import { PickerMenu } from "@/components/picker-menu";
 import { CURRENT_SEASON, getSeasonResults, HISTORY_SEASONS } from "@/lib/league-data";
 import { Card, EmptyState, Hexagon, PageIntro, TeamAvatar } from "@/components/ui";
 import type { Matchup, MatchupStatus, SeasonResult, SeasonStanding, Standing, TeamMeta } from "@/lib/types";
@@ -12,17 +14,17 @@ const CURRENT_LADDER_TABS = [
   { key: "extended", label: "Extended" },
   { key: "next5", label: "Next 5" },
   { key: "form", label: "Form" },
-  { key: "week", label: "By Week" },
 ] as const;
 const HISTORICAL_LADDER_TABS = [
   { key: "regular", label: "Regular" },
   { key: "final", label: "Final" },
-  { key: "week", label: "By Week" },
 ] as const;
 
 type CurrentLadderView = (typeof CURRENT_LADDER_TABS)[number]["key"];
 type HistoricalLadderView = (typeof HISTORICAL_LADDER_TABS)[number]["key"];
-type LadderView = CurrentLadderView | HistoricalLadderView;
+// "week" is reached from the week pill rather than either tab strip, so it sits
+// outside both tab-derived unions.
+type LadderView = CurrentLadderView | HistoricalLadderView | "week";
 type SortKey = "rank" | "wl" | "wins" | "losses" | "pct" | "for" | "against";
 type SortDir = "asc" | "desc";
 
@@ -61,7 +63,7 @@ interface LadderRow {
 export default async function LadderPage({
   searchParams,
 }: {
-  searchParams: Promise<{ season?: string; ladder?: string; week?: string; sort?: string; dir?: string }>;
+  searchParams: Promise<{ season?: string; ladder?: string; week?: string; sort?: string; dir?: string; live?: string }>;
 }) {
   const snapshot = getSnapshot();
   const {
@@ -70,6 +72,7 @@ export default async function LadderPage({
     week: weekParam,
     sort: sortParam,
     dir: dirParam,
+    live: liveParam,
   } = await searchParams;
   const currentSeason = snapshot.season || CURRENT_SEASON;
   const seasons = [currentSeason, ...[...HISTORY_SEASONS].reverse()];
@@ -88,6 +91,12 @@ export default async function LadderPage({
   const currentContext =
     season === currentSeason && view !== "week" ? buildCurrentContext(matchupWeeks, snapshot.currentWeek) : new Map();
 
+  // The confirmed ladder only moves once a week finalises, so while this week's
+  // games are running the in-progress picture sits behind a switch.
+  const liveMatchups = season === currentSeason && view !== "week" ? await getMatchups(snapshot.currentWeek) : [];
+  const liveAvailable = weekHasStarted(liveMatchups) && liveWeekIsPending(standings, snapshot.currentWeek);
+  const live = liveAvailable && liveParam === "1";
+
   const sort: SortKey = (["rank", "wl", "wins", "losses", "pct", "for", "against"] as const).includes(sortParam as SortKey)
     ? (sortParam as SortKey)
     : "rank";
@@ -101,7 +110,8 @@ export default async function LadderPage({
       season === currentSeason ? buildLadder(playedResults(matchupWeeks)) : await getLadderThroughWeek(season, week);
     if (ladder.length) rows = normalizeHistorical(ladder);
   } else if (season === currentSeason) {
-    if (standings.length) rows = normalizeCurrent(standings, currentContext);
+    const table = live ? applyLiveWeek(standings, liveMatchups) : standings;
+    if (table.length) rows = normalizeCurrent(table, currentContext);
   } else if (historical) {
     const historicalView = isHistoricalLadderView(view) ? view : defaultHistoricalViewForSeason(season);
     rows = normalizeHistorical(historicalView === "regular" ? regularSeasonRows(historical) : historical.finalStandings);
@@ -111,15 +121,18 @@ export default async function LadderPage({
 
   return (
     <div>
-      <PageIntro title="Ladder" subtitle={ladderSubtitle(season, view, week)} />
+      <PageIntro title="Ladder" subtitle={ladderSubtitle(season, view, week, live)} />
 
       <SeasonTabs seasons={seasons} active={season} view={view} week={week} currentSeason={currentSeason} />
+      <div className="mb-2 px-1">
+        <WeekPicker season={season} view={view} week={week} lastWeek={lastWeek} sort={sort} dir={dir} />
+      </div>
       {season === currentSeason ? (
-        <CurrentLadderSwitch season={season} active={isCurrentLadderView(view) ? view : "brief"} week={week} />
+        <CurrentLadderSwitch season={season} active={view} week={week} live={live} />
       ) : (
-        <HistoricalLadderSwitch season={season} active={isHistoricalLadderView(view) ? view : "final"} week={week} />
+        <HistoricalLadderSwitch season={season} active={view} week={week} />
       )}
-      {view === "week" && <WeekTabs season={season} active={week} lastWeek={lastWeek} sort={sort} dir={dir} />}
+      {liveAvailable && <LiveLadderSwitch season={season} view={view} week={week} live={live} />}
 
       {sortedRows ? (
         <LadderTable
@@ -130,6 +143,7 @@ export default async function LadderPage({
           season={season}
           view={view}
           week={week}
+          live={live}
         />
       ) : (
         <EmptyState>
@@ -242,11 +256,13 @@ function defaultHistoricalViewForSeason(season: number): HistoricalLadderView {
 }
 
 function viewForSeason(season: number, currentSeason: number, rawView?: string): LadderView {
+  if (rawView === "week") return "week";
   if (season === currentSeason) return isCurrentLadderView(rawView) ? rawView : defaultViewForSeason(season, currentSeason);
   return isHistoricalLadderView(rawView) ? rawView : defaultViewForSeason(season, currentSeason);
 }
 
 function compatibleViewForSeason(view: LadderView, season: number, currentSeason: number): LadderView {
+  if (view === "week") return "week";
   if (season === currentSeason) return isCurrentLadderView(view) ? view : defaultViewForSeason(season, currentSeason);
   return isHistoricalLadderView(view) ? view : defaultViewForSeason(season, currentSeason);
 }
@@ -267,13 +283,21 @@ function defaultSortDir(sort: SortKey): SortDir {
   return sort === "rank" || sort === "losses" ? "asc" : "desc";
 }
 
-function ladderHref(season: number, view: LadderView, week: number, sort?: SortKey, dir?: SortDir): string {
+function ladderHref(
+  season: number,
+  view: LadderView,
+  week: number,
+  sort?: SortKey,
+  dir?: SortDir,
+  live?: boolean,
+): string {
   const params = new URLSearchParams({ season: String(season), ladder: view });
   if (view === "week") params.set("week", String(week));
   if (sort && dir) {
     params.set("sort", sort);
     params.set("dir", dir);
   }
+  if (live) params.set("live", "1");
   return `/teams?${params}`;
 }
 
@@ -313,13 +337,23 @@ function SeasonTabs({
   );
 }
 
-function CurrentLadderSwitch({ season, active, week }: { season: number; active: CurrentLadderView; week: number }) {
+function CurrentLadderSwitch({
+  season,
+  active,
+  week,
+  live,
+}: {
+  season: number;
+  active: LadderView;
+  week: number;
+  live: boolean;
+}) {
   return (
-    <div className="mb-3 grid grid-cols-5 gap-1 rounded-lg bg-section p-1">
+    <div className="mb-3 grid grid-cols-4 gap-1 rounded-lg bg-section p-1">
       {CURRENT_LADDER_TABS.map((tab) => (
         <Link
           key={tab.key}
-          href={ladderHref(season, tab.key, week)}
+          href={ladderHref(season, tab.key, week, undefined, undefined, live)}
           className={`rounded-md px-1 py-2 text-center font-cond text-xs font-semibold uppercase tracking-wide transition-colors sm:text-sm ${
             active === tab.key ? "bg-card text-text shadow-sm" : "text-text-muted hover:text-text"
           }`}
@@ -331,9 +365,9 @@ function CurrentLadderSwitch({ season, active, week }: { season: number; active:
   );
 }
 
-function HistoricalLadderSwitch({ season, active, week }: { season: number; active: HistoricalLadderView; week: number }) {
+function HistoricalLadderSwitch({ season, active, week }: { season: number; active: LadderView; week: number }) {
   return (
-    <div className="mb-3 grid grid-cols-3 gap-1 rounded-lg bg-section p-1">
+    <div className="mb-3 grid grid-cols-2 gap-1 rounded-lg bg-section p-1">
       {HISTORICAL_LADDER_TABS.map((tab) => (
         <Link
           key={tab.key}
@@ -349,35 +383,87 @@ function HistoricalLadderSwitch({ season, active, week }: { season: number; acti
   );
 }
 
-/** Week 1-14 picker — the ladder as it stood after that week's games. */
-function WeekTabs({
+/** Week 1-14 picker — the ladder as it stood after that week's games.
+ *
+ *  A pill that drops the weeks open, rather than a tab in the view switch: the
+ *  week ladder is a rewind of whichever season is selected, so it belongs with
+ *  the season row above the brief/extended (or regular/final) tabs.
+ */
+function WeekPicker({
   season,
-  active,
+  view,
+  week,
   lastWeek,
   sort,
   dir,
 }: {
   season: number;
-  active: number;
+  view: LadderView;
+  week: number;
   lastWeek: number;
   sort: SortKey;
   dir: SortDir;
 }) {
+  const active = view === "week";
   return (
-    <div className="mb-3 flex gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      {Array.from({ length: lastWeek }, (_, i) => i + 1).map((week) => (
+    <PickerMenu
+      label={
+        <>
+          <span className={active ? "text-teal" : ""}>{active ? `Week ${week}` : "By Week"}</span>
+          <span className="ml-1.5 text-[10px] text-text-muted">▾</span>
+        </>
+      }
+      panelClassName="max-h-72 w-32 overflow-y-auto"
+    >
+      {Array.from({ length: lastWeek }, (_, i) => i + 1).map((w) => (
         <Link
-          key={week}
-          href={ladderHref(season, "week", week, sort, dir)}
+          key={w}
+          href={ladderHref(season, "week", w, sort, dir)}
           scroll={false}
-          className={`shrink-0 rounded-full px-3 py-1.5 font-cond text-sm font-semibold transition-colors ${
-            week === active ? "bg-teal text-white" : "bg-card text-text-muted hover:bg-card-hover"
+          className={`block px-3 py-2 font-cond text-sm font-semibold hover:bg-card-hover ${
+            active && w === week ? "bg-teal/10 text-text" : "text-text-muted"
           }`}
         >
-          W{week}
+          Week {w}
         </Link>
       ))}
-    </div>
+    </PickerMenu>
+  );
+}
+
+/** Toggles the in-progress week into the ladder. Only rendered once the week has
+ *  kicked off and Sleeper has yet to fold it into the confirmed records. */
+function LiveLadderSwitch({
+  season,
+  view,
+  week,
+  live,
+}: {
+  season: number;
+  view: LadderView;
+  week: number;
+  live: boolean;
+}) {
+  return (
+    <Link
+      href={ladderHref(season, view, week, undefined, undefined, !live)}
+      scroll={false}
+      className="mb-3 flex items-center gap-2.5 rounded-lg border border-border bg-card px-3 py-2.5 transition-colors hover:bg-card-hover"
+    >
+      <span className="relative flex h-2 w-2 shrink-0">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-live opacity-70" />
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-live" />
+      </span>
+      <span className="flex-1 font-cond text-sm font-semibold uppercase tracking-wide">Live ladder</span>
+      <span className="text-xs text-text-muted">{live ? "Week counted" : "Week not counted"}</span>
+      <span
+        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${live ? "bg-teal" : "bg-border-strong"}`}
+      >
+        <span
+          className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${live ? "left-[22px]" : "left-0.5"}`}
+        />
+      </span>
+    </Link>
   );
 }
 
@@ -465,8 +551,9 @@ function resultLetter(pointsFor: number, pointsAgainst: number): FormItem["resul
   return "T";
 }
 
-function ladderSubtitle(season: number, view: LadderView, week: number): string {
+function ladderSubtitle(season: number, view: LadderView, week: number, live = false): string {
   if (view === "week") return `${season} ladder after week ${week}`;
+  if (live) return `${season} live ladder`;
   if (view === "regular") return `${season} regular season ladder`;
   if (view === "final") return `${season} final ladder`;
   const label = CURRENT_LADDER_TABS.find((tab) => tab.key === view)?.label ?? "Breif";
@@ -488,6 +575,7 @@ function LadderTable({
   season,
   view,
   week,
+  live,
 }: {
   rows: LadderRow[];
   playoffCutoff: number;
@@ -496,27 +584,23 @@ function LadderTable({
   season: number;
   view: LadderView;
   week: number;
+  live: boolean;
 }) {
   const rankOrder = sort === "rank" && dir === "asc";
   return (
     <Card>
-      <LadderHeader sort={sort} dir={dir} season={season} view={view} week={week} />
-      {rows.map((row, i) => {
-        const rowView = (
-          <LadderRowView key={row.key} row={row} index={i} view={view} playoffCutoff={playoffCutoff} />
-        );
-        // The cutoff band only reads correctly while the ladder is in rank order.
-        return rankOrder && row.rank === playoffCutoff + 1 ? (
-          <div key={row.key}>
-            <div className="bg-bg px-4 py-3 font-cond text-base font-semibold text-text-muted">
-              Out of playoffs if season ended today
-            </div>
-            {rowView}
-          </div>
-        ) : (
-          rowView
-        );
-      })}
+      <LadderHeader sort={sort} dir={dir} season={season} view={view} week={week} live={live} />
+      {rows.map((row, i) => (
+        <LadderRowView
+          key={row.key}
+          row={row}
+          index={i}
+          view={view}
+          playoffCutoff={playoffCutoff}
+          // The cutoff line only reads correctly while the ladder is in rank order.
+          cutoff={rankOrder && row.rank === playoffCutoff + 1}
+        />
+      ))}
       {!rankOrder && (
         <div className="flex items-center gap-2 border-t border-border px-3 py-2 text-xs text-text-muted">
           <span className="hexagon inline-block h-3.5 w-3 bg-teal" /> Top {playoffCutoff} make the playoffs
@@ -531,11 +615,13 @@ function LadderRowView({
   index,
   view,
   playoffCutoff,
+  cutoff,
 }: {
   row: LadderRow;
   index: number;
   view: LadderView;
   playoffCutoff: number;
+  cutoff?: boolean;
 }) {
   const inPlayoffs = row.rank <= playoffCutoff;
   const content = (
@@ -583,7 +669,7 @@ function LadderRowView({
 
   const className = `flex items-center gap-3 py-2.5 pr-3 ${index % 2 ? "bg-card" : "bg-row"} ${
     row.href ? "hover:bg-card-hover" : ""
-  }`;
+  } ${cutoff ? "border-t-2 border-teal" : ""}`;
 
   return row.href ? (
     <Link href={row.href} className={className}>
@@ -594,9 +680,17 @@ function LadderRowView({
   );
 }
 
-function sortHref(key: SortKey, sort: SortKey, dir: SortDir, season: number, view: LadderView, week: number): string {
+function sortHref(
+  key: SortKey,
+  sort: SortKey,
+  dir: SortDir,
+  season: number,
+  view: LadderView,
+  week: number,
+  live: boolean,
+): string {
   const nextDir: SortDir = sort === key ? (dir === "asc" ? "desc" : "asc") : defaultSortDir(key);
-  return ladderHref(season, view, week, key, nextDir);
+  return ladderHref(season, view, week, key, nextDir, live);
 }
 
 function SortLabel({
@@ -607,6 +701,7 @@ function SortLabel({
   season,
   view,
   week,
+  live,
 }: {
   label: string;
   sortKey: SortKey;
@@ -615,11 +710,12 @@ function SortLabel({
   season: number;
   view: LadderView;
   week: number;
+  live: boolean;
 }) {
   const active = sort === sortKey;
   return (
     <Link
-      href={sortHref(sortKey, sort, dir, season, view, week)}
+      href={sortHref(sortKey, sort, dir, season, view, week, live)}
       scroll={false}
       className={`flex items-center gap-0.5 ${active ? "text-teal" : "hover:text-text"}`}
     >
@@ -635,26 +731,28 @@ function LadderHeader({
   season,
   view,
   week,
+  live,
 }: {
   sort: SortKey;
   dir: SortDir;
   season: number;
   view: LadderView;
   week: number;
+  live: boolean;
 }) {
   if (view === "brief") {
     return (
       <div className="flex items-center gap-3 border-b border-border bg-section py-2 pr-3 font-cond text-[11px] font-semibold uppercase tracking-wide text-text-muted sm:text-sm">
         <span className="-my-2 flex w-14 shrink-0 items-center justify-center self-stretch bg-teal/12 text-text">
-          <SortLabel label="Rank" sortKey="rank" sort={sort} dir={dir} season={season} view={view} week={week} />
+          <SortLabel label="Rank" sortKey="rank" sort={sort} dir={dir} season={season} view={view} week={week} live={live} />
         </span>
         <span className="flex-1 pl-11">Team</span>
         <span className="w-12 text-center">
-          <SortLabel label="W-L" sortKey="wl" sort={sort} dir={dir} season={season} view={view} week={week} />
+          <SortLabel label="W-L" sortKey="wl" sort={sort} dir={dir} season={season} view={view} week={week} live={live} />
         </span>
         <span className="w-14 text-right">
           <span className="flex justify-end">
-            <SortLabel label="PF" sortKey="for" sort={sort} dir={dir} season={season} view={view} week={week} />
+            <SortLabel label="PF" sortKey="for" sort={sort} dir={dir} season={season} view={view} week={week} live={live} />
           </span>
         </span>
       </div>
@@ -665,23 +763,23 @@ function LadderHeader({
     return (
       <div className="flex items-center gap-3 border-b border-border bg-section py-2 pr-3 font-cond text-[11px] font-semibold uppercase tracking-wide text-text-muted sm:text-sm">
         <span className="-my-2 flex w-14 shrink-0 items-center justify-center self-stretch bg-teal/12 text-text">
-          <SortLabel label="Rank" sortKey="rank" sort={sort} dir={dir} season={season} view={view} week={week} />
+          <SortLabel label="Rank" sortKey="rank" sort={sort} dir={dir} season={season} view={view} week={week} live={live} />
         </span>
         <span className="flex-1 pl-11">Team</span>
         <span className="w-8 text-center">
-          <SortLabel label="W" sortKey="wins" sort={sort} dir={dir} season={season} view={view} week={week} />
+          <SortLabel label="W" sortKey="wins" sort={sort} dir={dir} season={season} view={view} week={week} live={live} />
         </span>
         <span className="w-8 text-center">
-          <SortLabel label="L" sortKey="losses" sort={sort} dir={dir} season={season} view={view} week={week} />
+          <SortLabel label="L" sortKey="losses" sort={sort} dir={dir} season={season} view={view} week={week} live={live} />
         </span>
         <span className="w-12 text-right">
           <span className="flex justify-end">
-            <SortLabel label="PF" sortKey="for" sort={sort} dir={dir} season={season} view={view} week={week} />
+            <SortLabel label="PF" sortKey="for" sort={sort} dir={dir} season={season} view={view} week={week} live={live} />
           </span>
         </span>
         <span className="w-12 text-right">
           <span className="flex justify-end">
-            <SortLabel label="PA" sortKey="against" sort={sort} dir={dir} season={season} view={view} week={week} />
+            <SortLabel label="PA" sortKey="against" sort={sort} dir={dir} season={season} view={view} week={week} live={live} />
           </span>
         </span>
       </div>
@@ -692,7 +790,7 @@ function LadderHeader({
     return (
       <div className="flex items-center gap-3 border-b border-border bg-section py-2 pr-3 font-cond text-[11px] font-semibold uppercase tracking-wide text-text-muted sm:text-sm">
         <span className="-my-2 flex w-14 shrink-0 items-center justify-center self-stretch bg-teal/12 text-text">
-          <SortLabel label="Rank" sortKey="rank" sort={sort} dir={dir} season={season} view={view} week={week} />
+          <SortLabel label="Rank" sortKey="rank" sort={sort} dir={dir} season={season} view={view} week={week} live={live} />
         </span>
         <span className="flex-1 pl-11">Team</span>
         <span className="w-36 text-right sm:w-48">Next 5</span>
@@ -704,7 +802,7 @@ function LadderHeader({
     return (
       <div className="flex items-center gap-3 border-b border-border bg-section py-2 pr-3 font-cond text-[11px] font-semibold uppercase tracking-wide text-text-muted sm:text-sm">
         <span className="-my-2 flex w-14 shrink-0 items-center justify-center self-stretch bg-teal/12 text-text">
-          <SortLabel label="Rank" sortKey="rank" sort={sort} dir={dir} season={season} view={view} week={week} />
+          <SortLabel label="Rank" sortKey="rank" sort={sort} dir={dir} season={season} view={view} week={week} live={live} />
         </span>
         <span className="flex-1 pl-11">Team</span>
         <span className="w-36 text-right sm:w-48">Form</span>
@@ -715,23 +813,23 @@ function LadderHeader({
   return (
     <div className="flex items-center gap-2 border-b border-border bg-section py-2 pr-3 font-cond text-[11px] font-semibold uppercase tracking-wide text-text-muted sm:gap-3 sm:text-sm">
       <span className="-my-2 flex w-14 shrink-0 items-center justify-center self-stretch bg-teal/12 text-text">
-        <SortLabel label="Rank" sortKey="rank" sort={sort} dir={dir} season={season} view={view} week={week} />
+        <SortLabel label="Rank" sortKey="rank" sort={sort} dir={dir} season={season} view={view} week={week} live={live} />
       </span>
       <span className="flex-1 pl-11">Team</span>
       <span className="w-12 text-center">
-        <SortLabel label="W-L" sortKey="wl" sort={sort} dir={dir} season={season} view={view} week={week} />
+        <SortLabel label="W-L" sortKey="wl" sort={sort} dir={dir} season={season} view={view} week={week} live={live} />
       </span>
       <span className="hidden w-12 text-center sm:block">
-        <SortLabel label="Pct" sortKey="pct" sort={sort} dir={dir} season={season} view={view} week={week} />
+        <SortLabel label="Pct" sortKey="pct" sort={sort} dir={dir} season={season} view={view} week={week} live={live} />
       </span>
       <span className="w-14 text-right">
         <span className="flex justify-end">
-          <SortLabel label="For" sortKey="for" sort={sort} dir={dir} season={season} view={view} week={week} />
+          <SortLabel label="For" sortKey="for" sort={sort} dir={dir} season={season} view={view} week={week} live={live} />
         </span>
       </span>
       <span className="hidden w-14 text-right sm:block">
         <span className="flex justify-end">
-          <SortLabel label="Against" sortKey="against" sort={sort} dir={dir} season={season} view={view} week={week} />
+          <SortLabel label="Against" sortKey="against" sort={sort} dir={dir} season={season} view={view} week={week} live={live} />
         </span>
       </span>
       <span className="hidden w-12 text-center sm:block">Stk</span>

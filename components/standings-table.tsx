@@ -78,18 +78,7 @@ export function StandingsTable({
             </div>
           );
 
-          // The cutoff band sits above the first team that misses out.
-          const showCutoff = s.rank === playoffCutoff + 1;
-          return showCutoff ? (
-            <div key={`cut-${s.rank}`}>
-              <div className="bg-bg px-4 py-3 font-cond text-base font-semibold text-text-muted">
-                Out of playoffs if season ended today
-              </div>
-              {row}
-            </div>
-          ) : (
-            row
-          );
+          return row;
         })}
       </div>
     </Card>
