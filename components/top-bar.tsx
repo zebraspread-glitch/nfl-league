@@ -24,6 +24,7 @@ const TITLES: Record<string, string> = {
   "/mock-draft": "Mock Draft",
   "/playoff-simulator": "Playoff Simulator",
   "/predictor": "Season Predictor",
+  "/schedule-predictor": "Schedule Predictor",
   "/newspaper": "League Newspaper",
   "/more": "More",
   "/power-rankings": "Power Rankings",

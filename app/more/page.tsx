@@ -21,6 +21,7 @@ const FEATURED_LINKS: MoreLink[] = [
   { href: "/drafts", label: "Draft Results", desc: "Every historical MGL draft pick", icon: "DR" },
   { href: "/playoffs", label: "Playoff Bracket", desc: "Full postseason bracket, 2021-2025", icon: "PO" },
   { href: "/predictor", label: "Season Predictor", desc: "Pick a margin on all 84 games, then play out the finals", icon: "PRD" },
+  { href: "/schedule-predictor", label: "Schedule Predictor", desc: "Tap W or L through any team's 14 games for its record", icon: "W-L", badge: "NEW" },
 ];
 
 const OTHER_LINKS: MoreLink[] = [
