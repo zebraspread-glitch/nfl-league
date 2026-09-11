@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Suspense, use, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import type { ByeMap } from "@/lib/sleeper";
 import type { TeamMeta } from "@/lib/types";
 
 // ---------------------------------------------------------------------------
@@ -25,6 +26,8 @@ export interface ScheduleGame {
 type Picks = Record<string, number>;
 
 const STORAGE_KEY = "mgl_record_prediction_2026";
+/** "on" while the bye lists are showing, so the toggle sticks between visits. */
+const BYES_KEY = "mgl_record_prediction_byes";
 
 /** Weeks in the left column; the rest sit on the right above the record box,
  *  the same split that keeps the NFL screen's two columns level. */
@@ -87,22 +90,35 @@ export function RecordPredictor({
   games,
   teams,
   initialTeamId,
+  byes,
 }: {
   games: ScheduleGame[];
   teams: TeamMeta[];
   initialTeamId: number;
+  /** Streams in from the server; only read once the bye toggle is on. */
+  byes: Promise<ByeMap>;
 }) {
   const [teamId, setTeamId] = useState(initialTeamId);
   const [picks, setPicks] = useState<Picks>({});
+  const [showByes, setShowByes] = useState(false);
 
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect */
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) setPicks(JSON.parse(raw) as Picks);
+      setShowByes(localStorage.getItem(BYES_KEY) === "on");
     } catch {}
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
+
+  const toggleByes = () => {
+    const next = !showByes;
+    setShowByes(next);
+    try {
+      localStorage.setItem(BYES_KEY, next ? "on" : "off");
+    } catch {}
+  };
 
   const byId = useMemo(() => new Map(teams.map((t) => [t.id, t])), [teams]);
   const menu = useMemo(() => [...teams].sort((a, b) => a.name.localeCompare(b.name)), [teams]);
@@ -169,28 +185,36 @@ export function RecordPredictor({
     return winner === team.id ? "W" : "L";
   };
 
-  const week = (game: ScheduleGame) => (
-    <div key={game.id} className="pt-[1.55cqw]">
-      <div className="text-center text-[3.25cqw] leading-none tracking-[0.01em] text-[#cfd2d8]">WEEK {game.week}</div>
-      <div className="mt-[1.1cqw] flex h-[5.9cqw]">
-        {/* The selected team always takes the left half, whoever is at home. */}
-        {[team.id, game.awayId === team.id ? game.homeId : game.awayId].map((sideId) => {
-          const side = byId.get(sideId);
-          if (!side) return <div key={sideId} className="flex-1" />;
-          return (
-            <Side
-              key={sideId}
-              team={side}
-              state={stateOf(game, sideId)}
-              picked={winnerOf(game) === sideId}
-              onPick={() => pick(game, sideId)}
-              label={`Week ${game.week}: ${side.name} to win`}
-            />
-          );
-        })}
+  const week = (game: ScheduleGame) => {
+    // The selected team always takes the left half, whoever is at home.
+    const sides = [team.id, game.awayId === team.id ? game.homeId : game.awayId];
+    return (
+      <div key={game.id} className="pt-[1.55cqw]">
+        <div className="text-center text-[3.25cqw] leading-none tracking-[0.01em] text-[#cfd2d8]">WEEK {game.week}</div>
+        <div className="mt-[1.1cqw] flex h-[5.9cqw]">
+          {sides.map((sideId) => {
+            const side = byId.get(sideId);
+            if (!side) return <div key={sideId} className="flex-1" />;
+            return (
+              <Side
+                key={sideId}
+                team={side}
+                state={stateOf(game, sideId)}
+                picked={winnerOf(game) === sideId}
+                onPick={() => pick(game, sideId)}
+                label={`Week ${game.week}: ${side.name} to win`}
+              />
+            );
+          })}
+        </div>
+        {showByes ? (
+          <Suspense fallback={<div className={`${BYE_TEXT} text-center text-white/35`}>…</div>}>
+            <WeekByes byes={byes} week={game.week} sides={sides} />
+          </Suspense>
+        ) : null}
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div
@@ -271,9 +295,51 @@ export function RecordPredictor({
                 {wins}-{losses}
               </span>
             </div>
+            <button
+              type="button"
+              onClick={toggleByes}
+              aria-pressed={showByes}
+              className="mx-auto mt-[3cqw] flex w-fit items-center rounded-full border px-[2.6cqw] py-[1.1cqw] text-[2.5cqw] leading-none tracking-[0.04em] transition-colors"
+              style={
+                showByes
+                  ? { background: look.accent, borderColor: look.accent, color: inkOn(look.accent) }
+                  : { borderColor: "rgba(255, 255, 255, 0.45)", color: "rgba(255, 255, 255, 0.85)" }
+              }
+            >
+              {showByes ? "HIDE BYES" : "SHOW BYES"}
+            </button>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/** Bye lists are set in Saira Condensed so "WR J. Williams" fits under a half
+ *  bar. Named directly: the site's `.font-cond` falls back to the page font. */
+const BYE_TEXT = "mt-[0.9cqw] font-[family-name:var(--font-saira)] text-[3cqw] font-semibold leading-[1.25]";
+
+/** Each side's players on bye that week, under their own half of the bar. */
+function WeekByes({ byes, week, sides }: { byes: Promise<ByeMap>; week: number; sides: number[] }) {
+  const map = use(byes);
+  return (
+    <div className={`${BYE_TEXT} grid grid-cols-2`}>
+      {sides.map((id) => {
+        const players = map[id]?.[week] ?? [];
+        return (
+          <ul key={id} className="min-w-0 px-[0.6cqw] text-center text-[#cfd2d8]">
+            {players.length ? (
+              players.map((p) => (
+                <li key={p.sleeperId} className="[overflow-wrap:anywhere]">
+                  <span className="text-white/45">{p.position}</span> {p.name}
+                </li>
+              ))
+            ) : (
+              <li className="text-white/30">—</li>
+            )}
+          </ul>
+        );
+      })}
     </div>
   );
 }

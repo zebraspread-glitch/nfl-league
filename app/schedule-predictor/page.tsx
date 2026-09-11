@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { Montserrat } from "next/font/google";
 import { RecordPredictor, type ScheduleGame } from "@/components/record-predictor";
 import { CURRENT_SEASON_FIXTURE_WEEKS, getCurrentSeasonMatchups } from "@/lib/league-data";
+import { getByePlayers, type ByeMap } from "@/lib/sleeper";
 import { TEAMS, getTeam } from "@/lib/teams";
 
 export const metadata = { title: "Schedule Predictor - MGL Fantasy" };
@@ -27,9 +28,13 @@ export default async function SchedulePredictorPage({
     homeId: m.home.team.id,
   }));
 
+  // Not awaited: the byes need Sleeper's full player catalog, so they stream in
+  // behind the toggle rather than holding up the page.
+  const byes = getByePlayers().catch((): ByeMap => ({}));
+
   return (
     <div className={montserrat.className}>
-      <RecordPredictor games={games} teams={TEAMS} initialTeamId={initialTeamId} />
+      <RecordPredictor games={games} teams={TEAMS} initialTeamId={initialTeamId} byes={byes} />
     </div>
   );
 }

@@ -586,6 +586,80 @@ export async function getKeepers(): Promise<TeamKeepers[]> {
   return rows.sort((a, b) => a.team.id - b.team.id);
 }
 
+export interface ByePlayer {
+  sleeperId: string;
+  /** "J. Jefferson", or the nickname ("Chargers") for a team defence. */
+  name: string;
+  position: string;
+  proTeam: string;
+}
+
+/** byes[franchiseId][week] — that roster's players whose NFL team is on bye. */
+export type ByeMap = Record<number, Record<number, ByePlayer[]>>;
+
+/**
+ * Every rostered player (IR included) filed under their NFL team's bye week.
+ * A team's bye is the regular-season week it's missing from Sleeper's NFL
+ * schedule; MGL weeks run in step with NFL weeks, so they line up directly.
+ */
+export async function getByePlayers(): Promise<ByeMap> {
+  const leagueId = readLeagueId();
+  if (!leagueId) return {};
+
+  const season = Number(process.env.SLEEPER_SEASON) || CURRENT_SEASON;
+  const [rosters, users, catalog, schedule] = await Promise.all([
+    getRosters(),
+    getUsers(),
+    fetchPlayerCatalog(),
+    fetchSchedule(season),
+  ]);
+  if (!catalog || !schedule.length) return {};
+
+  const weeks = [...new Set(schedule.map((g) => g.week))].sort((a, b) => a - b);
+  const weeksPlayed = new Map<string, Set<number>>();
+  for (const game of schedule) {
+    for (const proTeam of [game.home, game.away]) {
+      (weeksPlayed.get(proTeam) ?? weeksPlayed.set(proTeam, new Set()).get(proTeam)!).add(game.week);
+    }
+  }
+  const byeWeek = new Map<string, number>();
+  for (const [proTeam, played] of weeksPlayed) {
+    const bye = weeks.find((w) => !played.has(w));
+    if (bye !== undefined) byeWeek.set(proTeam, bye);
+  }
+
+  const userById = new Map(users.map((u) => [u.user_id, u]));
+  const byes: ByeMap = {};
+  for (const roster of rosters) {
+    const team = resolveTeam(roster, roster.owner_id ? userById.get(roster.owner_id) : undefined);
+    const byWeek: Record<number, ByePlayer[]> = (byes[team.id] = {});
+    for (const id of roster.players ?? []) {
+      const meta = catalog[id];
+      const week = meta?.team ? byeWeek.get(meta.team) : undefined;
+      if (!meta?.team || week === undefined) continue;
+      (byWeek[week] ??= []).push({
+        sleeperId: id,
+        name:
+          meta.position === "DEF"
+            ? meta.last_name || meta.team
+            : meta.first_name && meta.last_name
+              ? `${meta.first_name[0]}. ${meta.last_name}`
+              : meta.full_name || id,
+        position: meta.position ?? "—",
+        proTeam: meta.team,
+      });
+    }
+    for (const list of Object.values(byWeek)) {
+      list.sort((a, b) => {
+        const pa = KEEPER_POS_ORDER.indexOf(a.position);
+        const pb = KEEPER_POS_ORDER.indexOf(b.position);
+        return (pa === -1 ? 99 : pa) - (pb === -1 ? 99 : pb) || a.name.localeCompare(b.name);
+      });
+    }
+  }
+  return byes;
+}
+
 function normalizePlayerName(name: string): string {
   return name
     .toLowerCase()
