@@ -173,6 +173,18 @@ export function RecordPredictor({
       return next;
     });
 
+  /** Clears the 14 games on screen. Picks are per game, so these also clear on
+   *  each opponent's schedule; every other game keeps its pick. */
+  const reset = () =>
+    setPicks((prev) => {
+      const next = { ...prev };
+      for (const game of schedule) delete next[game.id];
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+
   const chooseTeam = (id: number) => {
     setTeamId(id);
     window.history.replaceState(null, "", `?team=${id}`);
@@ -295,25 +307,41 @@ export function RecordPredictor({
                 {wins}-{losses}
               </span>
             </div>
-            <button
-              type="button"
-              onClick={toggleByes}
-              aria-pressed={showByes}
-              className="mx-auto mt-[3cqw] flex w-fit items-center rounded-full border px-[2.6cqw] py-[1.1cqw] text-[2.5cqw] leading-none tracking-[0.04em] transition-colors"
-              style={
-                showByes
-                  ? { background: look.accent, borderColor: look.accent, color: inkOn(look.accent) }
-                  : { borderColor: "rgba(255, 255, 255, 0.45)", color: "rgba(255, 255, 255, 0.85)" }
-              }
-            >
-              {showByes ? "HIDE BYES" : "SHOW BYES"}
-            </button>
+            <div className="mt-[3cqw] flex justify-center gap-[1.6cqw]">
+              <button
+                type="button"
+                onClick={reset}
+                disabled={wins + losses === 0}
+                className={`${PILL} disabled:opacity-35`}
+                style={PILL_OFF}
+              >
+                RESET
+              </button>
+              <button
+                type="button"
+                onClick={toggleByes}
+                aria-pressed={showByes}
+                className={PILL}
+                style={
+                  showByes
+                    ? { background: look.accent, borderColor: look.accent, color: inkOn(look.accent) }
+                    : PILL_OFF
+                }
+              >
+                {showByes ? "HIDE BYES" : "SHOW BYES"}
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 }
+
+/** The small outlined buttons under the record box. */
+const PILL =
+  "flex items-center rounded-full border px-[2.6cqw] py-[1.1cqw] text-[2.5cqw] leading-none tracking-[0.04em] transition-colors";
+const PILL_OFF = { borderColor: "rgba(255, 255, 255, 0.45)", color: "rgba(255, 255, 255, 0.85)" };
 
 /** Bye lists are set in Saira Condensed so "WR J. Williams" fits under a half
  *  bar. Named directly: the site's `.font-cond` falls back to the page font. */
