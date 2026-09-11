@@ -173,7 +173,8 @@ export function RecordPredictor({
     <div key={game.id} className="pt-[1.55cqw]">
       <div className="text-center text-[3.25cqw] leading-none tracking-[0.01em] text-[#cfd2d8]">WEEK {game.week}</div>
       <div className="mt-[1.1cqw] flex h-[5.9cqw]">
-        {[game.awayId, game.homeId].map((sideId) => {
+        {/* The selected team always takes the left half, whoever is at home. */}
+        {[team.id, game.awayId === team.id ? game.homeId : game.awayId].map((sideId) => {
           const side = byId.get(sideId);
           if (!side) return <div key={sideId} className="flex-1" />;
           return (
