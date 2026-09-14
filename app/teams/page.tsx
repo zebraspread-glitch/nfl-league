@@ -4,7 +4,6 @@ import { buildLadder, getLadderThroughWeek, LADDER_WEEKS, type LadderResult } fr
 import {
   applyLiveWeek,
   liveWeekIsPending,
-  modePoints,
   weekHasProjections,
   weekHasStarted,
   type LiveLadderMode,
@@ -68,15 +67,8 @@ interface LadderRow {
   form: FormItem[];
   /** Places moved against the confirmed ladder — only set on the live ladders. */
   change?: number;
-  /** This week's matchup, shown under the team on the live ladders. */
-  thisWeek?: WeekMatchup;
-}
-
-interface WeekMatchup {
-  opponent: TeamMeta;
-  status: MatchupStatus;
-  pointsFor: number;
-  pointsAgainst: number;
+  /** This week's matchup is still being played — flagged on the live ladders. */
+  inProgress?: boolean;
 }
 
 export default async function LadderPage({
@@ -228,25 +220,12 @@ function normalizeCurrent(
   live: LiveMode,
   matchups: Matchup[],
 ): LadderRow[] {
-  const thisWeek = new Map<number, WeekMatchup>();
-  if (live !== "off") {
-    for (const m of matchups) {
-      for (const [self, opponent] of [
-        [m.home, m.away],
-        [m.away, m.home],
-      ] as const) {
-        thisWeek.set(self.team.id, {
-          opponent: opponent.team,
-          status: m.status,
-          pointsFor: modePoints(self, live),
-          pointsAgainst: modePoints(opponent, live),
-        });
-      }
-    }
-  }
+  const playing = new Set(
+    live !== "off" ? matchups.filter((m) => m.status === "live").flatMap((m) => [m.home.team.id, m.away.team.id]) : [],
+  );
   return standings.map((s) => ({
     change: live !== "off" ? s.change : undefined,
-    thisWeek: thisWeek.get(s.team.id),
+    inProgress: playing.has(s.team.id),
     key: String(s.team.id),
     rank: s.rank,
     href: s.team.id > 0 ? `/teams/${s.team.id}` : undefined,
@@ -762,9 +741,9 @@ function LadderRowView({
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 items-center gap-1.5">
           <span className="min-w-0 truncate font-cond text-lg font-semibold leading-tight">{row.name}</span>
-          {row.thisWeek?.status === "live" && <LiveDot />}
+          {row.inProgress && <LiveDot />}
         </div>
-        {row.thisWeek ? <ThisWeekLine matchup={row.thisWeek} /> : <div className="truncate text-xs text-text-muted">{row.sub}</div>}
+        <div className="truncate text-xs text-text-muted">{row.sub}</div>
       </div>
       {view === "brief" ? (
         <>
@@ -815,24 +794,6 @@ function RankChange({ change }: { change: number }) {
       {change > 0 ? "▲" : "▼"}
       {Math.abs(change)}
     </span>
-  );
-}
-
-/** "vs ChiChi 128.8–135.6" under a team on the live ladders, tinted by who's ahead. */
-function ThisWeekLine({ matchup }: { matchup: WeekMatchup }) {
-  const { status, pointsFor, pointsAgainst, opponent } = matchup;
-  const tone = pointsFor > pointsAgainst ? "text-up" : pointsFor < pointsAgainst ? "text-down" : "text-text-muted";
-  const label = status === "final" ? "Final" : status === "live" ? "Live" : "Not started";
-  return (
-    // One truncating run of text, so a narrow team column clips the tail instead
-    // of squeezing the team name above it.
-    <div className="truncate text-xs text-text-muted">
-      <span className={`font-semibold ${status === "live" ? "text-up" : ""}`}>{label}</span>{" "}
-      <span className={`font-semibold tabular-nums ${tone}`}>
-        {pointsFor.toFixed(1)}–{pointsAgainst.toFixed(1)}
-      </span>{" "}
-      vs {opponent.name}
-    </div>
   );
 }
 
