@@ -12,6 +12,7 @@ import type {
   LeagueSnapshot,
 } from "./types";
 import { getTeam, getTeamByName, TEAMS } from "./teams";
+import { optimalLineupTotal } from "./optimal-lineup";
 import {
   CURRENT_SEASON,
   CURRENT_WEEK,
@@ -239,6 +240,32 @@ export function getSnapshot(): LeagueSnapshot {
   };
 }
 
+interface SleeperNflState {
+  week?: number;
+  season_type?: string;
+  season?: string;
+}
+
+/**
+ * The NFL week in play right now, from Sleeper's league-wide state.
+ *
+ * `CURRENT_WEEK` in league-data is a hand-set constant, so anything that has to
+ * follow the season week to week (the live ladder) reads this instead. Falls
+ * back to the constant off-season or when Sleeper can't be reached.
+ */
+export async function getCurrentWeek(): Promise<number> {
+  try {
+    const res = await fetch(`${SLEEPER_BASE}/state/nfl`, { next: { revalidate: 300 } });
+    if (!res.ok) return CURRENT_WEEK;
+    const state = (await res.json()) as SleeperNflState;
+    const season = Number(process.env.SLEEPER_SEASON) || CURRENT_SEASON;
+    if (Number(state.season) !== season || state.season_type !== "regular" || !state.week) return CURRENT_WEEK;
+    return state.week;
+  } catch {
+    return CURRENT_WEEK;
+  }
+}
+
 export async function getStandings(): Promise<Standing[]> {
   const [rosters, users] = await Promise.all([getRosters(), getUsers()]);
   if (!rosters.length) return getFallbackStandings();
@@ -279,13 +306,19 @@ function rosterRecord(roster: SleeperRoster): MatchupSide["record"] {
 
 async function enrichManualMatchups(matchups: Matchup[], week: number): Promise<Matchup[]> {
   const season = Number(process.env.SLEEPER_SEASON) || CURRENT_SEASON;
-  const [matchupRows, rosters, users, projections] = await Promise.all([
+  const [matchupRows, rosters, users, projections, players, config, schedule, scores] = await Promise.all([
     sleeperFetch<SleeperMatchup[]>(`/matchups/${week}`),
     getRosters(),
     getUsers(),
     fetchProjections(season, week),
+    fetchPlayerCatalog(),
+    getLeagueConfig(),
+    fetchSchedule(season),
+    fetchScores(season, week),
   ]);
   if (!rosters.length) return matchups;
+  const startingSlots = startingSlotsFor(config);
+  const gameByTeam = gameInfoForWeek(schedule, week, scores);
 
   const userById = new Map(users.map((u) => [u.user_id, u]));
   const rosterByTeamId = new Map<TeamId, SleeperRoster>();
@@ -295,29 +328,104 @@ async function enrichManualMatchups(matchups: Matchup[], week: number): Promise<
   }
 
   const liveByRosterId = new Map((matchupRows ?? []).map((row) => [row.roster_id, row]));
-  const side = (manualSide: MatchupSide): MatchupSide => {
+  const side = (manualSide: MatchupSide): [MatchupSide, LineupProgress | undefined] => {
     const roster = rosterByTeamId.get(manualSide.team.id);
-    if (!roster) return manualSide;
+    if (!roster) return [manualSide, undefined];
     const live = liveByRosterId.get(roster.roster_id);
-    return {
-      ...manualSide,
-      score: Math.round((live?.points ?? manualSide.score) * 100) / 100,
-      projected: projectedTotal(roster, live, projections) ?? manualSide.projected,
-      record: rosterRecord(roster),
-      rosterId: roster.roster_id,
-    };
+    const progress = lineupProgress(roster, live, projections, players, gameByTeam);
+    return [
+      {
+        ...manualSide,
+        score: Math.round((live?.points ?? manualSide.score) * 100) / 100,
+        projected: projectedTotal(roster, live, projections) ?? manualSide.projected,
+        optimalProjected: optimalProjectedTotal(roster, live, projections, players, startingSlots),
+        liveProjected: progress.liveProjected,
+        record: rosterRecord(roster),
+        rosterId: roster.roster_id,
+      },
+      progress,
+    ];
   };
 
   return matchups.map((matchup) => {
-    const away = side(matchup.away);
-    const home = side(matchup.home);
+    const [away, awayProgress] = side(matchup.away);
+    const [home, homeProgress] = side(matchup.home);
     return {
       ...matchup,
-      status: away.score || home.score ? "live" : matchup.status,
+      status: matchupStatus(away, home, awayProgress, homeProgress, matchup.status),
       away,
       home,
     };
   });
+}
+
+interface LineupProgress {
+  liveProjected: number | undefined;
+  /** Some starter's NFL game has kicked off. */
+  started: boolean;
+  /** Every starter's NFL game is over (or they have none this week). */
+  finished: boolean;
+}
+
+/**
+ * Where a lineup stands mid-week: whether its players are out there yet, and
+ * the final score it's on track for.
+ *
+ * The projected final is what the Sleeper app shows while games run — a
+ * finished player's points are banked, a player in a live game keeps his
+ * points and earns the unplayed share of his projection (by game minutes
+ * left), and a player yet to kick off is worth his full projection.
+ */
+function lineupProgress(
+  roster: SleeperRoster | undefined,
+  live: SleeperMatchup | undefined,
+  projections: Map<string, number>,
+  players: Record<string, SleeperPlayer> | null,
+  gameByTeam: Map<string, TeamGameInfo>,
+): LineupProgress {
+  const scored = live?.players_points && Object.values(live.players_points).some((p) => p > 0);
+  const starters = ((scored ? live?.starters : roster?.starters) ?? roster?.starters ?? []).filter(
+    (id): id is string => Boolean(id) && id !== "0",
+  );
+  if (!starters.length) return { liveProjected: undefined, started: false, finished: false };
+
+  let total = 0;
+  let started = false;
+  let finished = true;
+  for (const id of starters) {
+    // Team defences are keyed by their abbreviation and may be missing from the catalog.
+    const proTeam = players?.[id]?.team ?? (/^[A-Z]{2,3}$/.test(id) ? id : undefined);
+    const game = proTeam ? gameByTeam.get(proTeam) : undefined;
+    const points = live?.players_points?.[id] ?? 0;
+    const projected = projections.get(id) ?? 0;
+    if (!game) {
+      total += points; // bye week or free agent: nothing more to come
+    } else if (!game.started) {
+      total += projected;
+      finished = false;
+    } else if (game.live) {
+      total += points + projected * (game.minutesRemaining / 60);
+      started = true;
+      finished = false;
+    } else {
+      total += points;
+      started = true;
+    }
+  }
+  return { liveProjected: Math.round(total * 100) / 100, started, finished };
+}
+
+/** Upcoming until a starter kicks off, final once every starter on both sides is done. */
+function matchupStatus(
+  away: MatchupSide,
+  home: MatchupSide,
+  awayProgress: LineupProgress | undefined,
+  homeProgress: LineupProgress | undefined,
+  fallback: Matchup["status"],
+): Matchup["status"] {
+  if (!awayProgress || !homeProgress) return away.score || home.score ? "live" : fallback;
+  if (!awayProgress.started && !homeProgress.started && !away.score && !home.score) return "upcoming";
+  return awayProgress.finished && homeProgress.finished ? "final" : "live";
 }
 
 export async function getMatchups(week: number): Promise<Matchup[]> {
@@ -328,13 +436,19 @@ export async function getMatchups(week: number): Promise<Matchup[]> {
   if (!leagueId) return getFallbackMatchups(week);
 
   const season = Number(process.env.SLEEPER_SEASON) || CURRENT_SEASON;
-  const [matchupRows, rosters, users, projections] = await Promise.all([
+  const [matchupRows, rosters, users, projections, players, config, schedule, scores] = await Promise.all([
     sleeperFetch<SleeperMatchup[]>(`/matchups/${week}`),
     getRosters(),
     getUsers(),
     fetchProjections(season, week),
+    fetchPlayerCatalog(),
+    getLeagueConfig(),
+    fetchSchedule(season),
+    fetchScores(season, week),
   ]);
   if (!matchupRows?.length || !rosters.length) return getFallbackMatchups(week);
+  const startingSlots = startingSlotsFor(config);
+  const gameByTeam = gameInfoForWeek(schedule, week, scores);
 
   const userById = new Map(users.map((u) => [u.user_id, u]));
   const rosterById = new Map(rosters.map((r) => [r.roster_id, r]));
@@ -355,26 +469,34 @@ export async function getMatchups(week: number): Promise<Matchup[]> {
   for (const [matchupId, pair] of grouped) {
     if (pair.length < 2) continue;
     const [a, b] = pair;
-    const side = (m: SleeperMatchup) => {
+    const side = (m: SleeperMatchup): [MatchupSide, LineupProgress] => {
       const roster = rosterById.get(m.roster_id);
       const team = roster
         ? resolveTeam(roster, roster.owner_id ? userById.get(roster.owner_id) : undefined)
         : getTeamByName(`Team ${m.roster_id}`);
-      return {
-        team,
-        score: Math.round((m.points ?? 0) * 100) / 100,
-        projected: projectedTotal(roster, m, projections),
-        record: recordById.get(m.roster_id),
-        rosterId: m.roster_id,
-      };
+      const progress = lineupProgress(roster, m, projections, players, gameByTeam);
+      return [
+        {
+          team,
+          score: Math.round((m.points ?? 0) * 100) / 100,
+          projected: projectedTotal(roster, m, projections),
+          optimalProjected: optimalProjectedTotal(roster, m, projections, players, startingSlots),
+          liveProjected: progress.liveProjected,
+          record: recordById.get(m.roster_id),
+          rosterId: m.roster_id,
+        },
+        progress,
+      ];
     };
 
+    const [away, awayProgress] = side(a);
+    const [home, homeProgress] = side(b);
     out.push({
       id: `${week}-${matchupId}`,
       week,
-      status: a.points || b.points ? "live" : "upcoming",
-      away: side(a),
-      home: side(b),
+      status: matchupStatus(away, home, awayProgress, homeProgress, "upcoming"),
+      away,
+      home,
     } satisfies Matchup);
   }
 
@@ -778,7 +900,10 @@ export interface WeekKickoff {
   iso: string;
 }
 
-const projectionCache = new Map<string, Map<string, number>>();
+// Projections move through the week (injuries, inactives), so expire them in step
+// with the fetch's revalidate window below.
+const PROJECTIONS_TTL_MS = 300_000;
+const projectionCache = new Map<string, { at: number; data: Map<string, number> }>();
 
 /**
  * Per-player projected points, keyed by Sleeper player id.
@@ -793,7 +918,7 @@ const projectionCache = new Map<string, Map<string, number>>();
 async function fetchProjections(season: number, week: number): Promise<Map<string, number>> {
   const key = `${season}-${week}`;
   const cached = projectionCache.get(key);
-  if (cached) return cached;
+  if (cached && Date.now() - cached.at < PROJECTIONS_TTL_MS) return cached.data;
 
   const map = new Map<string, number>();
   try {
@@ -835,7 +960,7 @@ async function fetchProjections(season: number, week: number): Promise<Map<strin
   } catch (err) {
     console.warn("[sleeper] projections fetch failed:", err);
   }
-  projectionCache.set(key, map);
+  projectionCache.set(key, { at: Date.now(), data: map });
   return map;
 }
 
@@ -861,6 +986,37 @@ function projectedTotal(
   return Math.round(total * 100) / 100;
 }
 
+/**
+ * Projected total for the best lineup this roster could field.
+ *
+ * Unlike {@link projectedTotal} this ignores who the manager actually started —
+ * every rostered player bar IR is a candidate for a slot. It exists to price the
+ * novelty betting lines, which should read a roster's strength rather than
+ * whether its manager remembered to set a lineup.
+ */
+function optimalProjectedTotal(
+  roster: SleeperRoster | undefined,
+  live: SleeperMatchup | undefined,
+  projections: Map<string, number>,
+  players: Record<string, SleeperPlayer> | null,
+  startingSlots: string[],
+): number | undefined {
+  if (!projections.size || !players || !roster || !startingSlots.length) return undefined;
+  const reserve = new Set((roster.reserve ?? []).filter((id) => id && id !== "0"));
+  const ids = (live?.players ?? roster.players ?? []).filter((id) => id && id !== "0" && !reserve.has(id));
+  if (!ids.length) return undefined;
+  const total = optimalLineupTotal(
+    ids.map((id) => ({ id, position: players[id]?.position ?? "", projected: projections.get(id) ?? 0 })),
+    startingSlots,
+  );
+  return total > 0 ? total : undefined;
+}
+
+/** The league's starting slots — everything that isn't bench or IR. */
+function startingSlotsFor(config: LeagueConfig): string[] {
+  return config.rosterPositions.filter((p) => p !== "BN" && p !== "IR");
+}
+
 const scheduleCache = new Map<number, SleeperScheduleGame[]>();
 
 async function fetchSchedule(season: number): Promise<SleeperScheduleGame[]> {
@@ -883,12 +1039,15 @@ async function fetchSchedule(season: number): Promise<SleeperScheduleGame[]> {
 
 const NOT_STARTED_STATUSES = new Set(["", "pre_game", "scheduled"]);
 
-const scoresCache = new Map<string, SleeperScoreGame[]>();
+// Live game state, so the in-memory copy has to expire along with the fetch's own
+// revalidate window — held forever it would freeze clocks and "live" flags.
+const SCORES_TTL_MS = 60_000;
+const scoresCache = new Map<string, { at: number; data: SleeperScoreGame[] }>();
 
 async function fetchScores(season: number, week: number): Promise<SleeperScoreGame[]> {
   const key = `${season}-${week}`;
   const cached = scoresCache.get(key);
-  if (cached) return cached;
+  if (cached && Date.now() - cached.at < SCORES_TTL_MS) return cached.data;
 
   try {
     const res = await fetch(`${SLEEPER_HOST}/scores/nfl/regular/${season}/${week}`, {
@@ -899,7 +1058,7 @@ async function fetchScores(season: number, week: number): Promise<SleeperScoreGa
       return [];
     }
     const data = (await res.json()) as SleeperScoreGame[];
-    scoresCache.set(key, data);
+    scoresCache.set(key, { at: Date.now(), data });
     return data;
   } catch (err) {
     console.warn("[sleeper] scores fetch failed:", err);

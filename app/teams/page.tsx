@@ -1,7 +1,14 @@
 import Link from "next/link";
-import { getMatchups, getSnapshot, getStandings } from "@/lib/sleeper";
+import { getCurrentWeek, getMatchups, getSnapshot, getStandings } from "@/lib/sleeper";
 import { buildLadder, getLadderThroughWeek, LADDER_WEEKS, type LadderResult } from "@/lib/games";
-import { applyLiveWeek, liveWeekIsPending, weekHasStarted } from "@/lib/live-ladder";
+import {
+  applyLiveWeek,
+  liveWeekIsPending,
+  modePoints,
+  weekHasProjections,
+  weekHasStarted,
+  type LiveLadderMode,
+} from "@/lib/live-ladder";
 import { PickerMenu } from "@/components/picker-menu";
 import { CURRENT_SEASON, getSeasonResults, HISTORY_SEASONS } from "@/lib/league-data";
 import { Card, EmptyState, Hexagon, PageIntro, TeamAvatar } from "@/components/ui";
@@ -26,6 +33,7 @@ type HistoricalLadderView = (typeof HISTORICAL_LADDER_TABS)[number]["key"];
 // outside both tab-derived unions.
 type LadderView = CurrentLadderView | HistoricalLadderView | "week";
 type SortKey = "rank" | "wl" | "wins" | "losses" | "pct" | "for" | "against";
+type LiveMode = LiveLadderMode | "off";
 type SortDir = "asc" | "desc";
 
 interface ScheduleItem {
@@ -58,6 +66,17 @@ interface LadderRow {
   streak: string;
   nextFive: ScheduleItem[];
   form: FormItem[];
+  /** Places moved against the confirmed ladder — only set on the live ladders. */
+  change?: number;
+  /** This week's matchup, shown under the team on the live ladders. */
+  thisWeek?: WeekMatchup;
+}
+
+interface WeekMatchup {
+  opponent: TeamMeta;
+  status: MatchupStatus;
+  pointsFor: number;
+  pointsAgainst: number;
 }
 
 export default async function LadderPage({
@@ -75,27 +94,38 @@ export default async function LadderPage({
     live: liveParam,
   } = await searchParams;
   const currentSeason = snapshot.season || CURRENT_SEASON;
+  // Follows Sleeper's NFL state rather than the hand-set constant, so the ladder
+  // (and its live week) moves on by itself each week.
+  const currentWeek = await getCurrentWeek();
   const seasons = [currentSeason, ...[...HISTORY_SEASONS].reverse()];
   const requestedSeason = Number(seasonParam);
   const season = seasons.includes(requestedSeason) ? requestedSeason : seasons[0];
   const view = viewForSeason(season, currentSeason, ladderParam);
   // A past season rewinds to any week; the live one only as far as we have played.
-  const lastWeek = season === currentSeason ? clamp(snapshot.currentWeek, 1, LADDER_WEEKS) : LADDER_WEEKS;
+  const lastWeek = season === currentSeason ? clamp(currentWeek, 1, LADDER_WEEKS) : LADDER_WEEKS;
   const week = clamp(Number(weekParam) || lastWeek, 1, lastWeek);
   const historical = getSeasonResults().find((s) => s.season === season);
   const standings = season === currentSeason && view !== "week" ? await getStandings() : [];
   const matchupWeeks =
     season === currentSeason && needsCurrentMatchups(view)
-      ? await loadMatchupsForWeeks(currentMatchupWeeks(snapshot.currentWeek, view, week))
+      ? await loadMatchupsForWeeks(currentMatchupWeeks(currentWeek, view, week))
       : new Map<number, Matchup[]>();
   const currentContext =
-    season === currentSeason && view !== "week" ? buildCurrentContext(matchupWeeks, snapshot.currentWeek) : new Map();
+    season === currentSeason && view !== "week" ? buildCurrentContext(matchupWeeks, currentWeek) : new Map();
 
   // The confirmed ladder only moves once a week finalises, so while this week's
-  // games are running the in-progress picture sits behind a switch.
-  const liveMatchups = season === currentSeason && view !== "week" ? await getMatchups(snapshot.currentWeek) : [];
-  const liveAvailable = weekHasStarted(liveMatchups) && liveWeekIsPending(standings, snapshot.currentWeek);
-  const live = liveAvailable && liveParam === "1";
+  // games are running the in-progress pictures sit behind a switch: live once a
+  // game has kicked off, projected as soon as Sleeper has projections out.
+  const liveMatchups =
+    season === currentSeason && view !== "week" && currentWeek <= LADDER_WEEKS ? await getMatchups(currentWeek) : [];
+  const weekPending = liveWeekIsPending(standings, currentWeek);
+  const modesAvailable: Record<LiveLadderMode, boolean> = {
+    live: weekPending && weekHasStarted(liveMatchups),
+    projected: weekPending && weekHasProjections(liveMatchups),
+  };
+  const requestedLive = parseLiveMode(liveParam);
+  const live: LiveMode = requestedLive !== "off" && modesAvailable[requestedLive] ? requestedLive : "off";
+  const liveAvailable = modesAvailable.live || modesAvailable.projected;
 
   const sort: SortKey = (["rank", "wl", "wins", "losses", "pct", "for", "against"] as const).includes(sortParam as SortKey)
     ? (sortParam as SortKey)
@@ -110,8 +140,8 @@ export default async function LadderPage({
       season === currentSeason ? buildLadder(playedResults(matchupWeeks)) : await getLadderThroughWeek(season, week);
     if (ladder.length) rows = normalizeHistorical(ladder);
   } else if (season === currentSeason) {
-    const table = live ? applyLiveWeek(standings, liveMatchups) : standings;
-    if (table.length) rows = normalizeCurrent(table, currentContext);
+    const table = live !== "off" ? applyLiveWeek(standings, liveMatchups, live) : standings;
+    if (table.length) rows = normalizeCurrent(table, currentContext, live, liveMatchups);
   } else if (historical) {
     const historicalView = isHistoricalLadderView(view) ? view : defaultHistoricalViewForSeason(season);
     rows = normalizeHistorical(historicalView === "regular" ? regularSeasonRows(historical) : historical.finalStandings);
@@ -121,7 +151,7 @@ export default async function LadderPage({
 
   return (
     <div>
-      <PageIntro title="Ladder" subtitle={ladderSubtitle(season, view, week, live)} />
+      <PageIntro title="Ladder" subtitle={ladderSubtitle(season, view, week, live, currentWeek)} />
 
       <SeasonTabs seasons={seasons} active={season} view={view} week={week} currentSeason={currentSeason} />
       <div className="mb-2 px-1">
@@ -132,7 +162,16 @@ export default async function LadderPage({
       ) : (
         <HistoricalLadderSwitch season={season} active={view} week={week} />
       )}
-      {liveAvailable && <LiveLadderSwitch season={season} view={view} week={week} live={live} />}
+      {liveAvailable && (
+        <LiveLadderSwitch
+          season={season}
+          view={view}
+          week={week}
+          live={live}
+          available={modesAvailable}
+          gamesInProgress={liveMatchups.filter((m) => m.status === "live").length}
+        />
+      )}
 
       {sortedRows ? (
         <LadderTable
@@ -183,8 +222,31 @@ function playedResults(matchupsByWeek: Map<number, Matchup[]>): LadderResult[] {
   return results;
 }
 
-function normalizeCurrent(standings: Standing[], context: Map<number, Pick<LadderRow, "nextFive" | "form">>): LadderRow[] {
+function normalizeCurrent(
+  standings: Standing[],
+  context: Map<number, Pick<LadderRow, "nextFive" | "form">>,
+  live: LiveMode,
+  matchups: Matchup[],
+): LadderRow[] {
+  const thisWeek = new Map<number, WeekMatchup>();
+  if (live !== "off") {
+    for (const m of matchups) {
+      for (const [self, opponent] of [
+        [m.home, m.away],
+        [m.away, m.home],
+      ] as const) {
+        thisWeek.set(self.team.id, {
+          opponent: opponent.team,
+          status: m.status,
+          pointsFor: modePoints(self, live),
+          pointsAgainst: modePoints(opponent, live),
+        });
+      }
+    }
+  }
   return standings.map((s) => ({
+    change: live !== "off" ? s.change : undefined,
+    thisWeek: thisWeek.get(s.team.id),
     key: String(s.team.id),
     rank: s.rank,
     href: s.team.id > 0 ? `/teams/${s.team.id}` : undefined,
@@ -289,7 +351,7 @@ function ladderHref(
   week: number,
   sort?: SortKey,
   dir?: SortDir,
-  live?: boolean,
+  live: LiveMode = "off",
 ): string {
   const params = new URLSearchParams({ season: String(season), ladder: view });
   if (view === "week") params.set("week", String(week));
@@ -297,8 +359,16 @@ function ladderHref(
     params.set("sort", sort);
     params.set("dir", dir);
   }
-  if (live) params.set("live", "1");
+  if (live !== "off") params.set("live", LIVE_PARAM[live]);
   return `/teams?${params}`;
+}
+
+// ?live=1 predates the projected ladder, so it keeps meaning the live one.
+const LIVE_PARAM: Record<LiveLadderMode, string> = { live: "1", projected: "proj" };
+
+function parseLiveMode(raw?: string): LiveMode {
+  if (raw === LIVE_PARAM.projected) return "projected";
+  return raw === LIVE_PARAM.live ? "live" : "off";
 }
 
 function seasonHref(season: number, view: LadderView, week: number, currentSeason: number): string {
@@ -346,7 +416,7 @@ function CurrentLadderSwitch({
   season: number;
   active: LadderView;
   week: number;
-  live: boolean;
+  live: LiveMode;
 }) {
   return (
     <div className="mb-3 grid grid-cols-4 gap-1 rounded-lg bg-section p-1">
@@ -431,39 +501,89 @@ function WeekPicker({
   );
 }
 
-/** Toggles the in-progress week into the ladder. Only rendered once the week has
- *  kicked off and Sleeper has yet to fold it into the confirmed records. */
+/** Green flashing dot marking something still being played. */
+function LiveDot({ size = "sm" }: { size?: "sm" | "md" }) {
+  const box = size === "md" ? "h-2.5 w-2.5" : "h-2 w-2";
+  return (
+    <span className={`relative inline-flex shrink-0 ${box}`} aria-label="In progress">
+      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-up opacity-75" />
+      <span className={`live-dot relative inline-flex rounded-full bg-up ${box}`} />
+    </span>
+  );
+}
+
+const LIVE_OPTIONS: { key: LiveMode; label: string }[] = [
+  { key: "off", label: "Confirmed" },
+  { key: "live", label: "Live" },
+  { key: "projected", label: "Projected" },
+];
+
+/** Picks which ladder to show while the week is in play: the confirmed records,
+ *  the week settled on live scores, or the week settled on projected finals.
+ *  Only rendered while Sleeper has yet to fold the week into the confirmed records. */
 function LiveLadderSwitch({
   season,
   view,
   week,
   live,
+  available,
+  gamesInProgress,
 }: {
   season: number;
   view: LadderView;
   week: number;
-  live: boolean;
+  live: LiveMode;
+  available: Record<LiveLadderMode, boolean>;
+  gamesInProgress: number;
 }) {
+  const note =
+    live === "live"
+      ? "This week's matchups settled on the scores right now."
+      : live === "projected"
+        ? "This week's matchups settled on Sleeper's projected final scores."
+        : "Records only count finished weeks. Switch to see this week added.";
   return (
-    <Link
-      href={ladderHref(season, view, week, undefined, undefined, !live)}
-      scroll={false}
-      className="mb-3 flex items-center gap-2.5 rounded-lg border border-border bg-card px-3 py-2.5 transition-colors hover:bg-card-hover"
-    >
-      <span className="relative flex h-2 w-2 shrink-0">
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-live opacity-70" />
-        <span className="relative inline-flex h-2 w-2 rounded-full bg-live" />
-      </span>
-      <span className="flex-1 font-cond text-sm font-semibold uppercase tracking-wide">Live ladder</span>
-      <span className="text-xs text-text-muted">{live ? "Week counted" : "Week not counted"}</span>
-      <span
-        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${live ? "bg-teal" : "bg-border-strong"}`}
-      >
-        <span
-          className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${live ? "left-[22px]" : "left-0.5"}`}
-        />
-      </span>
-    </Link>
+    <div className="mb-3 rounded-lg border border-border bg-card px-3 py-2.5">
+      <div className="mb-2 flex items-center gap-2">
+        {gamesInProgress > 0 ? <LiveDot size="md" /> : <span className="h-2.5 w-2.5 rounded-full bg-border-strong" />}
+        <span className="shrink-0 font-cond text-sm font-semibold uppercase tracking-wide">Week {week} ladder</span>
+        {gamesInProgress > 0 && (
+          <span className="ml-auto shrink-0 text-xs text-text-muted">
+            {gamesInProgress} in progress
+          </span>
+        )}
+      </div>
+      <div className="grid grid-cols-3 gap-1 rounded-md bg-section p-1">
+        {LIVE_OPTIONS.map((option) => {
+          const enabled = option.key === "off" || available[option.key];
+          const active = live === option.key;
+          const className = `flex items-center justify-center gap-1.5 rounded px-1 py-1.5 font-cond text-xs font-semibold uppercase tracking-wide transition-colors sm:text-sm ${
+            active ? "bg-card text-text shadow-sm" : enabled ? "text-text-muted hover:text-text" : "text-text-dim"
+          }`;
+          const label = (
+            <>
+              {option.key === "live" && available.live && gamesInProgress > 0 && <LiveDot />}
+              {option.label}
+            </>
+          );
+          return enabled ? (
+            <Link
+              key={option.key}
+              href={ladderHref(season, view, week, undefined, undefined, option.key)}
+              scroll={false}
+              className={className}
+            >
+              {label}
+            </Link>
+          ) : (
+            <span key={option.key} className={className} title="Available once a game kicks off">
+              {label}
+            </span>
+          );
+        })}
+      </div>
+      <p className="mt-1.5 text-xs text-text-muted">{note}</p>
+    </div>
   );
 }
 
@@ -551,9 +671,10 @@ function resultLetter(pointsFor: number, pointsAgainst: number): FormItem["resul
   return "T";
 }
 
-function ladderSubtitle(season: number, view: LadderView, week: number, live = false): string {
+function ladderSubtitle(season: number, view: LadderView, week: number, live: LiveMode, currentWeek: number): string {
   if (view === "week") return `${season} ladder after week ${week}`;
-  if (live) return `${season} live ladder`;
+  if (live === "live") return `${season} live ladder · week ${currentWeek} as it stands`;
+  if (live === "projected") return `${season} projected ladder · week ${currentWeek} on projected finals`;
   if (view === "regular") return `${season} regular season ladder`;
   if (view === "final") return `${season} final ladder`;
   const label = CURRENT_LADDER_TABS.find((tab) => tab.key === view)?.label ?? "Breif";
@@ -584,7 +705,7 @@ function LadderTable({
   season: number;
   view: LadderView;
   week: number;
-  live: boolean;
+  live: LiveMode;
 }) {
   const rankOrder = sort === "rank" && dir === "asc";
   return (
@@ -632,12 +753,18 @@ function LadderRowView({
           inPlayoffs ? "bg-teal/12" : "bg-section"
         }`}
       >
-        <Hexagon value={row.rank} tone={inPlayoffs ? "teal" : "grey"} />
+        <span className="flex flex-col items-center gap-0.5">
+          <Hexagon value={row.rank} tone={inPlayoffs ? "teal" : "grey"} />
+          {row.change != null && <RankChange change={row.change} />}
+        </span>
       </span>
       {row.team ? <TeamAvatar team={row.team} size="md" /> : <span className="h-11 w-11 shrink-0 rounded-full bg-section" />}
       <div className="min-w-0 flex-1">
-        <div className="truncate font-cond text-lg font-semibold leading-tight">{row.name}</div>
-        <div className="truncate text-xs text-text-muted">{row.sub}</div>
+        <div className="flex min-w-0 items-center gap-1.5">
+          <span className="min-w-0 truncate font-cond text-lg font-semibold leading-tight">{row.name}</span>
+          {row.thisWeek?.status === "live" && <LiveDot />}
+        </div>
+        {row.thisWeek ? <ThisWeekLine matchup={row.thisWeek} /> : <div className="truncate text-xs text-text-muted">{row.sub}</div>}
       </div>
       {view === "brief" ? (
         <>
@@ -680,6 +807,35 @@ function LadderRowView({
   );
 }
 
+/** Places gained or lost against the confirmed ladder. */
+function RankChange({ change }: { change: number }) {
+  if (!change) return <span className="font-cond text-[10px] font-semibold leading-none text-text-dim">–</span>;
+  return (
+    <span className={`font-cond text-[10px] font-bold leading-none tabular-nums ${change > 0 ? "text-up" : "text-down"}`}>
+      {change > 0 ? "▲" : "▼"}
+      {Math.abs(change)}
+    </span>
+  );
+}
+
+/** "vs ChiChi 128.8–135.6" under a team on the live ladders, tinted by who's ahead. */
+function ThisWeekLine({ matchup }: { matchup: WeekMatchup }) {
+  const { status, pointsFor, pointsAgainst, opponent } = matchup;
+  const tone = pointsFor > pointsAgainst ? "text-up" : pointsFor < pointsAgainst ? "text-down" : "text-text-muted";
+  const label = status === "final" ? "Final" : status === "live" ? "Live" : "Not started";
+  return (
+    // One truncating run of text, so a narrow team column clips the tail instead
+    // of squeezing the team name above it.
+    <div className="truncate text-xs text-text-muted">
+      <span className={`font-semibold ${status === "live" ? "text-up" : ""}`}>{label}</span>{" "}
+      <span className={`font-semibold tabular-nums ${tone}`}>
+        {pointsFor.toFixed(1)}–{pointsAgainst.toFixed(1)}
+      </span>{" "}
+      vs {opponent.name}
+    </div>
+  );
+}
+
 function sortHref(
   key: SortKey,
   sort: SortKey,
@@ -687,7 +843,7 @@ function sortHref(
   season: number,
   view: LadderView,
   week: number,
-  live: boolean,
+  live: LiveMode,
 ): string {
   const nextDir: SortDir = sort === key ? (dir === "asc" ? "desc" : "asc") : defaultSortDir(key);
   return ladderHref(season, view, week, key, nextDir, live);
@@ -710,7 +866,7 @@ function SortLabel({
   season: number;
   view: LadderView;
   week: number;
-  live: boolean;
+  live: LiveMode;
 }) {
   const active = sort === sortKey;
   return (
@@ -738,7 +894,7 @@ function LadderHeader({
   season: number;
   view: LadderView;
   week: number;
-  live: boolean;
+  live: LiveMode;
 }) {
   if (view === "brief") {
     return (

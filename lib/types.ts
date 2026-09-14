@@ -45,8 +45,15 @@ export interface MatchupSide {
   team: TeamMeta;
   /** Points scored so far. */
   score: number;
-  /** Projected total points. */
+  /** Projected total points, from the lineup the manager actually set. */
   projected?: number;
+  /** Projected total from the best lineup this roster could have fielded.
+   *  Prices the betting lines, so a manager benching points doesn't move them. */
+  optimalProjected?: number;
+  /** Live projected final: points banked from finished games, the running score
+   *  plus the unplayed share of the projection for games in progress, and the
+   *  full projection for players yet to kick off. Equals `projected` pre-game. */
+  liveProjected?: number;
   record?: { wins: number; losses: number; ties: number };
   /** Sleeper roster_id backing this side, when sourced from the live API. */
   rosterId?: number;
