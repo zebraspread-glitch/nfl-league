@@ -1,22 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import type { PowerRankings } from "@/lib/power-rankings";
 import { Card, Hexagon, SectionHeader, TeamAvatar, TeamLink, rankBadgeTone } from "@/components/ui";
 import { usePowerRankingPreviousRanks } from "@/components/power-rankings-seen";
 
-type Mode = "tp" | "ai";
-
-export default function PowerRankingsView({
-  tp,
-  ai,
-}: {
-  tp: PowerRankings;
-  ai: PowerRankings;
-}) {
-  const [mode, setMode] = useState<Mode>("tp");
-  const active = mode === "tp" ? tp : ai;
-  const previousRanks = usePowerRankingPreviousRanks(mode, active.version, active.entries);
+export default function PowerRankingsView({ tp: active }: { tp: PowerRankings }) {
+  const previousRanks = usePowerRankingPreviousRanks("tp", active.version, active.entries);
 
   const updatedLabel = new Date(active.updated + "T00:00:00").toLocaleDateString("en-AU", {
     day: "numeric",
@@ -34,22 +23,6 @@ export default function PowerRankingsView({
 
   return (
     <div>
-      {/* Toggle between TP's and the AI's rankings */}
-      <div className="mb-3 flex rounded-full bg-section p-1">
-        {(["tp", "ai"] as const).map((m) => (
-          <button
-            key={m}
-            type="button"
-            onClick={() => setMode(m)}
-            className={`flex-1 rounded-full px-4 py-2 font-cond text-sm font-semibold uppercase tracking-wide transition-colors ${
-              mode === m ? "bg-card text-text shadow-sm" : "text-text-muted"
-            }`}
-          >
-            {m === "tp" ? "TP's Rankings" : "AI Rankings"}
-          </button>
-        ))}
-      </div>
-
       {active.intro && <p className="mb-2 px-1 text-sm text-text-muted">{active.intro}</p>}
       <div className="mb-2 px-1 font-cond text-xs font-semibold uppercase tracking-widest text-text-muted">
         Updated {updatedLabel}
@@ -89,9 +62,7 @@ export default function PowerRankingsView({
       </div>
 
       <p className="px-1 pt-3 text-xs text-text-dim">
-        {mode === "tp"
-          ? "These are TP's personal rankings. Only TP can change the order."
-          : "AI ranking for the 2026 season, based on kept players and recent form. TP has no hand in this one."}
+        These are TP&apos;s personal rankings. Only TP can change the order.
       </p>
     </div>
   );

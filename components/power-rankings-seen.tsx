@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const SEEN_EVENT = "mgl-power-rankings-seen";
 
@@ -144,4 +146,83 @@ export function usePowerRankingPreviousRanks(kind: string, version: string, entr
   }, [entryKey, entries, kind, version]);
 
   return previousRanks;
+}
+
+// One-time "rankings updated" popup, shown on any page except the rankings page
+// itself. It's keyed to the rankings version, so each new update shows it once:
+// dismissing it, tapping through, or simply visiting /power-rankings (which
+// writes the snapshot above) all count as having seen it.
+export function PowerRankingsUpdatePopup({
+  version,
+  updated,
+  top,
+}: {
+  version: string;
+  updated: string;
+  top: { rank: number; name: string }[];
+}) {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  const popupKey = storageKey("tp", "popup");
+
+  useEffect(() => {
+    if (pathname === "/power-rankings") return;
+    const dismissed = readJson<string>(popupKey);
+    const viewed = readJson<RankingSnapshot>(storageKey("tp", "snapshot"));
+    if (dismissed === version || viewed?.version === version) return;
+    const timer = window.setTimeout(() => setOpen(true), 400);
+    return () => window.clearTimeout(timer);
+  }, [pathname, popupKey, version]);
+
+  if (!open) return null;
+
+  const close = () => {
+    writeJson(popupKey, version);
+    setOpen(false);
+  };
+  const updatedLabel = new Date(updated + "T00:00:00").toLocaleDateString("en-AU", { day: "numeric", month: "long" });
+
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="pr-popup-title"
+      onClick={close}
+    >
+      <div className="w-full max-w-sm overflow-hidden rounded-2xl bg-card shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div className="bg-teal px-5 py-4 text-white">
+          <div className="font-cond text-xs font-semibold uppercase tracking-widest text-white/80">Updated {updatedLabel}</div>
+          <h2 id="pr-popup-title" className="font-cond text-2xl font-bold leading-tight">
+            New power rankings are out
+          </h2>
+        </div>
+        <ol className="px-5 py-3">
+          {top.map((t) => (
+            <li key={t.rank} className="flex items-baseline gap-3 py-1">
+              <span className="w-5 font-cond text-lg font-bold text-text-muted">{t.rank}</span>
+              <span className="font-cond text-lg font-semibold text-text">{t.name}</span>
+            </li>
+          ))}
+          <li className="pl-8 pt-1 text-sm text-text-muted">See where everyone else landed…</li>
+        </ol>
+        <div className="flex gap-2 px-5 pb-5">
+          <button
+            type="button"
+            onClick={close}
+            className="flex-1 rounded-full bg-section py-2.5 font-cond text-sm font-semibold uppercase tracking-wide text-text-muted"
+          >
+            Later
+          </button>
+          <Link
+            href="/power-rankings"
+            onClick={close}
+            className="flex-1 rounded-full bg-teal py-2.5 text-center font-cond text-sm font-semibold uppercase tracking-wide text-white"
+          >
+            View rankings
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
 }

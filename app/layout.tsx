@@ -8,6 +8,7 @@ import { BottomNav } from "@/components/bottom-nav";
 import { SettingsProvider } from "@/components/settings-provider";
 import { NavigationProgress } from "@/components/navigation-progress";
 import { getPowerRankings } from "@/lib/power-rankings";
+import { PowerRankingsUpdatePopup } from "@/components/power-rankings-seen";
 
 // Runs before paint to apply the saved theme, preventing a flash of light mode
 // on load. Keep in sync with SettingsProvider's THEME_KEY.
@@ -53,7 +54,8 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const powerRankingsVersion = getPowerRankings().version;
+  const powerRankings = getPowerRankings();
+  const powerRankingsVersion = powerRankings.version;
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -74,6 +76,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               {children}
             </main>
             <BottomNav powerRankingsVersion={powerRankingsVersion} />
+            <PowerRankingsUpdatePopup
+              version={powerRankingsVersion}
+              updated={powerRankings.updated}
+              top={powerRankings.entries.slice(0, 3).map((e) => ({ rank: e.rank, name: e.team.name }))}
+            />
           </div>
         </SettingsProvider>
       </body>
