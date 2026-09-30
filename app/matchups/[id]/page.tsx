@@ -5,10 +5,13 @@ import { getMatchups, getRoster, getStandings, getWeekKickoff } from "@/lib/slee
 import { Card, TeamAvatar, Score, EmptyState, Hexagon, Pill } from "@/components/ui";
 import { SleeperPlayerAvatar } from "@/components/sleeper-player-avatar";
 import { MatchupTabs } from "@/components/matchup-tabs";
+import { MatchupReplay } from "@/components/matchup-replay";
 import { MatchupSwiper } from "@/components/matchup-swiper";
 import { MatchupCountdown } from "@/components/matchup-countdown";
 import { proTeamLogoUrl } from "@/lib/player-images";
 import { getHeadToHead, shortWeek } from "@/lib/games";
+import { getMatchupReplay } from "@/lib/replays";
+import { CURRENT_SEASON } from "@/lib/league-data";
 import type { MatchupSide, Roster, RosterEntry, RosterSlot, Standing, TeamMeta } from "@/lib/types";
 
 export const revalidate = 60;
@@ -45,6 +48,21 @@ export default async function MatchupPage({ params }: { params: Promise<{ id: st
   ]);
   const awayStanding = standings.find((standing) => standing.team.id === awayId);
   const homeStanding = standings.find((standing) => standing.team.id === homeId);
+
+  // Replays are rebuilt from play-by-play after the fact, so one exists only for
+  // a matchup that has finished and been built.
+  const replay = matchup.status === "final"
+    ? await getMatchupReplay(CURRENT_SEASON, week, matchup.away.rosterId, matchup.home.rosterId)
+    : null;
+  const replayPanel = replay ? (
+    <Card className="mt-3 overflow-hidden">
+      <MatchupReplay
+        replay={replay}
+        away={{ name: matchup.away.team.name, abbrev: matchup.away.team.abbrev, color: matchup.away.team.primary }}
+        home={{ name: matchup.home.team.name, abbrev: matchup.home.team.abbrev, color: matchup.home.team.primary }}
+      />
+    </Card>
+  ) : undefined;
 
   const teamsPanel = hasLineup ? (
     <>
@@ -137,7 +155,7 @@ export default async function MatchupPage({ params }: { params: Promise<{ id: st
 
       <MatchupSwiper ids={matchups.map((m) => m.id)} currentId={id} />
 
-      <MatchupTabs teams={teamsPanel} preview={previewPanel} />
+      <MatchupTabs teams={teamsPanel} preview={previewPanel} replay={replayPanel} />
     </div>
   );
 }

@@ -98,3 +98,25 @@ historical games linking to boxscores.
 The Scoreboard, Matchups and current Standings views are 2026-only and require
 live ESPN data. Older seasons live under History, Records, Head to Head and
 Every Game.
+
+### Matchup replays
+
+Sleeper keeps no score history, so a finished matchup is rebuilt from raw NFL
+play-by-play: every play is replayed through the league's own scoring settings,
+credited to whoever started that player, and stamped with the moment it
+happened. The result is each side's running total on a real clock, a live win
+probability, and the plays that swung it most — shown as the **Replay** tab on
+a completed matchup.
+
+```bash
+node scripts/build-replays.mjs            # completed weeks -> data/replays/<season>.json
+node scripts/build-replays.mjs --week 2   # one week
+node scripts/build-replays.mjs --verify   # rebuild and check, write nothing
+node scripts/build-replays.mjs --players  # per-starter diff against Sleeper
+```
+
+Run it once a week, after the last game. It checks itself: every rebuilt team
+total is printed against Sleeper's own final, and anything it cannot account
+for is booked as a residual at that player's last scoring play, so the chart
+always ends on the real score. Source data (nflverse play-by-play) is cached
+under `.cache/` and refetched when stale.
