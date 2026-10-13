@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getMatchups, getSnapshot } from "@/lib/sleeper";
+import { getCurrentWeek, getMatchups, getSnapshot } from "@/lib/sleeper";
 import { getTeam, getTeamByName, TEAMS } from "@/lib/teams";
 import { CURRENT_SEASON_FIXTURE_WEEKS, HISTORY_SEASONS } from "@/lib/league-data";
 import { getSeasonGames, weekLabel, type Game, type GameSide } from "@/lib/games";
@@ -31,7 +31,8 @@ export default async function MatchupsPage({
   const availableWeeks = isCurrentSeason
     ? CURRENT_AVAILABLE_WEEKS
     : [...new Set(historicalGames.map((game) => game.week))].sort((a, b) => a - b);
-  const requestedWeek = Math.min(Math.max(Number(weekParam) || snapshot.currentWeek, 1), Math.max(...availableWeeks, TOTAL_WEEKS));
+  const defaultWeek = isCurrentSeason ? await getCurrentWeek() : availableWeeks[0] ?? 1;
+  const requestedWeek = Math.min(Math.max(Number(weekParam) || defaultWeek, 1), Math.max(...availableWeeks, TOTAL_WEEKS));
   const week = availableWeeks.includes(requestedWeek) ? requestedWeek : availableWeeks[0] ?? 1;
 
   const [roundItems, fixture] = isCurrentSeason

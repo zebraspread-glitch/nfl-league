@@ -232,10 +232,11 @@ function slotLabel(pos: string): string {
 
 // --- Public API ---------------------------------------------------------------
 
+/** Season-level facts that never need a round trip. The week in play is not one
+ *  of them — it moves every week, so it lives in `getCurrentWeek()`. */
 export function getSnapshot(): LeagueSnapshot {
   return {
     season: Number(process.env.SLEEPER_SEASON) || CURRENT_SEASON,
-    currentWeek: CURRENT_WEEK,
     live: isLiveConfigured(),
   };
 }

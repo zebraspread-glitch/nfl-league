@@ -185,7 +185,6 @@ export interface FranchiseSeason {
 /** High-level dashboard payload for the home page. */
 export interface LeagueSnapshot {
   season: number;
-  currentWeek: number;
   /** True when ESPN current-season credentials are configured. */
   live: boolean;
 }

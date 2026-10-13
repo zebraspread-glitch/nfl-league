@@ -1,6 +1,6 @@
 import { getAllPlayStandings } from "@/lib/insights";
 import { getAiPowerRankings } from "@/lib/power-rankings";
-import { getMatchups, getSnapshot, getStandings } from "@/lib/sleeper";
+import { getCurrentWeek, getMatchups, getSnapshot, getStandings } from "@/lib/sleeper";
 import type { Matchup, TeamMeta } from "@/lib/types";
 import { Card, PageIntro, SectionHeader, TeamAvatar, TeamLink, Pill } from "@/components/ui";
 
@@ -10,9 +10,10 @@ export const metadata = { title: "League Newspaper - MGL Fantasy" };
 
 export default async function NewspaperPage() {
   const snapshot = getSnapshot();
+  const week = await getCurrentWeek();
   const [standings, matchups, allPlay, power] = await Promise.all([
     getStandings(),
-    getMatchups(snapshot.currentWeek),
+    getMatchups(week),
     getAllPlayStandings(),
     Promise.resolve(getAiPowerRankings()),
   ]);
@@ -27,7 +28,7 @@ export default async function NewspaperPage() {
 
   return (
     <div className="space-y-3">
-      <PageIntro title="League Newspaper" subtitle={`MGL Gazette - ${snapshot.season} Week ${snapshot.currentWeek}`} />
+      <PageIntro title="League Newspaper" subtitle={`MGL Gazette - ${snapshot.season} Week ${week}`} />
 
       <Card className="p-4">
         <div className="flex items-center justify-between gap-3 border-b border-border pb-3">
@@ -35,7 +36,7 @@ export default async function NewspaperPage() {
             <div className="font-cond text-4xl font-bold uppercase leading-none">MGL Gazette</div>
             <div className="mt-1 font-cond text-xs uppercase tracking-[0.18em] text-text-muted">Updated {power.updated}</div>
           </div>
-          <Pill tone="gold">Edition {snapshot.currentWeek}</Pill>
+          <Pill tone="gold">Edition {week}</Pill>
         </div>
 
         <div className="grid gap-4 pt-4 sm:grid-cols-[1.25fr_0.75fr]">

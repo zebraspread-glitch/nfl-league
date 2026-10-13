@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { getMatchups, getRosterByFranchise, getStandings, getSnapshot } from "@/lib/sleeper";
+import { getCurrentWeek, getMatchups, getRosterByFranchise, getStandings, getSnapshot } from "@/lib/sleeper";
 import { getTeam } from "@/lib/teams";
 import { MyTeamLineup } from "@/components/my-team-lineup";
 
@@ -13,10 +13,11 @@ export default async function HomePage() {
 
   if (!team) return <PickTeamPrompt />;
 
+  const week = await getCurrentWeek();
   const [standings, matchups, roster] = await Promise.all([
     getStandings(),
-    getMatchups(snapshot.currentWeek),
-    getRosterByFranchise(team.id, snapshot.currentWeek),
+    getMatchups(week),
+    getRosterByFranchise(team.id, week),
   ]);
 
   const standing = standings.find((s) => s.team.id === team.id);
@@ -27,7 +28,7 @@ export default async function HomePage() {
       <div className="px-1 pb-2 pt-1 font-cond text-sm uppercase tracking-widest text-text-muted">
         Mike Glennon League · {snapshot.season}
       </div>
-      <MyTeamLineup team={team} roster={roster} standing={standing} matchup={matchup} week={snapshot.currentWeek} />
+      <MyTeamLineup team={team} roster={roster} standing={standing} matchup={matchup} week={week} />
     </div>
   );
 }

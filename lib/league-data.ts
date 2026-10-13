@@ -19,6 +19,8 @@ import type {
 // Historical pages use the real scraped 2021-2025 NFL.com data below.
 
 export const CURRENT_SEASON = 2026;
+/** Off-season fallback only. The week actually in play comes from Sleeper via
+ *  `getCurrentWeek()` — do not read this to decide what to show. */
 export const CURRENT_WEEK = 1;
 export const HISTORY_SEASONS = [2021, 2022, 2023, 2024, 2025];
 
