@@ -15,8 +15,8 @@ type MoreLink = {
 };
 
 const FEATURED_LINKS: MoreLink[] = [
-  { href: "/odds", label: "Odds", desc: "Title, top 6, minor premiership and spoon markets, week by week", icon: "OD", badge: "NEW" },
-  { href: "/superbowl-odds", label: "Superbowl Odds", desc: "MGL Book futures on the 2026 title, top 6 and the spoon", icon: "SB", badge: "NEW" },
+  { href: "/odds", label: "Odds", desc: "Title, top 8, minor premiership and spoon markets, week by week", icon: "OD", badge: "NEW" },
+  { href: "/superbowl-odds", label: "Superbowl Odds", desc: "MGL Book futures on the 2026 title, top 8 and the spoon", icon: "SB", badge: "NEW" },
   { href: "/power-rankings", label: "Power Rankings", desc: "TP's personal ranking of every team", icon: "🏆" },
   { href: "/transactions", label: "Transactions", desc: "Every add & drop, 2021-2025", icon: "TX" },
   { href: "/drafts", label: "Draft Results", desc: "Every historical MGL draft pick", icon: "DR" },

@@ -115,7 +115,7 @@ export const MARKETS: Market[] = [
   },
   {
     key: "playoffs",
-    tab: "Top 6",
+    tab: `Top ${PLAYOFF_CUTOFF}`,
     title: "To Make the Playoffs",
     blurb: `Finishes the regular season inside the top ${PLAYOFF_CUTOFF}`,
     type: "yesno",
@@ -409,6 +409,11 @@ function simulate(
   const wins = new Float64Array(n);
   const points = new Float64Array(n);
   const order = Array.from({ length: n }, (_, i) => i);
+  /** Team index -> its seed this simulation, for reseeding the bracket. */
+  const seedOf = new Int32Array(n);
+  // Scratch for the bracket rounds, reused rather than reallocated per season.
+  const alive: number[] = [];
+  const next: number[] = [];
 
   const random = mulberry32(SEED);
   const normal = gaussian(random);
@@ -460,25 +465,31 @@ function simulate(
     for (let i = 0; i < n; i++) {
       tally.seed[order[i]] += i + 1;
       tally.wins[i] += wins[i];
+      seedOf[order[i]] = i;
       if (i < PLAYOFF_CUTOFF) tally.playoffs[order[i]] += 1;
     }
     tally.topSeed[order[0]] += 1;
     tally.spoon[order[last]] += 1;
 
-    // Six-team bracket: seeds 1 and 2 sit out the quarters, then the survivors
-    // are reseeded so the top seed always draws the longest shot still alive.
-    const thirdSixth = play(order[2], order[5]);
-    const fourthFifth = play(order[3], order[4]);
-    // Seed 6 surviving is the longest shot left; otherwise seed 3 came through
-    // and whoever won 4 v 5 is the lower seed of the two.
-    const lowerSeedIn = thirdSixth === order[5] ? thirdSixth : fourthFifth;
-    const higherSeedIn = lowerSeedIn === thirdSixth ? fourthFifth : thirdSixth;
+    // The bracket: the qualifiers are paired best against worst, and after each
+    // round the survivors are reseeded, so the top seed always draws the
+    // longest shot still alive. Written as a loop over rounds rather than a
+    // fixed set of ties, so it follows PLAYOFF_CUTOFF — which has to stay a
+    // power of two, since nothing here hands out a first-round bye.
+    alive.length = 0;
+    for (let i = 0; i < PLAYOFF_CUTOFF; i++) alive.push(order[i]);
 
-    const semiOne = play(order[0], lowerSeedIn);
-    const semiTwo = play(order[1], higherSeedIn);
-    tally.final[semiOne] += 1;
-    tally.final[semiTwo] += 1;
-    tally.title[play(semiOne, semiTwo)] += 1;
+    while (alive.length > 2) {
+      next.length = 0;
+      for (let i = 0, j = alive.length - 1; i < j; i++, j--) next.push(play(alive[i], alive[j]));
+      next.sort((a, b) => seedOf[a] - seedOf[b]);
+      alive.length = 0;
+      for (const team of next) alive.push(team);
+    }
+
+    tally.final[alive[0]] += 1;
+    tally.final[alive[1]] += 1;
+    tally.title[play(alive[0], alive[1])] += 1;
   }
 
   return tally;

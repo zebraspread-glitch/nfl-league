@@ -2,7 +2,7 @@ import { TEAMS } from "./teams";
 import type { Matchup, Standing, TeamMeta } from "./types";
 
 export const REGULAR_SEASON_WEEKS = 14;
-export const PLAYOFF_CUTOFF = 6;
+export const PLAYOFF_CUTOFF = 8;
 
 export interface SimulatorTeam {
   team: TeamMeta;
