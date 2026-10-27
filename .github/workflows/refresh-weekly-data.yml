@@ -1,0 +1,59 @@
+# Rebuilds the data a finished week produces, then pushes it so Vercel deploys.
+#
+#   data/replays/<season>.json       matchup replays  (scripts/build-replays.mjs)
+#   data/odds-history/<season>.json  ladder snapshots (scripts/build-odds-history.mjs)
+#
+# Both read public Sleeper and nflverse endpoints, so the job needs no secrets.
+# A week settles on the Monday night NFL game, which is Tuesday afternoon in
+# Melbourne; Sleeper rolls its own week pointer over around then, and both
+# scripts key off that. Wednesday morning league time leaves plenty of room.
+name: Refresh weekly data
+
+on:
+  schedule:
+    # 00:30 UTC Wednesday — 11:30am Melbourne in summer, 10:30am in winter.
+    - cron: "30 0 * * 3"
+  workflow_dispatch:
+
+# A manual run while the scheduled one is going would race on the same push.
+concurrency:
+  group: refresh-weekly-data
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # --strict: nobody is reading this output, so a replay that no longer
+      # reconstructs Sleeper's own finals fails the job instead of being
+      # committed quietly.
+      - name: Rebuild matchup replays
+        run: node scripts/build-replays.mjs --strict
+
+      # Reads the replays written above for its daily snapshots, so it runs second.
+      - name: Rebuild odds history
+        run: node scripts/build-odds-history.mjs
+
+      - name: Commit and push
+        run: |
+          if git diff --quiet -- data/replays data/odds-history; then
+            echo "Nothing changed — no week has settled since the last run."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/replays data/odds-history
+          git commit \
+            -m "Refresh replays and odds history" \
+            -m "Automated weekly rebuild (.github/workflows/refresh-weekly-data.yml)."
+          git push

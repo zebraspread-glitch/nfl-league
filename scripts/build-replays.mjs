@@ -16,6 +16,7 @@
 // Run:        node scripts/build-replays.mjs
 // One week:   node scripts/build-replays.mjs --week 2
 // Check only: node scripts/build-replays.mjs --verify   (no file written)
+// Unattended: node scripts/build-replays.mjs --strict   (fails if a total drifts)
 //
 // Output: data/replays/<season>.json — { [matchupId]: Replay }
 
@@ -37,6 +38,7 @@ const opt = (n) => { const i = args.indexOf(n); return i < 0 ? null : args[i + 1
 const ONLY_WEEK = opt('--week') ? Number(opt('--week')) : null;
 const VERIFY_ONLY = flag('--verify');
 const PLAYER_DIFF = flag('--players');
+const STRICT = flag('--strict');
 
 const r2 = (v) => Math.round(v * 100) / 100;
 
@@ -527,6 +529,14 @@ for (const c of checks) {
   );
 }
 console.log(`\nworst single-team error: ${worst.toFixed(2)} pts`);
+
+// Run by hand, a drifting reconstruction is something to eyeball and dig into.
+// Run unattended it is a failure, because nobody is reading the output and the
+// result would be committed regardless — so --strict refuses to write.
+if (STRICT && worst > 0.5) {
+  console.error(`\n--strict: reconstruction is off by ${worst.toFixed(2)} pts; nothing written.`);
+  process.exit(1);
+}
 
 if (!VERIFY_ONLY) {
   const dir = path.join(ROOT, 'data', 'replays');
