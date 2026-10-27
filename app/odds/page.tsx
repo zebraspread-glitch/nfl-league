@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { OddsHistoryChart, type ChartSeries } from "@/components/odds-history-chart";
+import {
+  OddsHistoryChart,
+  type ChartScale,
+  type ChartSeries,
+  type Granularity,
+} from "@/components/odds-history-chart";
 import { Card, PageIntro, SectionHeader, TeamAvatar } from "@/components/ui";
 import { biggestMover, getOddsHistory, type OddsSeries } from "@/lib/odds-history";
 import { PLAYOFF_CUTOFF, REGULAR_SEASON_WEEKS } from "@/lib/playoff-simulator";
@@ -17,13 +22,24 @@ export default async function OddsPage({
   const { market: marketParam } = await searchParams;
   const market = getMarket(marketParam);
   const history = getOddsHistory();
-  const series = history.series[market.key];
+  const series = history.series.week[market.key];
   const mover = biggestMover(series, series[0]?.team.id);
 
-  const chartSeries: ChartSeries[] = series.map((s) => ({
-    team: s.team,
-    points: s.points.map((p) => [p.week, p.p] as [number, number]),
-  }));
+  const flatten = (rows: typeof series): ChartSeries[] =>
+    rows.map((s) => ({ team: s.team, values: s.points.map((p) => p.p) }));
+  const axis = (rows: typeof series): ChartScale => ({
+    ticks: rows[0].points.map((p) => p.tick),
+    labels: rows[0].points.map((p) => p.label),
+  });
+
+  const chartSeries: Record<Granularity, ChartSeries[]> = {
+    week: flatten(series),
+    day: flatten(history.series.day[market.key]),
+  };
+  const chartScale: Record<Granularity, ChartScale> = {
+    week: axis(series),
+    day: axis(history.series.day[market.key]),
+  };
 
   return (
     <div className="space-y-3">
@@ -54,7 +70,8 @@ export default async function OddsPage({
         <p className="px-3 pb-1 pt-2 text-xs text-text-muted">{market.blurb}</p>
         <OddsHistoryChart
           series={chartSeries}
-          caption={`${market.title}: every franchise's chance, week by week`}
+          scale={chartScale}
+          caption={`${market.title}: every franchise's chance over the season`}
         />
       </Card>
 

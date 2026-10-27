@@ -1,6 +1,6 @@
 import historyJson from "@/data/odds-history/2026.json";
 import { CURRENT_SEASON } from "./league-data";
-import { simulateMarkets, type MarketKey } from "./superbowl-odds";
+import { simulateMarkets, type LiveMatchup, type MarketKey } from "./superbowl-odds";
 import { TEAMS } from "./teams";
 import type { Standing, TeamId, TeamMeta } from "./types";
 
@@ -32,20 +32,38 @@ interface Snapshot {
   standings: SnapshotTeam[];
 }
 
+/** An end-of-day snapshot, which can land mid-week: finished matchups are in
+ *  the standings, anything still being played is carried alongside. */
+interface DaySnapshot {
+  date: string;
+  scheduleFromWeek: number;
+  pending: { away: number; home: number }[];
+  standings: SnapshotTeam[];
+  live: LiveMatchup[];
+}
+
+export type Granularity = "week" | "day";
+
 /** Sims per replayed week. The board itself runs 20k for a price that has to
  *  stand up to the cent; a curve only has to be readable, and nine weeks of 20k
  *  is work nobody sees. At 6k the standard error on a 10% chance is ~0.4pp —
  *  under half a pixel on a 280-unit chart. */
 const SIMULATIONS = 6_000;
 
+/** The day view runs seven times as many boards as the week view, so it trades
+ *  some precision for the build staying quick. At 3k the standard error on a
+ *  10% chance is ~0.5pp, and because the run is seeded, two days with the same
+ *  ladder return byte-identical numbers — a flat stretch stays flat rather than
+ *  shimmering with sampling noise. */
+const DAY_SIMULATIONS = 3_000;
+
 export interface OddsPoint {
-  /** 0 is the pre-season board, before a ball is kicked. */
-  week: number;
   /** Chance of landing the market, 0-1. */
   p: number;
-  wins: number;
-  losses: number;
-  ties: number;
+  /** Short x-axis tick, e.g. "W3" or "14 Sep". */
+  tick: string;
+  /** What the footer reads out when this point is scrubbed to. */
+  label: string;
 }
 
 export interface OddsSeries {
@@ -60,17 +78,20 @@ export interface OddsHistory {
   season: number;
   /** Weeks replayed, not counting the pre-season point. */
   completedWeeks: number;
+  days: number;
   simulations: number;
-  /** One series per franchise, longest-priced last. */
-  series: Record<MarketKey, OddsSeries[]>;
+  /** One series per franchise, longest-priced last, per granularity. */
+  series: Record<Granularity, Record<MarketKey, OddsSeries[]>>;
 }
 
-const snapshots = (historyJson as { season: number; weeks: Snapshot[] }).weeks;
+const history = historyJson as { season: number; weeks: Snapshot[]; days?: DaySnapshot[] };
+const snapshots = history.weeks;
+const dailySnapshots = history.days ?? [];
 
 /** A stored snapshot inflated into the `Standing[]` the simulator expects.
  *  Only wins/ties/pointsFor are read by the model; the rest of the shape is
  *  filled in so the snapshot can be passed straight through. */
-function standingsFor(snapshot: Snapshot | null): Standing[] {
+function standingsFor(snapshot: { standings: SnapshotTeam[] } | null): Standing[] {
   const byTeam = new Map((snapshot?.standings ?? []).map((s) => [s.teamId, s]));
 
   return TEAMS.map((team) => {
@@ -99,34 +120,33 @@ const MARKET_KEYS: MarketKey[] = ["title", "final", "playoffs", "topSeed", "spoo
 
 let cache: OddsHistory | null = null;
 
-/** Every market's week-by-week line. Built once per process — the snapshots are
- *  a committed file and the simulation is seeded, so the result never changes
- *  between calls. */
-export function getOddsHistory(): OddsHistory {
-  if (cache) return cache;
+const OPENING = { tick: "Pre", label: "Opening board, before Week 1" };
 
-  // Week 0 is the opening board: no results, so the model is pure projection.
-  const weeks: (Snapshot | null)[] = [null, ...snapshots];
+const fmtDayTick = new Intl.DateTimeFormat("en-AU", { day: "numeric", month: "short", timeZone: "UTC" });
+const fmtDayLabel = new Intl.DateTimeFormat("en-AU", {
+  weekday: "short",
+  day: "numeric",
+  month: "short",
+  timeZone: "UTC",
+});
 
-  // [week index][team index] -> chances
-  const runs = weeks.map((snapshot) => {
-    const standings = standingsFor(snapshot);
-    return {
-      standings,
-      chances: simulateMarkets(standings, snapshot?.week ?? 0, SIMULATIONS),
-    };
-  });
+/** One point on a curve: the board run off a single snapshot. */
+interface Run {
+  chances: Record<MarketKey, number>[];
+  tick: string;
+  label: string;
+}
 
-  const series = {} as Record<MarketKey, OddsSeries[]>;
+/** Turn a list of runs into one sorted series per market. */
+function seriesFrom(runs: Run[]): Record<MarketKey, OddsSeries[]> {
+  const out = {} as Record<MarketKey, OddsSeries[]>;
 
   for (const market of MARKET_KEYS) {
-    series[market] = TEAMS.map((team, i) => {
-      const points = runs.map((run, w) => ({
-        week: w,
+    out[market] = TEAMS.map((team, i) => {
+      const points = runs.map((run) => ({
         p: run.chances[i][market],
-        wins: run.standings[i].wins,
-        losses: run.standings[i].losses,
-        ties: run.standings[i].ties,
+        tick: run.tick,
+        label: run.label,
       }));
 
       return {
@@ -138,11 +158,53 @@ export function getOddsHistory(): OddsHistory {
     }).sort((a, b) => b.current - a.current || b.opening - a.opening);
   }
 
+  return out;
+}
+
+/** The opening board, shared by both granularities: no results at all, so the
+ *  model is pure projection. */
+function openingRun(simulations: number): Run {
+  return { chances: simulateMarkets(standingsFor(null), 0, simulations), ...OPENING };
+}
+
+/** Every market's line at both granularities. Built once per process — the
+ *  snapshots are a committed file and the simulation is seeded, so the result
+ *  never changes between calls. */
+export function getOddsHistory(): OddsHistory {
+  if (cache) return cache;
+
+  const byWeek: Run[] = [
+    openingRun(SIMULATIONS),
+    ...snapshots.map((snapshot) => ({
+      chances: simulateMarkets(standingsFor(snapshot), snapshot.week, SIMULATIONS),
+      tick: `W${snapshot.week}`,
+      label: `After Week ${snapshot.week}`,
+    })),
+  ];
+
+  const byDay: Run[] = [
+    openingRun(DAY_SIMULATIONS),
+    ...dailySnapshots.map((day) => {
+      // Dates are stored as plain league-local days, so they are read back in
+      // UTC — parsing them in the viewer's zone would slide the label a day.
+      const at = new Date(`${day.date}T00:00:00Z`);
+      return {
+        chances: simulateMarkets(standingsFor(day), day.scheduleFromWeek - 1, DAY_SIMULATIONS, {
+          live: day.live,
+          pending: day.pending,
+        }),
+        tick: fmtDayTick.format(at),
+        label: fmtDayLabel.format(at) + (day.live.length ? ` — ${day.live.length} live` : ""),
+      };
+    }),
+  ];
+
   cache = {
-    season: (historyJson as { season: number }).season ?? CURRENT_SEASON,
+    season: history.season ?? CURRENT_SEASON,
     completedWeeks: snapshots.length,
+    days: dailySnapshots.length,
     simulations: SIMULATIONS,
-    series,
+    series: { week: seriesFrom(byWeek), day: seriesFrom(byDay) },
   };
   return cache;
 }

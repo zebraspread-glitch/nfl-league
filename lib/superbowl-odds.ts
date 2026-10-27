@@ -195,12 +195,55 @@ export async function getFuturesBoard(): Promise<FuturesBoard> {
  *  this same function against the ladder as it stood after each past week. Both
  *  read the same simulation, so a historical price and today's price can never
  *  be produced by two different models. */
+/** A matchup caught half-played, as the daily odds history reads it off the
+ *  replays: the score so far, and the replay's own live win probability. */
+export interface LiveMatchup {
+  away: { teamId: number; points: number };
+  home: { teamId: number; points: number };
+  /** Away team's chance of winning this matchup, 0-1. */
+  awayWinProb: number;
+}
+
+export interface SimulationOptions {
+  /** Matchups already under way when the snapshot was taken. */
+  live?: LiveMatchup[];
+  /** Fixtures inside an already-started week that had not kicked off yet. */
+  pending?: { away: number; home: number }[];
+}
+
+interface LiveGame {
+  away: number;
+  home: number;
+  awayPoints: number;
+  homePoints: number;
+  awayWinProb: number;
+}
+
 export function simulateMarkets(
   standings: Standing[],
   completedWeeks: number,
   simulations: number = SIMULATIONS,
+  options: SimulationOptions = {},
 ): Record<MarketKey, number>[] {
-  const tally = simulate(buildRatings(standings), standings, remainingSchedule(completedWeeks), simulations);
+  const indexById = new Map(TEAMS.map((t, i) => [t.id, i]));
+  const idx = (id: number) => indexById.get(id as TeamId) ?? -1;
+
+  // Fixtures the caller knows are still unplayed inside an otherwise-started
+  // week, in front of every week that has not begun at all.
+  const extra = (options.pending ?? []).flatMap((p) => [idx(p.away), idx(p.home)]);
+  const schedule = Int32Array.from([...extra, ...remainingSchedule(completedWeeks)]);
+
+  const live: LiveGame[] = (options.live ?? [])
+    .map((m) => ({
+      away: idx(m.away.teamId),
+      home: idx(m.home.teamId),
+      awayPoints: m.away.points,
+      homePoints: m.home.points,
+      awayWinProb: m.awayWinProb,
+    }))
+    .filter((m) => m.away >= 0 && m.home >= 0);
+
+  const tally = simulate(buildRatings(standings), standings, schedule, simulations, live);
   return TEAMS.map((_, i) => ({
     title: tally.title[i] / simulations,
     final: tally.final[i] / simulations,
@@ -338,6 +381,7 @@ function simulate(
   standings: Standing[],
   schedule: Int32Array,
   simulations: number,
+  live: LiveGame[] = [],
 ): Tally {
   const n = TEAMS.length;
   const last = n - 1;
@@ -371,6 +415,19 @@ function simulate(
   const score = (i: number) => ratings[i] + normal() * TEAM_SCORE_SD;
   const play = (a: number, b: number) => (score(a) >= score(b) ? a : b);
 
+  /** Where a half-played franchise finishes the week.
+   *
+   *  A score already banked cannot be taken away, so only what is left to come
+   *  is random: the side is carried up to its rating, and the noise on that is
+   *  scaled by how much of the rating is still outstanding. With nothing played
+   *  this is the ordinary full-week draw; with the rating already passed it
+   *  collapses to the score on the board. */
+  const finishFrom = (i: number, sofar: number) => {
+    const remaining = Math.max(0, ratings[i] - sofar);
+    if (remaining === 0) return sofar;
+    return sofar + remaining + normal() * TEAM_SCORE_SD * Math.sqrt(remaining / ratings[i]);
+  };
+
   for (let sim = 0; sim < simulations; sim++) {
     wins.set(baseWins);
     points.set(basePoints);
@@ -384,6 +441,18 @@ function simulate(
       points[home] += homeScore;
       if (awayScore >= homeScore) wins[away] += 1;
       else wins[home] += 1;
+    }
+
+    // Matchups caught in progress. The result is drawn off the replay's live
+    // win probability, which weighs each side's score against what its
+    // still-playing starters were projected to add — a better-informed read
+    // than two ratings alone. The points each side ends on are drawn
+    // separately, because they only ever decide a ladder tiebreak.
+    for (const game of live) {
+      points[game.away] += finishFrom(game.away, game.awayPoints);
+      points[game.home] += finishFrom(game.home, game.homePoints);
+      if (random() < game.awayWinProb) wins[game.away] += 1;
+      else wins[game.home] += 1;
     }
 
     // Ladder: wins first, then points for — the league's own tiebreak.

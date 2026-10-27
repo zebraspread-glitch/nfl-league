@@ -6,9 +6,35 @@ import type { TeamMeta } from "@/lib/types";
 /** The shape lib/odds-history.ts hands over, flattened for the client. */
 export interface ChartSeries {
   team: TeamMeta;
-  /** [week, chance 0-1] — week 0 is the pre-season board. */
-  points: [number, number][];
+  /** Chance of landing the market at each snapshot, 0-1. */
+  values: number[];
 }
+
+export interface ChartScale {
+  /** Short x-axis labels, one per snapshot. */
+  ticks: string[];
+  /** What the footer reads out when a snapshot is scrubbed to. */
+  labels: string[];
+}
+
+export type Granularity = "week" | "day";
+
+/** Floors the team list can be cut at. A twelve-line chart is a lot to read at
+ *  once, and most of those lines are franchises the market has already settled. */
+const FLOORS = [
+  { value: 0, label: "All" },
+  { value: 0.01, label: "1%+" },
+  { value: 0.1, label: "10%+" },
+];
+
+/** How far back the day view looks. Fifty-odd days of season squeeze a lot of
+ *  movement into one chart, and most of the time what matters is the last week
+ *  or two. Weeks are never windowed — there are only ever a handful of them. */
+const RANGES = [
+  { value: 0, label: "All time" },
+  { value: 30, label: "30 days" },
+  { value: 7, label: "7 days" },
+];
 
 // Geometry (viewBox units; the SVG scales to its container). The right margin
 // carries the end labels, the way the matchup replay labels its two lines —
@@ -27,6 +53,35 @@ const NAMED = 4;
 
 const pct = (p: number) => `${(p * 100).toFixed(1)}%`;
 
+/** A small pill switch — the chart carries two of them, so they share one. */
+function Segmented({
+  options,
+  value,
+  onChange,
+}: {
+  options: { value: string; label: string }[];
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="flex rounded-full bg-section p-0.5">
+      {options.map((o) => (
+        <button
+          key={o.value}
+          type="button"
+          onClick={() => onChange(o.value)}
+          aria-pressed={o.value === value}
+          className={`rounded-full px-2.5 py-1 font-cond text-xs font-semibold transition-colors ${
+            o.value === value ? "bg-card text-text shadow-sm" : "text-text-muted hover:text-text"
+          }`}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /**
  * One market's whole season: a line per franchise from the opening board to
  * now. Hovering a week reads every price at that moment; tapping a franchise
@@ -34,35 +89,66 @@ const pct = (p: number) => `${(p * 100).toFixed(1)}%`;
  */
 export function OddsHistoryChart({
   series,
+  scale,
   caption,
 }: {
-  series: ChartSeries[];
+  series: Record<Granularity, ChartSeries[]>;
+  scale: Record<Granularity, ChartScale>;
   caption: string;
 }) {
+  const [grain, setGrain] = useState<Granularity>("week");
+  const [floor, setFloor] = useState(0);
+  const [range, setRange] = useState(0);
   const [hover, setHover] = useState<number | null>(null);
   const [picked, setPicked] = useState<number | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
+  const full = series[grain];
+
+  // The day view can be wound back to the last 30 or 7 snapshots — one per day,
+  // so the window is just the tail. The week view is always shown whole, and
+  // dropping the pre-season point with it is the right call: a seven-day window
+  // that still started at the opening board would not be a seven-day window.
+  const from =
+    grain === "day" && range > 0 ? Math.max(0, (full[0]?.values.length ?? 0) - range) : 0;
+
+  const all = useMemo(
+    () => (from === 0 ? full : full.map((s) => ({ ...s, values: s.values.slice(from) }))),
+    [full, from],
+  );
+  const axis = useMemo(() => {
+    const a = scale[grain];
+    return from === 0 ? a : { ticks: a.ticks.slice(from), labels: a.labels.slice(from) };
+  }, [scale, grain, from]);
+
+  // Cutting the field is done on where each franchise stands now, not on the
+  // point being hovered — lines appearing and vanishing under the cursor would
+  // make the chart impossible to read.
+  const shown = useMemo(
+    () => all.filter((s) => s.values[s.values.length - 1] >= floor),
+    [all, floor],
+  );
+  const hidden = all.length - shown.length;
+
   const g = useMemo(() => {
-    const weeks = series[0]?.points.map(([w]) => w) ?? [0];
-    const last = weeks.length - 1;
+    const last = Math.max(0, (shown[0]?.values.length ?? 1) - 1);
 
     // A twelve-horse title market tops out around a third, so a fixed 0-100%
     // axis would squash every line into the bottom of the plot. The scale is
     // cut to the market instead: the next round ceiling above the best price
     // anyone has held all season.
-    const peak = Math.max(0.05, ...series.flatMap((s) => s.points.map(([, p]) => p)));
+    const peak = Math.max(0.05, ...shown.flatMap((s) => s.values));
     const top = [0.1, 0.2, 0.25, 0.4, 0.5, 0.6, 0.75, 1].find((t) => t >= peak - 1e-9) ?? 1;
     const gridlines = [0, 0.25, 0.5, 0.75, 1].map((f) => top * f);
 
     const x = (i: number) => PAD.l + (last === 0 ? 0 : (i / last) * PLOT_W);
     const y = (p: number) => PAD.t + PLOT_H - (p / top) * PLOT_H;
 
-    const lines = series.map((s) => ({
+    const lines = shown.map((s) => ({
       team: s.team,
-      values: s.points.map(([, p]) => p),
-      path: s.points.map(([, p], i) => `${x(i).toFixed(1)},${y(p).toFixed(1)}`).join(" "),
-      end: s.points[last][1],
+      values: s.values,
+      path: s.values.map((p, i) => `${x(i).toFixed(1)},${y(p).toFixed(1)}`).join(" "),
+      end: s.values[last],
     }));
 
     // Only the shortest few prices get a name on the chart. They are nudged
@@ -76,17 +162,22 @@ export function OddsHistoryChart({
       const overlap = LABEL_H - (named[i].ly - named[i - 1].ly);
       if (overlap > 0) named[i].ly += overlap;
     }
-    const floor = PAD.t + PLOT_H;
+    const bottom = PAD.t + PLOT_H;
     for (let i = named.length - 1; i > 0; i--) {
-      if (named[i].ly > floor) named[i].ly = floor;
+      if (named[i].ly > bottom) named[i].ly = bottom;
       const overlap = LABEL_H - (named[i].ly - named[i - 1].ly);
       if (overlap > 0) named[i - 1].ly -= overlap;
     }
 
-    const ticks = weeks.map((w, i) => ({ px: x(i), label: w === 0 ? "Pre" : `W${w}` }));
+    // Seven weeks can all be labelled; fifty days cannot, so the day view takes
+    // an even sample and always keeps both ends.
+    const every = Math.max(1, Math.ceil(axis.ticks.length / 8));
+    const ticks = axis.ticks
+      .map((label, i) => ({ px: x(i), label, i }))
+      .filter((t) => t.i === 0 || t.i === last || (every === 1 ? true : t.i % every === 0 && last - t.i > every / 2));
 
-    return { lines, named, ticks, weeks, gridlines, x, y, last };
-  }, [series]);
+    return { lines, named, ticks, gridlines, x, y, last };
+  }, [shown, axis]);
 
   const onMove = (e: React.PointerEvent<SVGSVGElement>) => {
     const svg = svgRef.current;
@@ -102,7 +193,10 @@ export function OddsHistoryChart({
     setHover(best);
   };
 
-  const at = hover ?? g.last;
+  // Switching granularity leaves a stale hover index behind — the day view has
+  // far more points than the week view — so it is clamped rather than reset,
+  // which keeps the cursor roughly where it was.
+  const at = Math.min(hover ?? g.last, g.last);
 
   // The table under the chart: ranked on whatever week is being read, with the
   // move since the opening board alongside.
@@ -120,6 +214,34 @@ export function OddsHistoryChart({
 
   return (
     <figure className="m-0">
+      <div className="flex flex-wrap items-center gap-2 px-3 pb-2 pt-1">
+        <Segmented
+          options={[
+            { value: "week", label: "Week" },
+            { value: "day", label: "Day" },
+          ]}
+          value={grain}
+          onChange={(v) => setGrain(v as Granularity)}
+        />
+        <Segmented
+          options={FLOORS.map((f) => ({ value: String(f.value), label: f.label }))}
+          value={String(floor)}
+          onChange={(v) => setFloor(Number(v))}
+        />
+        {grain === "day" && (
+          <Segmented
+            options={RANGES.map((r) => ({ value: String(r.value), label: r.label }))}
+            value={String(range)}
+            onChange={(v) => setRange(Number(v))}
+          />
+        )}
+        {hidden > 0 && (
+          <span className="font-cond text-[11px] text-text-dim">
+            {hidden} hidden
+          </span>
+        )}
+      </div>
+
       <svg
         ref={svgRef}
         viewBox={`0 0 ${W} ${H}`}
@@ -241,11 +363,7 @@ export function OddsHistoryChart({
 
       <figcaption className="flex items-center justify-between px-3 pb-2 pt-1 text-xs">
         <span className="text-text-muted">
-          {hover === null
-            ? "Hover the chart to scrub through the season"
-            : g.weeks[hover] === 0
-              ? "Opening board, before Week 1"
-              : `After Week ${g.weeks[hover]}`}
+          {hover === null ? "Hover the chart to scrub through the season" : axis.labels[at]}
         </span>
         {picked !== null && (
           <button
