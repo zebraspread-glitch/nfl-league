@@ -7,7 +7,8 @@
 // someone joins or renames.
 
 export const USERNAME_TO_FRANCHISE = {
-  dimmymgl: "Dimmy",
+  dimmymgl: "Dimmy", // old handle
+  dimmmmy: "Dimmy", // renamed mid-2026
   thomopatto: "Thomo", // old handle
   thomoo: "Thomo",
   deaaroncronin: "De'Aaron Cronin",

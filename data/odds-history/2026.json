@@ -1,0 +1,712 @@
+{
+  "season": 2026,
+  "weeks": [
+    {
+      "week": 1,
+      "standings": [
+        {
+          "teamId": 1,
+          "wins": 0,
+          "losses": 1,
+          "ties": 0,
+          "pointsFor": 80.1,
+          "pointsAgainst": 139.5
+        },
+        {
+          "teamId": 2,
+          "wins": 1,
+          "losses": 0,
+          "ties": 0,
+          "pointsFor": 138.76,
+          "pointsAgainst": 129.06
+        },
+        {
+          "teamId": 3,
+          "wins": 1,
+          "losses": 0,
+          "ties": 0,
+          "pointsFor": 163.82,
+          "pointsAgainst": 80.9
+        },
+        {
+          "teamId": 4,
+          "wins": 0,
+          "losses": 1,
+          "ties": 0,
+          "pointsFor": 129.06,
+          "pointsAgainst": 138.76
+        },
+        {
+          "teamId": 5,
+          "wins": 0,
+          "losses": 1,
+          "ties": 0,
+          "pointsFor": 126.6,
+          "pointsAgainst": 152.86
+        },
+        {
+          "teamId": 6,
+          "wins": 1,
+          "losses": 0,
+          "ties": 0,
+          "pointsFor": 138.36,
+          "pointsAgainst": 57.7
+        },
+        {
+          "teamId": 7,
+          "wins": 0,
+          "losses": 1,
+          "ties": 0,
+          "pointsFor": 80.9,
+          "pointsAgainst": 163.82
+        },
+        {
+          "teamId": 8,
+          "wins": 1,
+          "losses": 0,
+          "ties": 0,
+          "pointsFor": 139.5,
+          "pointsAgainst": 80.1
+        },
+        {
+          "teamId": 9,
+          "wins": 0,
+          "losses": 1,
+          "ties": 0,
+          "pointsFor": 128.76,
+          "pointsAgainst": 135.6
+        },
+        {
+          "teamId": 10,
+          "wins": 1,
+          "losses": 0,
+          "ties": 0,
+          "pointsFor": 135.6,
+          "pointsAgainst": 128.76
+        },
+        {
+          "teamId": 11,
+          "wins": 0,
+          "losses": 1,
+          "ties": 0,
+          "pointsFor": 57.7,
+          "pointsAgainst": 138.36
+        },
+        {
+          "teamId": 12,
+          "wins": 1,
+          "losses": 0,
+          "ties": 0,
+          "pointsFor": 152.86,
+          "pointsAgainst": 126.6
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "standings": [
+        {
+          "teamId": 1,
+          "wins": 0,
+          "losses": 2,
+          "ties": 0,
+          "pointsFor": 173.08,
+          "pointsAgainst": 269.42
+        },
+        {
+          "teamId": 2,
+          "wins": 1,
+          "losses": 1,
+          "ties": 0,
+          "pointsFor": 248.86,
+          "pointsAgainst": 304.2
+        },
+        {
+          "teamId": 3,
+          "wins": 1,
+          "losses": 1,
+          "ties": 0,
+          "pointsFor": 269.48,
+          "pointsAgainst": 217.56
+        },
+        {
+          "teamId": 4,
+          "wins": 1,
+          "losses": 1,
+          "ties": 0,
+          "pointsFor": 258.98,
+          "pointsAgainst": 231.74
+        },
+        {
+          "teamId": 5,
+          "wins": 0,
+          "losses": 2,
+          "ties": 0,
+          "pointsFor": 226.6,
+          "pointsAgainst": 287.24
+        },
+        {
+          "teamId": 6,
+          "wins": 2,
+          "losses": 0,
+          "ties": 0,
+          "pointsFor": 313.5,
+          "pointsAgainst": 167.8
+        },
+        {
+          "teamId": 7,
+          "wins": 1,
+          "losses": 1,
+          "ties": 0,
+          "pointsFor": 192.18,
+          "pointsAgainst": 247.1
+        },
+        {
+          "teamId": 8,
+          "wins": 2,
+          "losses": 0,
+          "ties": 0,
+          "pointsFor": 273.88,
+          "pointsAgainst": 180.1
+        },
+        {
+          "teamId": 9,
+          "wins": 0,
+          "losses": 2,
+          "ties": 0,
+          "pointsFor": 212.04,
+          "pointsAgainst": 246.88
+        },
+        {
+          "teamId": 10,
+          "wins": 1,
+          "losses": 1,
+          "ties": 0,
+          "pointsFor": 230.46,
+          "pointsAgainst": 257.98
+        },
+        {
+          "teamId": 11,
+          "wins": 1,
+          "losses": 1,
+          "ties": 0,
+          "pointsFor": 194.36,
+          "pointsAgainst": 244.02
+        },
+        {
+          "teamId": 12,
+          "wins": 2,
+          "losses": 0,
+          "ties": 0,
+          "pointsFor": 282.08,
+          "pointsAgainst": 221.46
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "standings": [
+        {
+          "teamId": 1,
+          "wins": 1,
+          "losses": 2,
+          "ties": 0,
+          "pointsFor": 288.08,
+          "pointsAgainst": 382
+        },
+        {
+          "teamId": 2,
+          "wins": 1,
+          "losses": 2,
+          "ties": 0,
+          "pointsFor": 365.9,
+          "pointsAgainst": 428.78
+        },
+        {
+          "teamId": 3,
+          "wins": 1,
+          "losses": 2,
+          "ties": 0,
+          "pointsFor": 361.4,
+          "pointsAgainst": 324.98
+        },
+        {
+          "teamId": 4,
+          "wins": 1,
+          "losses": 2,
+          "ties": 0,
+          "pointsFor": 361.34,
+          "pointsAgainst": 393.22
+        },
+        {
+          "teamId": 5,
+          "wins": 0,
+          "losses": 3,
+          "ties": 0,
+          "pointsFor": 343.02,
+          "pointsAgainst": 430.12
+        },
+        {
+          "teamId": 6,
+          "wins": 3,
+          "losses": 0,
+          "ties": 0,
+          "pointsFor": 474.98,
+          "pointsAgainst": 270.16
+        },
+        {
+          "teamId": 7,
+          "wins": 2,
+          "losses": 1,
+          "ties": 0,
+          "pointsFor": 316.76,
+          "pointsAgainst": 364.14
+        },
+        {
+          "teamId": 8,
+          "wins": 3,
+          "losses": 0,
+          "ties": 0,
+          "pointsFor": 381.3,
+          "pointsAgainst": 272.02
+        },
+        {
+          "teamId": 9,
+          "wins": 1,
+          "losses": 2,
+          "ties": 0,
+          "pointsFor": 339.02,
+          "pointsAgainst": 346.42
+        },
+        {
+          "teamId": 10,
+          "wins": 2,
+          "losses": 1,
+          "ties": 0,
+          "pointsFor": 373.34,
+          "pointsAgainst": 374.4
+        },
+        {
+          "teamId": 11,
+          "wins": 1,
+          "losses": 2,
+          "ties": 0,
+          "pointsFor": 293.9,
+          "pointsAgainst": 371
+        },
+        {
+          "teamId": 12,
+          "wins": 2,
+          "losses": 1,
+          "ties": 0,
+          "pointsFor": 394.66,
+          "pointsAgainst": 336.46
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "standings": [
+        {
+          "teamId": 1,
+          "wins": 1,
+          "losses": 3,
+          "ties": 0,
+          "pointsFor": 376.02,
+          "pointsAgainst": 545.82
+        },
+        {
+          "teamId": 2,
+          "wins": 2,
+          "losses": 2,
+          "ties": 0,
+          "pointsFor": 506.98,
+          "pointsAgainst": 546.66
+        },
+        {
+          "teamId": 3,
+          "wins": 1,
+          "losses": 3,
+          "ties": 0,
+          "pointsFor": 433.82,
+          "pointsAgainst": 405.66
+        },
+        {
+          "teamId": 4,
+          "wins": 2,
+          "losses": 2,
+          "ties": 0,
+          "pointsFor": 497.96,
+          "pointsAgainst": 518.34
+        },
+        {
+          "teamId": 5,
+          "wins": 0,
+          "losses": 4,
+          "ties": 0,
+          "pointsFor": 450.54,
+          "pointsAgainst": 575.8
+        },
+        {
+          "teamId": 6,
+          "wins": 4,
+          "losses": 0,
+          "ties": 0,
+          "pointsFor": 620.66,
+          "pointsAgainst": 377.68
+        },
+        {
+          "teamId": 7,
+          "wins": 3,
+          "losses": 1,
+          "ties": 0,
+          "pointsFor": 480.58,
+          "pointsAgainst": 452.08
+        },
+        {
+          "teamId": 8,
+          "wins": 3,
+          "losses": 1,
+          "ties": 0,
+          "pointsFor": 499.18,
+          "pointsAgainst": 413.1
+        },
+        {
+          "teamId": 9,
+          "wins": 1,
+          "losses": 3,
+          "ties": 0,
+          "pointsFor": 464.14,
+          "pointsAgainst": 483.04
+        },
+        {
+          "teamId": 10,
+          "wins": 3,
+          "losses": 1,
+          "ties": 0,
+          "pointsFor": 518.22,
+          "pointsAgainst": 463.56
+        },
+        {
+          "teamId": 11,
+          "wins": 1,
+          "losses": 3,
+          "ties": 0,
+          "pointsFor": 383.06,
+          "pointsAgainst": 515.88
+        },
+        {
+          "teamId": 12,
+          "wins": 3,
+          "losses": 1,
+          "ties": 0,
+          "pointsFor": 475.34,
+          "pointsAgainst": 408.88
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "standings": [
+        {
+          "teamId": 1,
+          "wins": 1,
+          "losses": 4,
+          "ties": 0,
+          "pointsFor": 473.4,
+          "pointsAgainst": 659.92
+        },
+        {
+          "teamId": 2,
+          "wins": 3,
+          "losses": 2,
+          "ties": 0,
+          "pointsFor": 630,
+          "pointsAgainst": 639.36
+        },
+        {
+          "teamId": 3,
+          "wins": 1,
+          "losses": 4,
+          "ties": 0,
+          "pointsFor": 526.52,
+          "pointsAgainst": 528.68
+        },
+        {
+          "teamId": 4,
+          "wins": 3,
+          "losses": 2,
+          "ties": 0,
+          "pointsFor": 637.16,
+          "pointsAgainst": 636.6
+        },
+        {
+          "teamId": 5,
+          "wins": 1,
+          "losses": 4,
+          "ties": 0,
+          "pointsFor": 564.64,
+          "pointsAgainst": 673.18
+        },
+        {
+          "teamId": 6,
+          "wins": 5,
+          "losses": 0,
+          "ties": 0,
+          "pointsFor": 766.32,
+          "pointsAgainst": 512.92
+        },
+        {
+          "teamId": 7,
+          "wins": 3,
+          "losses": 2,
+          "ties": 0,
+          "pointsFor": 598.84,
+          "pointsAgainst": 591.28
+        },
+        {
+          "teamId": 8,
+          "wins": 4,
+          "losses": 1,
+          "ties": 0,
+          "pointsFor": 657.5,
+          "pointsAgainst": 571.38
+        },
+        {
+          "teamId": 9,
+          "wins": 1,
+          "losses": 4,
+          "ties": 0,
+          "pointsFor": 622.42,
+          "pointsAgainst": 641.36
+        },
+        {
+          "teamId": 10,
+          "wins": 3,
+          "losses": 2,
+          "ties": 0,
+          "pointsFor": 653.46,
+          "pointsAgainst": 609.22
+        },
+        {
+          "teamId": 11,
+          "wins": 1,
+          "losses": 4,
+          "ties": 0,
+          "pointsFor": 501.5,
+          "pointsAgainst": 636.06
+        },
+        {
+          "teamId": 12,
+          "wins": 4,
+          "losses": 1,
+          "ties": 0,
+          "pointsFor": 595.52,
+          "pointsAgainst": 527.32
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "standings": [
+        {
+          "teamId": 1,
+          "wins": 1,
+          "losses": 5,
+          "ties": 0,
+          "pointsFor": 549.58,
+          "pointsAgainst": 785.16
+        },
+        {
+          "teamId": 2,
+          "wins": 4,
+          "losses": 2,
+          "ties": 0,
+          "pointsFor": 759.58,
+          "pointsAgainst": 729.76
+        },
+        {
+          "teamId": 3,
+          "wins": 1,
+          "losses": 5,
+          "ties": 0,
+          "pointsFor": 628.32,
+          "pointsAgainst": 637.88
+        },
+        {
+          "teamId": 4,
+          "wins": 4,
+          "losses": 2,
+          "ties": 0,
+          "pointsFor": 746.36,
+          "pointsAgainst": 738.4
+        },
+        {
+          "teamId": 5,
+          "wins": 2,
+          "losses": 4,
+          "ties": 0,
+          "pointsFor": 675.36,
+          "pointsAgainst": 758.58
+        },
+        {
+          "teamId": 6,
+          "wins": 5,
+          "losses": 1,
+          "ties": 0,
+          "pointsFor": 851.72,
+          "pointsAgainst": 623.64
+        },
+        {
+          "teamId": 7,
+          "wins": 4,
+          "losses": 2,
+          "ties": 0,
+          "pointsFor": 726.8,
+          "pointsAgainst": 674.18
+        },
+        {
+          "teamId": 8,
+          "wins": 5,
+          "losses": 1,
+          "ties": 0,
+          "pointsFor": 787.68,
+          "pointsAgainst": 660.1
+        },
+        {
+          "teamId": 9,
+          "wins": 1,
+          "losses": 5,
+          "ties": 0,
+          "pointsFor": 712.82,
+          "pointsAgainst": 770.94
+        },
+        {
+          "teamId": 10,
+          "wins": 4,
+          "losses": 2,
+          "ties": 0,
+          "pointsFor": 778.7,
+          "pointsAgainst": 685.4
+        },
+        {
+          "teamId": 11,
+          "wins": 1,
+          "losses": 5,
+          "ties": 0,
+          "pointsFor": 590.22,
+          "pointsAgainst": 766.24
+        },
+        {
+          "teamId": 12,
+          "wins": 4,
+          "losses": 2,
+          "ties": 0,
+          "pointsFor": 678.42,
+          "pointsAgainst": 655.28
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "standings": [
+        {
+          "teamId": 1,
+          "wins": 2,
+          "losses": 5,
+          "ties": 0,
+          "pointsFor": 682.2,
+          "pointsAgainst": 905.94
+        },
+        {
+          "teamId": 2,
+          "wins": 5,
+          "losses": 2,
+          "ties": 0,
+          "pointsFor": 858.66,
+          "pointsAgainst": 824.58
+        },
+        {
+          "teamId": 3,
+          "wins": 1,
+          "losses": 6,
+          "ties": 0,
+          "pointsFor": 722.06,
+          "pointsAgainst": 766.68
+        },
+        {
+          "teamId": 4,
+          "wins": 5,
+          "losses": 2,
+          "ties": 0,
+          "pointsFor": 862.48,
+          "pointsAgainst": 827.32
+        },
+        {
+          "teamId": 5,
+          "wins": 2,
+          "losses": 5,
+          "ties": 0,
+          "pointsFor": 798.24,
+          "pointsAgainst": 896.08
+        },
+        {
+          "teamId": 6,
+          "wins": 6,
+          "losses": 1,
+          "ties": 0,
+          "pointsFor": 972.24,
+          "pointsAgainst": 730.36
+        },
+        {
+          "teamId": 7,
+          "wins": 4,
+          "losses": 3,
+          "ties": 0,
+          "pointsFor": 833.52,
+          "pointsAgainst": 794.7
+        },
+        {
+          "teamId": 8,
+          "wins": 6,
+          "losses": 1,
+          "ties": 0,
+          "pointsFor": 916.48,
+          "pointsAgainst": 753.84
+        },
+        {
+          "teamId": 9,
+          "wins": 1,
+          "losses": 6,
+          "ties": 0,
+          "pointsFor": 833.6,
+          "pointsAgainst": 903.56
+        },
+        {
+          "teamId": 10,
+          "wins": 5,
+          "losses": 2,
+          "ties": 0,
+          "pointsFor": 916.2,
+          "pointsAgainst": 808.28
+        },
+        {
+          "teamId": 11,
+          "wins": 1,
+          "losses": 6,
+          "ties": 0,
+          "pointsFor": 679.14,
+          "pointsAgainst": 882.36
+        },
+        {
+          "teamId": 12,
+          "wins": 4,
+          "losses": 3,
+          "ties": 0,
+          "pointsFor": 773.24,
+          "pointsAgainst": 754.36
+        }
+      ]
+    }
+  ]
+}

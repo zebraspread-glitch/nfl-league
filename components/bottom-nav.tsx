@@ -55,6 +55,7 @@ const TABS: Tab[] = [
       p.startsWith("/head-to-head") ||
       p.startsWith("/power-rankings") ||
       p.startsWith("/superbowl-odds") ||
+      p.startsWith("/odds") ||
       p.startsWith("/keepers"),
     icon: "more",
   },

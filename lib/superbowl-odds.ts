@@ -189,12 +189,33 @@ export async function getFuturesBoard(): Promise<FuturesBoard> {
   return board;
 }
 
+/** Every market's chance for every franchise, in TEAMS order, off one run.
+ *
+ *  The board below is one caller; the odds-history page is the other, replaying
+ *  this same function against the ladder as it stood after each past week. Both
+ *  read the same simulation, so a historical price and today's price can never
+ *  be produced by two different models. */
+export function simulateMarkets(
+  standings: Standing[],
+  completedWeeks: number,
+  simulations: number = SIMULATIONS,
+): Record<MarketKey, number>[] {
+  const tally = simulate(buildRatings(standings), standings, remainingSchedule(completedWeeks), simulations);
+  return TEAMS.map((_, i) => ({
+    title: tally.title[i] / simulations,
+    final: tally.final[i] / simulations,
+    playoffs: tally.playoffs[i] / simulations,
+    topSeed: tally.topSeed[i] / simulations,
+    spoon: tally.spoon[i] / simulations,
+  }));
+}
+
 async function buildFuturesBoard(): Promise<FuturesBoard> {
   const standings = await getStandings();
   const completedWeeks = completedWeeksFromStandings(standings);
   const ratings = buildRatings(standings);
   const schedule = remainingSchedule(completedWeeks);
-  const tally = simulate(ratings, standings, schedule);
+  const tally = simulate(ratings, standings, schedule, SIMULATIONS);
   const titles = titlesByTeam();
 
   const entries = TEAMS.map((team, i) => {
@@ -312,7 +333,12 @@ interface Tally {
   seed: Float64Array;
 }
 
-function simulate(ratings: Float64Array, standings: Standing[], schedule: Int32Array): Tally {
+function simulate(
+  ratings: Float64Array,
+  standings: Standing[],
+  schedule: Int32Array,
+  simulations: number,
+): Tally {
   const n = TEAMS.length;
   const last = n - 1;
   const standingByTeam = new Map(standings.map((s) => [s.team.id, s]));
@@ -345,7 +371,7 @@ function simulate(ratings: Float64Array, standings: Standing[], schedule: Int32A
   const score = (i: number) => ratings[i] + normal() * TEAM_SCORE_SD;
   const play = (a: number, b: number) => (score(a) >= score(b) ? a : b);
 
-  for (let sim = 0; sim < SIMULATIONS; sim++) {
+  for (let sim = 0; sim < simulations; sim++) {
     wins.set(baseWins);
     points.set(basePoints);
 
