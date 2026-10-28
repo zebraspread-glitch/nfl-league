@@ -647,7 +647,7 @@
           "wins": 2,
           "losses": 5,
           "ties": 0,
-          "pointsFor": 798.24,
+          "pointsFor": 798.14,
           "pointsAgainst": 896.08
         },
         {
@@ -688,7 +688,7 @@
           "losses": 2,
           "ties": 0,
           "pointsFor": 916.2,
-          "pointsAgainst": 808.28
+          "pointsAgainst": 808.18
         },
         {
           "teamId": 11,
@@ -7359,9 +7359,9 @@
           },
           "home": {
             "teamId": 5,
-            "points": 122.88
+            "points": 122.78
           },
-          "awayWinProb": 0.792
+          "awayWinProb": 0.794
         },
         {
           "away": {
@@ -7440,7 +7440,7 @@
           "wins": 2,
           "losses": 5,
           "ties": 0,
-          "pointsFor": 798.24,
+          "pointsFor": 798.14,
           "pointsAgainst": 896.08
         },
         {
@@ -7481,7 +7481,7 @@
           "losses": 2,
           "ties": 0,
           "pointsFor": 916.2,
-          "pointsAgainst": 808.28
+          "pointsAgainst": 808.18
         },
         {
           "teamId": 11,
